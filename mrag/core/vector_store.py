@@ -59,7 +59,7 @@ class ChromaVectorStore(VectorStore):
         except ImportError:
             raise ImportError(
                 "ChromaDB is not installed. Please install it using "
-                "`pip install mrag[chromadb]` or `pip install chromadb`."
+                "`pip install -e .[chromadb]` or `pip install chromadb`."
             )
 
     def embed_text(self, text: str) -> np.ndarray:
@@ -138,7 +138,7 @@ class PineconeVectorStore(VectorStore):
         except ImportError:
             raise ImportError(
                 "Pinecone client is not installed. Please install it using "
-                "`pip install mrag[pinecone]` or `pip install pinecone`."
+                "`pip install -e .[pinecone]` or `pip install pinecone`."
             )
 
     def embed_text(self, text: str) -> np.ndarray:
@@ -260,8 +260,8 @@ def create_vector_store(backend: Optional[str] = None, **kwargs) -> VectorStore:
         raise ValueError(
             "\n[MicroRAG Configuration Error]: No VectorStore backend selected.\n"
             "You must choose a backend when initializing the system. Options:\n"
-            "1. 'chromadb' (Requires `pip install mrag[chromadb]`)\n"
-            "2. 'pinecone' (Requires `pip install mrag[pinecone]`)\n"
+            "1. 'chromadb' (Requires `pip install -e .[chromadb]`)\n"
+            "2. 'pinecone' (Requires `pip install -e .[pinecone]`)\n"
             "3. 'dummy'    (Zero-dependency local sandbox testing)\n\n"
             "Usage:\n"
             "  from mrag.core.vector_store import create_vector_store\n"

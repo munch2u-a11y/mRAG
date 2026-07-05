@@ -15,15 +15,22 @@ Micro-RAG is a lightweight, framework-agnostic memory management system. It prov
 
 ## Installation
 
-To install the barebones memory system (zero external vector database dependencies):
+Clone the repository and install it locally in editable mode:
 ```bash
-pip install mrag
+git clone https://github.com/munch2u-a11y/mRAG.git
+cd mRAG
+pip install -e .
 ```
 
 Or install with specific vector database extras:
 ```bash
-pip install mrag[chromadb]  # For local ChromaDB support
-pip install mrag[pinecone]  # For cloud Pinecone support
+pip install -e .[chromadb]  # For local ChromaDB support
+pip install -e .[pinecone]  # For cloud Pinecone support
+```
+
+You can also install directly from GitHub:
+```bash
+pip install git+https://github.com/munch2u-a11y/mRAG.git
 ```
 
 ## Usage Example
