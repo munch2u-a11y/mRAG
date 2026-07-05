@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+mrag_data/
+*.egg-info/
+build/
+dist/
+test_*/
+tests/benchmark_*/
+tests/test_soul_import_data/
+.claude/

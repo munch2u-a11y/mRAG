@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mrag"
+version = "0.1.0"
+description = "Micro-RAG (mRAG): An agnostic agentic memory management system."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy"
+]
+
+[project.optional-dependencies]
+chromadb = [
+    "chromadb"
+]
+pinecone = [
+    "pinecone"
+]
+dev = [
+    "pytest"
+]

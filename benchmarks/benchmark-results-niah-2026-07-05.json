@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-07-05T13:51:27-04:00",
+  "query_text": "What is the vault code?",
+  "needle_content": "The passcode for the private vault is 9987-Alpha.",
+  "haystack_size": 5000,
+  "warmup_runs": 3,
+  "measured_runs": 20,
+  "latency_ms": {
+    "mean_ms": 148.0,
+    "median_ms": 147.12,
+    "p95_ms": 156.89,
+    "min_ms": 142.17,
+    "max_ms": 163.21
+  },
+  "recall_rate": 1.0,
+  "avg_needle_score": 0.802,
+  "avg_next_best_score": 0.1616,
+  "avg_margin": 0.6404,
+  "methodology": {
+    "distractor_embeddings": "synthetic random normalized vectors",
+    "needle_embedding": "real embedding from Chroma DefaultEmbeddingFunction",
+    "query_latency_mode": "steady-state after warmup"
+  }
+}
