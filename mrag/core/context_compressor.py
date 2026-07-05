@@ -1,8 +1,48 @@
+import os
 import json
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("mrag.core.context_compressor")
+
+def resolve_context_limit(model_name: Optional[str] = None, env_var: str = "MRAG_CONTEXT_LIMIT") -> int:
+    """Resolves context window token limit for standard models or env configs.
+
+    Raises ValueError if limit is unknown and not configured.
+    """
+    env_limit = os.environ.get(env_var)
+    if env_limit:
+        try:
+            return int(env_limit)
+        except ValueError:
+            pass
+
+    if not model_name:
+        raise ValueError(
+            "\n[MicroRAG Configuration Error]: LLM Context Window limit is not set.\n"
+            "You must specify the context limit for your active model to enable dynamic memory compression.\n"
+            "Options:\n"
+            "1. Pass context_token_limit directly to the constructor.\n"
+            "2. Set the MRAG_CONTEXT_LIMIT environment variable.\n"
+            "3. Provide a standard model_name string (e.g. 'gpt-4o', 'claude-3-5-sonnet')."
+        )
+
+    m = model_name.lower().strip()
+    if "gemini-1.5" in m:
+        return 1000000
+    elif "claude-3-5" in m or "claude-3" in m:
+        return 200000
+    elif "gpt-4o" in m or "gpt-4" in m:
+        return 128000
+    elif "llama3" in m or "mistral" in m or "phi3" in m or "gemma" in m:
+        return 8192
+    else:
+        raise ValueError(
+            f"\n[MicroRAG Configuration Error]: Unknown model context limit for '{model_name}'.\n"
+            "Please configure the context window limit manually by passing context_token_limit "
+            "or setting the MRAG_CONTEXT_LIMIT environment variable."
+        )
+
 
 SUMMARY_PREFIX = (
     "[COGNITIVE CONTINUITY] The following is a seamless continuation of your "
@@ -23,7 +63,7 @@ class ContextCompressor:
     def __init__(
         self,
         llm_callable: Callable[[str], str],
-        context_token_limit: int = 128000,
+        context_token_limit: Optional[int] = None,
         threshold_percent: float = 0.65,
         protect_first_n: int = 2,
         summary_target_ratio: float = 0.20,
@@ -31,14 +71,18 @@ class ContextCompressor:
         """
         Args:
             llm_callable: A function that takes a prompt string and returns the LLM's string response.
-            context_token_limit: The maximum tokens for the context window.
+            context_token_limit: Optional. The maximum tokens for the context window. Resolved from env/model name if omitted.
             threshold_percent: Compress when tokens exceed this percent of the limit.
             protect_first_n: Keep the first N messages (usually system prompt + first user message).
             summary_target_ratio: How much of the context window to use for the tail (recent context).
         """
         self.llm = llm_callable
-        self.context_token_limit = context_token_limit
-        self.threshold_tokens = int(context_token_limit * threshold_percent)
+        if context_token_limit is None:
+            model_name = os.environ.get("MRAG_MODEL_NAME")
+            self.context_token_limit = resolve_context_limit(model_name)
+        else:
+            self.context_token_limit = context_token_limit
+        self.threshold_tokens = int(self.context_token_limit * threshold_percent)
         self.protect_first_n = protect_first_n
         self.tail_token_budget = int(self.threshold_tokens * summary_target_ratio)
         

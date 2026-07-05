@@ -1,7 +1,7 @@
 import hashlib
 import json
 import logging
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 from mrag.memory.belief_store import BeliefStore
 
@@ -14,9 +14,44 @@ class BeliefConsolidator:
     and saves them into the BeliefStore with temporal and structural metadata.
     """
 
-    def __init__(self, belief_store: BeliefStore, llm_callable: Callable[[str], str]):
+    def __init__(self, belief_store: BeliefStore, llm_callable: Callable[[str], str], context_limit: Optional[int] = None, ratio: float = 0.40, vector_store: Optional[Any] = None):
         self._store = belief_store
         self.llm = llm_callable
+        self._vector_store = vector_store
+        
+        if context_limit is None:
+            import os
+            from mrag.core.context_compressor import resolve_context_limit
+            try:
+                model_name = os.environ.get("MRAG_MODEL_NAME")
+                self.context_limit = resolve_context_limit(model_name)
+            except ValueError:
+                self.context_limit = 8192
+        else:
+            self.context_limit = context_limit
+
+        self.ratio = ratio
+        self.backlog_threshold_tokens = min(int(self.context_limit * ratio), 10000)
+        self._backlog: List[Dict[str, Any]] = []
+        self._backlog_tokens = 0
+
+    def add_conversation_turn(self, turn: Dict[str, Any]):
+        """Adds a turn to the consolidation backlog and auto-triggers consolidation when full."""
+        self._backlog.append(turn)
+        content = turn.get("content", "")
+        # Standard approximation: 1 token = 4 characters
+        estimated_tokens = len(content) // 4
+        self._backlog_tokens += estimated_tokens
+        
+        if self._backlog_tokens >= self.backlog_threshold_tokens:
+            logger.info(f"Consolidation backlog tokens ({self._backlog_tokens}) exceeded threshold ({self.backlog_threshold_tokens}). Triggering consolidation pass...")
+            self.run_consolidation_pass(self._backlog)
+            self.clear_backlog()
+
+    def clear_backlog(self):
+        """Clears the backlog buffer."""
+        self._backlog = []
+        self._backlog_tokens = 0
 
     def run_consolidation_pass(self, conversation_turns: List[Dict[str, Any]]):
         """Analyze a batch of recent conversation turns and extract new beliefs."""
@@ -77,15 +112,16 @@ Return ONLY valid JSON. No markdown formatting or backticks.
                 content_digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
                 belief_id = f"bel_{content_digest}"
                 
-                # We could do a deduplication check here, or let the BeliefStore handle it.
-                self._store.add_belief(
+                # Merge semantic duplicates or add new beliefs
+                self._store.merge_or_add_belief(
                     category=category,
                     belief_id=belief_id,
                     content=content,
                     confidence=bd.get("confidence", 0.7),
-                    source=bd.get("source", "consolidation_pass")
+                    source=bd.get("source", "consolidation_pass"),
+                    vector_store=self._vector_store
                 )
-                logger.info(f"Consolidated new belief: [{category}] {content}")
+                logger.info(f"Consolidated belief: [{category}] {content}")
                 
         except Exception as e:
             logger.error(f"Failed to consolidate beliefs: {e}")

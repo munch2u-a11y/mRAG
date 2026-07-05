@@ -246,6 +246,92 @@ class BeliefStore:
         self.version += 1
         return True
 
+    def merge_or_add_belief(
+        self,
+        category: str,
+        belief_id: str,
+        content: str,
+        confidence: float = 0.5,
+        source: str = "system",
+        relations: list = None,
+        memory_refs: list = None,
+        vector_store: Optional[Any] = None,
+        **extra_fields,
+    ) -> bool:
+        """Adds a belief to the store. If an exact duplicate or semantic equivalent is found,
+        it merges their metadata (updating confidence, verifications, and relations) instead
+        of creating a duplicate entry.
+        """
+        if not self._cache_loaded:
+            self.load_into_cache()
+
+        target_belief_id = belief_id
+        is_duplicate = False
+
+        if belief_id in self._beliefs_cache:
+            target_belief_id = belief_id
+            is_duplicate = True
+
+        if not is_duplicate and vector_store is not None:
+            try:
+                query_emb = vector_store.embed_text(content)
+                results = vector_store.query_top_k(query_emb, k=1)
+                if results and len(results) > 0:
+                    matched_id, similarity = results[0]
+                    if similarity >= 0.90 and matched_id in self._beliefs_cache:
+                        target_belief_id = matched_id
+                        is_duplicate = True
+                        logger.info(f"Detected semantic duplicate (similarity {similarity:.4f}). Merging '{content}' into matched belief '{self._beliefs_cache[matched_id]['content']}'.")
+            except Exception as e:
+                logger.error(f"Semantic deduplication query failed: {e}")
+
+        if is_duplicate:
+            existing = self._beliefs_cache[target_belief_id]
+            old_conf = existing.get("confidence", 0.5)
+            existing["confidence"] = max(0.0, min(1.0, old_conf + (1.0 - old_conf) * 0.2))
+            
+            existing["verifications"] = existing.get("verifications", 1.0) + 1.0
+            existing["stability_index"] = max(0.0, min(1.0, existing.get("stability_index", 0.5) + (1.0 - existing.get("stability_index", 0.5)) * 0.1))
+            
+            new_rels = relations or []
+            existing["relations"] = list(dict.fromkeys(existing.get("relations", []) + new_rels))
+            
+            new_refs = memory_refs or []
+            existing["memory_refs"] = list(dict.fromkeys(existing.get("memory_refs", []) + new_refs))
+            
+            existing["last_accessed"] = _now_iso()
+            existing["source"] = f"{existing.get('source', '')}; {source}"
+            
+            for key, val in extra_fields.items():
+                if key not in existing:
+                    existing[key] = val
+
+            category_of_existing = existing.get("_category") or category
+            existing = self._normalize_belief(existing, category=category_of_existing)
+            self._beliefs_cache[target_belief_id] = existing
+            
+            beliefs_list = [
+                b for b in self._beliefs_cache.values()
+                if b.get("_category") == category_of_existing
+            ]
+            self._write_category(category_of_existing, beliefs_list)
+            self._index_relations(target_belief_id, existing.get("relations", []))
+            self.version += 1
+            return True
+        else:
+            return self.add_belief(
+                category=category,
+                belief_id=belief_id,
+                content=content,
+                confidence=confidence,
+                source=source,
+                verifications=1.0,
+                stability_index=0.5,
+                relations=relations,
+                memory_refs=memory_refs,
+                **extra_fields
+            )
+
     def get_belief(self, belief_id: str) -> Optional[Dict[str, Any]]:
         if self._cache_loaded:
             return self._beliefs_cache.get(belief_id)
