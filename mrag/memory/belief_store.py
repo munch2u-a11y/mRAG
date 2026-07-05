@@ -287,6 +287,10 @@ class BeliefStore:
 
         if is_duplicate:
             existing = self._beliefs_cache[target_belief_id]
+            if existing.get("content") != content:
+                logger.info(f"Updating content of belief {target_belief_id} from '{existing.get('content')}' to newer '{content}' (semantic match similarity >= 0.90).")
+                existing["content"] = content
+
             old_conf = existing.get("confidence", 0.5)
             existing["confidence"] = max(0.0, min(1.0, old_conf + (1.0 - old_conf) * 0.2))
             

@@ -15,20 +15,30 @@ class BeliefConsolidator:
     """
 
     def __init__(self, belief_store: BeliefStore, llm_callable: Callable[[str], str], context_limit: Optional[int] = None, ratio: float = 0.40, vector_store: Optional[Any] = None):
+        """
+        Args:
+            belief_store: The cognitive belief store.
+            llm_callable: Function that accepts a prompt string and returns LLM string output.
+            context_limit: The model's context window size. Defaults to 8192 if not resolved.
+            ratio: Fraction of the context window to accumulate before triggering consolidation.
+                   Note: The threshold is capped at 10,000 tokens to preserve extraction recall and output limit compliance,
+                   meaning this ratio is primarily effective for small context windows (< 25k tokens).
+            vector_store: Vector store used for semantic duplicate matching.
+            
+        Note:
+            The consolidation backlog is managed in-memory only in v0.2 and does not persist across restarts.
+        """
         self._store = belief_store
         self.llm = llm_callable
         self._vector_store = vector_store
         
-        if context_limit is None:
-            import os
-            from mrag.core.context_compressor import resolve_context_limit
-            try:
-                model_name = os.environ.get("MRAG_MODEL_NAME")
-                self.context_limit = resolve_context_limit(model_name)
-            except ValueError:
-                self.context_limit = 8192
-        else:
-            self.context_limit = context_limit
+        import os
+        from mrag.core.context_compressor import resolve_context_limit
+        try:
+            model_name = os.environ.get("MRAG_MODEL_NAME")
+            self.context_limit = resolve_context_limit(context_limit, model_name)
+        except ValueError:
+            self.context_limit = 8192
 
         self.ratio = ratio
         self.backlog_threshold_tokens = min(int(self.context_limit * ratio), 10000)

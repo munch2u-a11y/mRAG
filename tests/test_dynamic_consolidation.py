@@ -29,19 +29,19 @@ class TestDynamicConsolidation(unittest.TestCase):
 
     def test_resolve_context_limit(self):
         # 1. Test standard model name resolution
-        self.assertEqual(resolve_context_limit("gpt-4o"), 128000)
-        self.assertEqual(resolve_context_limit("claude-3-5-sonnet"), 200000)
-        self.assertEqual(resolve_context_limit("gemini-1.5-flash"), 1000000)
-        self.assertEqual(resolve_context_limit("llama3"), 8192)
+        self.assertEqual(resolve_context_limit(model_name="gpt-4o"), 128000)
+        self.assertEqual(resolve_context_limit(model_name="claude-3-5-sonnet"), 200000)
+        self.assertEqual(resolve_context_limit(model_name="gemini-1.5-flash"), 1000000)
+        self.assertEqual(resolve_context_limit(model_name="llama3"), 8192)
 
         # 2. Test environment variable override
         os.environ["MRAG_CONTEXT_LIMIT"] = "50000"
-        self.assertEqual(resolve_context_limit("gpt-4o"), 50000)
+        self.assertEqual(resolve_context_limit(model_name="gpt-4o"), 50000)
         del os.environ["MRAG_CONTEXT_LIMIT"]
 
         # 3. Test unknown model error
         with self.assertRaises(ValueError):
-            resolve_context_limit("unknown-model-name")
+            resolve_context_limit(model_name="unknown-model-name")
 
     def test_backlog_consolidation_trigger(self):
         # Setup consolidator with small context limit so backlog triggers quickly
@@ -142,6 +142,48 @@ class TestDynamicConsolidation(unittest.TestCase):
         self.assertEqual(b["id"], "bel_python_pref") # merged into Python pref
         self.assertEqual(b["verifications"], 3.0)
         self.assertEqual(sorted(b["relations"]), ["relation_bar", "relation_baz", "relation_foo"])
+
+    def test_contradiction_fact_update_merging(self):
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+                self.query_result = []
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return self.query_result
+
+        mock_vs = MockVectorStore()
+
+        # Seed initial staging server IP address
+        self.belief_store.add_belief(
+            category="propositions",
+            belief_id="bel_staging_ip",
+            content="The staging server is 10.14.2.1",
+            confidence=0.7,
+            source="Turn 1"
+        )
+
+        # Mock a semantic match (high similarity, but different IP address/content)
+        mock_vs.query_result = [("bel_staging_ip", 0.92)]
+
+        # Consolidate newer turn with updated IP address
+        self.belief_store.merge_or_add_belief(
+            category="propositions",
+            belief_id="bel_new_staging_ip",
+            content="The staging server is 10.14.9.9",
+            confidence=0.8,
+            source="Turn 2",
+            vector_store=mock_vs
+        )
+
+        # Verify that we merged but preferred the newer content to avoid the stale IP trap
+        beliefs = self.belief_store.get_all_beliefs_flat()
+        self.assertEqual(len(beliefs), 1)
+        b = beliefs[0]
+        self.assertEqual(b["id"], "bel_staging_ip")
+        self.assertEqual(b["content"], "The staging server is 10.14.9.9") # Updated to newer!
+        self.assertEqual(b["verifications"], 2.0)
 
 if __name__ == "__main__":
     unittest.main()

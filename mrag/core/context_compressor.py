@@ -5,11 +5,21 @@ from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger("mrag.core.context_compressor")
 
-def resolve_context_limit(model_name: Optional[str] = None, env_var: str = "MRAG_CONTEXT_LIMIT") -> int:
+def resolve_context_limit(
+    context_token_limit: Optional[int] = None,
+    model_name: Optional[str] = None,
+    env_var: str = "MRAG_CONTEXT_LIMIT"
+) -> int:
     """Resolves context window token limit for standard models or env configs.
 
-    Raises ValueError if limit is unknown and not configured.
+    Priority:
+    1. Explicit context_token_limit parameter
+    2. Environment variable override (MRAG_CONTEXT_LIMIT)
+    3. Model name auto-detection (best-effort fallback)
     """
+    if context_token_limit is not None:
+        return context_token_limit
+
     env_limit = os.environ.get(env_var)
     if env_limit:
         try:
@@ -28,14 +38,14 @@ def resolve_context_limit(model_name: Optional[str] = None, env_var: str = "MRAG
         )
 
     m = model_name.lower().strip()
-    if "gemini-1.5" in m:
-        return 1000000
-    elif "claude-3-5" in m or "claude-3" in m:
-        return 200000
-    elif "gpt-4o" in m or "gpt-4" in m:
-        return 128000
-    elif "llama3" in m or "mistral" in m or "phi3" in m or "gemma" in m:
-        return 8192
+    if "gemini" in m:
+        return 1000000  # Default fallback for Gemini (approximate)
+    elif "claude" in m:
+        return 200000   # Default fallback for Claude (approximate)
+    elif "gpt-4" in m or "gpt-3.5" in m:
+        return 128000   # Default fallback for GPT-4 (approximate)
+    elif "llama" in m or "mistral" in m or "phi" in m or "gemma" in m or "qwen" in m:
+        return 8192     # Default fallback for local models (approximate)
     else:
         raise ValueError(
             f"\n[MicroRAG Configuration Error]: Unknown model context limit for '{model_name}'.\n"
@@ -77,11 +87,8 @@ class ContextCompressor:
             summary_target_ratio: How much of the context window to use for the tail (recent context).
         """
         self.llm = llm_callable
-        if context_token_limit is None:
-            model_name = os.environ.get("MRAG_MODEL_NAME")
-            self.context_token_limit = resolve_context_limit(model_name)
-        else:
-            self.context_token_limit = context_token_limit
+        model_name = os.environ.get("MRAG_MODEL_NAME")
+        self.context_token_limit = resolve_context_limit(context_token_limit, model_name)
         self.threshold_tokens = int(self.context_token_limit * threshold_percent)
         self.protect_first_n = protect_first_n
         self.tail_token_budget = int(self.threshold_tokens * summary_target_ratio)
