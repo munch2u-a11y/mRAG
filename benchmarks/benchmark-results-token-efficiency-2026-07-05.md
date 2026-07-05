@@ -1,6 +1,6 @@
 # Micro-RAG Token Efficiency Over Time Benchmark
 
-- Timestamp: `2026-07-05T14:19:48-04:00`
+- Timestamp: `2026-07-05T14:54:57-04:00`
 - Command: `python tests/run_token_efficiency_benchmark.py`
 - Simulated turns: `200` (fact introduced every `5` turns)
 - Context limit for compression: `8000` tokens
@@ -9,17 +9,17 @@
 
 | Turn | Baseline (full history) | Micro-RAG | Saving |
 | ---: | ---: | ---: | ---: |
-| 25 | 2,236 | 2,359 | -5.5% |
-| 50 | 4,509 | 4,676 | -3.7% |
-| 100 | 9,048 | 5,178 | 42.8% |
-| 150 | 13,657 | 2,108 | 84.6% |
-| 200 | 18,267 | 3,055 | 83.3% |
+| 25 | 2,236 | 2,371 | -6.0% |
+| 50 | 4,509 | 4,620 | -2.5% |
+| 100 | 9,048 | 5,164 | 42.9% |
+| 150 | 13,657 | 2,093 | 84.7% |
+| 200 | 18,267 | 3,058 | 83.3% |
 
 ## Cumulative Prompt Tokens (200 turns)
 
 - Baseline: `1,823,991`
-- Micro-RAG: `631,412`
-- **Cumulative saving: `65.4%`** (grows with session length)
+- Micro-RAG: `630,050`
+- **Cumulative saving: `65.5%`** (grows with session length)
 
 ## Long-Range Fact Recall
 
@@ -33,13 +33,13 @@
 - Catalog: `20` tools, natural-language task queries
 - Correct skill surfaced in top-5 injection: `1.0`
 - Missed: `none`
-- Injection latency mean: `143.47 ms`
+- Injection latency mean: `144.62 ms`
 
 ## Injection Latency During Simulation
 
-- Mean: `183.5 ms`
-- Median: `144.42 ms`
-- Max (includes first-call embedding warmup): `3076.23 ms`
+- Mean: `184.59 ms`
+- Median: `146.0 ms`
+- Max (includes first-call embedding warmup): `3087.25 ms`
 
 ## Methodology Notes
 

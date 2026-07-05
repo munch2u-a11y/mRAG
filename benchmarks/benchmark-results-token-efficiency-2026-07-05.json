@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-05T14:19:48-04:00",
+  "timestamp": "2026-07-05T14:54:57-04:00",
   "total_turns": 200,
   "context_token_limit": 8000,
   "facts_introduced": 40,
@@ -7,38 +7,38 @@
     {
       "turn": 25,
       "baseline_prompt_tokens": 2236,
-      "mrag_prompt_tokens": 2359,
-      "per_turn_saving_pct": -5.5
+      "mrag_prompt_tokens": 2371,
+      "per_turn_saving_pct": -6.0
     },
     {
       "turn": 50,
       "baseline_prompt_tokens": 4509,
-      "mrag_prompt_tokens": 4676,
-      "per_turn_saving_pct": -3.7
+      "mrag_prompt_tokens": 4620,
+      "per_turn_saving_pct": -2.5
     },
     {
       "turn": 100,
       "baseline_prompt_tokens": 9048,
-      "mrag_prompt_tokens": 5178,
-      "per_turn_saving_pct": 42.8
+      "mrag_prompt_tokens": 5164,
+      "per_turn_saving_pct": 42.9
     },
     {
       "turn": 150,
       "baseline_prompt_tokens": 13657,
-      "mrag_prompt_tokens": 2108,
-      "per_turn_saving_pct": 84.6
+      "mrag_prompt_tokens": 2093,
+      "per_turn_saving_pct": 84.7
     },
     {
       "turn": 200,
       "baseline_prompt_tokens": 18267,
-      "mrag_prompt_tokens": 3055,
+      "mrag_prompt_tokens": 3058,
       "per_turn_saving_pct": 83.3
     }
   ],
   "cumulative_prompt_tokens": {
     "baseline": 1823991,
-    "mrag": 631412,
-    "saving_pct": 65.4
+    "mrag": 630050,
+    "saving_pct": 65.5
   },
   "recall_probes": {
     "count": 21,
@@ -51,13 +51,13 @@
     "catalog_size": 20,
     "hit_rate_top5": 1.0,
     "missed": [],
-    "latency_ms_mean": 143.47,
-    "latency_ms_median": 143.25
+    "latency_ms_mean": 144.62,
+    "latency_ms_median": 143.57
   },
   "injection_latency_ms": {
-    "mean": 183.5,
-    "median": 144.42,
-    "max": 3076.23
+    "mean": 184.59,
+    "median": 146.0,
+    "max": 3087.25
   },
   "per_turn": [
     {
@@ -123,25 +123,25 @@
     {
       "turn": 11,
       "baseline_prompt_tokens": 961,
-      "mrag_prompt_tokens": 1014,
+      "mrag_prompt_tokens": 1082,
       "history_messages": 23
     },
     {
       "turn": 12,
       "baseline_prompt_tokens": 1048,
-      "mrag_prompt_tokens": 1160,
+      "mrag_prompt_tokens": 1131,
       "history_messages": 25
     },
     {
       "turn": 13,
       "baseline_prompt_tokens": 1136,
-      "mrag_prompt_tokens": 1252,
+      "mrag_prompt_tokens": 1242,
       "history_messages": 27
     },
     {
       "turn": 14,
       "baseline_prompt_tokens": 1222,
-      "mrag_prompt_tokens": 1344,
+      "mrag_prompt_tokens": 1329,
       "history_messages": 29
     },
     {
@@ -153,25 +153,25 @@
     {
       "turn": 16,
       "baseline_prompt_tokens": 1415,
-      "mrag_prompt_tokens": 1535,
+      "mrag_prompt_tokens": 1507,
       "history_messages": 33
     },
     {
       "turn": 17,
       "baseline_prompt_tokens": 1502,
-      "mrag_prompt_tokens": 1625,
+      "mrag_prompt_tokens": 1614,
       "history_messages": 35
     },
     {
       "turn": 18,
       "baseline_prompt_tokens": 1588,
-      "mrag_prompt_tokens": 1711,
+      "mrag_prompt_tokens": 1723,
       "history_messages": 37
     },
     {
       "turn": 19,
       "baseline_prompt_tokens": 1674,
-      "mrag_prompt_tokens": 1798,
+      "mrag_prompt_tokens": 1809,
       "history_messages": 39
     },
     {
@@ -183,103 +183,103 @@
     {
       "turn": 21,
       "baseline_prompt_tokens": 1868,
-      "mrag_prompt_tokens": 1956,
+      "mrag_prompt_tokens": 1937,
       "history_messages": 43
     },
     {
       "turn": 22,
       "baseline_prompt_tokens": 1954,
-      "mrag_prompt_tokens": 2038,
+      "mrag_prompt_tokens": 2016,
       "history_messages": 45
     },
     {
       "turn": 23,
       "baseline_prompt_tokens": 2041,
-      "mrag_prompt_tokens": 2145,
+      "mrag_prompt_tokens": 2107,
       "history_messages": 47
     },
     {
       "turn": 24,
       "baseline_prompt_tokens": 2130,
-      "mrag_prompt_tokens": 2195,
+      "mrag_prompt_tokens": 2262,
       "history_messages": 49
     },
     {
       "turn": 25,
       "baseline_prompt_tokens": 2236,
-      "mrag_prompt_tokens": 2359,
+      "mrag_prompt_tokens": 2371,
       "history_messages": 51
     },
     {
       "turn": 26,
       "baseline_prompt_tokens": 2322,
-      "mrag_prompt_tokens": 2393,
+      "mrag_prompt_tokens": 2458,
       "history_messages": 53
     },
     {
       "turn": 27,
       "baseline_prompt_tokens": 2408,
-      "mrag_prompt_tokens": 2534,
+      "mrag_prompt_tokens": 2479,
       "history_messages": 55
     },
     {
       "turn": 28,
       "baseline_prompt_tokens": 2495,
-      "mrag_prompt_tokens": 2624,
+      "mrag_prompt_tokens": 2633,
       "history_messages": 57
     },
     {
       "turn": 29,
       "baseline_prompt_tokens": 2583,
-      "mrag_prompt_tokens": 2719,
+      "mrag_prompt_tokens": 2657,
       "history_messages": 59
     },
     {
       "turn": 30,
       "baseline_prompt_tokens": 2688,
-      "mrag_prompt_tokens": 2819,
+      "mrag_prompt_tokens": 2831,
       "history_messages": 61
     },
     {
       "turn": 31,
       "baseline_prompt_tokens": 2775,
-      "mrag_prompt_tokens": 2903,
+      "mrag_prompt_tokens": 2884,
       "history_messages": 63
     },
     {
       "turn": 32,
       "baseline_prompt_tokens": 2864,
-      "mrag_prompt_tokens": 2952,
+      "mrag_prompt_tokens": 2942,
       "history_messages": 65
     },
     {
       "turn": 33,
       "baseline_prompt_tokens": 2951,
-      "mrag_prompt_tokens": 3028,
+      "mrag_prompt_tokens": 3088,
       "history_messages": 67
     },
     {
       "turn": 34,
       "baseline_prompt_tokens": 3037,
-      "mrag_prompt_tokens": 3114,
+      "mrag_prompt_tokens": 3122,
       "history_messages": 69
     },
     {
       "turn": 35,
       "baseline_prompt_tokens": 3142,
-      "mrag_prompt_tokens": 3247,
+      "mrag_prompt_tokens": 3226,
       "history_messages": 71
     },
     {
       "turn": 36,
       "baseline_prompt_tokens": 3229,
-      "mrag_prompt_tokens": 3337,
+      "mrag_prompt_tokens": 3381,
       "history_messages": 73
     },
     {
       "turn": 37,
       "baseline_prompt_tokens": 3317,
-      "mrag_prompt_tokens": 3465,
+      "mrag_prompt_tokens": 3469,
       "history_messages": 75
     },
     {
@@ -291,13 +291,13 @@
     {
       "turn": 39,
       "baseline_prompt_tokens": 3490,
-      "mrag_prompt_tokens": 3600,
+      "mrag_prompt_tokens": 3603,
       "history_messages": 79
     },
     {
       "turn": 40,
       "baseline_prompt_tokens": 3601,
-      "mrag_prompt_tokens": 3744,
+      "mrag_prompt_tokens": 3749,
       "history_messages": 81
     },
     {
@@ -309,67 +309,67 @@
     {
       "turn": 42,
       "baseline_prompt_tokens": 3774,
-      "mrag_prompt_tokens": 3883,
+      "mrag_prompt_tokens": 3866,
       "history_messages": 85
     },
     {
       "turn": 43,
       "baseline_prompt_tokens": 3860,
-      "mrag_prompt_tokens": 3953,
+      "mrag_prompt_tokens": 3951,
       "history_messages": 87
     },
     {
       "turn": 44,
       "baseline_prompt_tokens": 3947,
-      "mrag_prompt_tokens": 4108,
+      "mrag_prompt_tokens": 4046,
       "history_messages": 89
     },
     {
       "turn": 45,
       "baseline_prompt_tokens": 4055,
-      "mrag_prompt_tokens": 4157,
+      "mrag_prompt_tokens": 4179,
       "history_messages": 91
     },
     {
       "turn": 46,
       "baseline_prompt_tokens": 4141,
-      "mrag_prompt_tokens": 4312,
+      "mrag_prompt_tokens": 4262,
       "history_messages": 93
     },
     {
       "turn": 47,
       "baseline_prompt_tokens": 4228,
-      "mrag_prompt_tokens": 4390,
+      "mrag_prompt_tokens": 4342,
       "history_messages": 95
     },
     {
       "turn": 48,
       "baseline_prompt_tokens": 4317,
-      "mrag_prompt_tokens": 4465,
+      "mrag_prompt_tokens": 4422,
       "history_messages": 97
     },
     {
       "turn": 49,
       "baseline_prompt_tokens": 4404,
-      "mrag_prompt_tokens": 4533,
+      "mrag_prompt_tokens": 4567,
       "history_messages": 99
     },
     {
       "turn": 50,
       "baseline_prompt_tokens": 4509,
-      "mrag_prompt_tokens": 4676,
+      "mrag_prompt_tokens": 4620,
       "history_messages": 101
     },
     {
       "turn": 51,
       "baseline_prompt_tokens": 4595,
-      "mrag_prompt_tokens": 4767,
+      "mrag_prompt_tokens": 4771,
       "history_messages": 103
     },
     {
       "turn": 52,
       "baseline_prompt_tokens": 4682,
-      "mrag_prompt_tokens": 4850,
+      "mrag_prompt_tokens": 4834,
       "history_messages": 105
     },
     {
@@ -381,13 +381,13 @@
     {
       "turn": 54,
       "baseline_prompt_tokens": 4856,
-      "mrag_prompt_tokens": 4971,
+      "mrag_prompt_tokens": 5040,
       "history_messages": 109
     },
     {
       "turn": 55,
       "baseline_prompt_tokens": 4964,
-      "mrag_prompt_tokens": 5122,
+      "mrag_prompt_tokens": 5162,
       "history_messages": 111
     },
     {
@@ -399,19 +399,19 @@
     {
       "turn": 57,
       "baseline_prompt_tokens": 5140,
-      "mrag_prompt_tokens": 5284,
+      "mrag_prompt_tokens": 5287,
       "history_messages": 115
     },
     {
       "turn": 58,
       "baseline_prompt_tokens": 5226,
-      "mrag_prompt_tokens": 5377,
+      "mrag_prompt_tokens": 5362,
       "history_messages": 24
     },
     {
       "turn": 59,
       "baseline_prompt_tokens": 5312,
-      "mrag_prompt_tokens": 1402,
+      "mrag_prompt_tokens": 1405,
       "history_messages": 26
     },
     {
@@ -423,91 +423,91 @@
     {
       "turn": 61,
       "baseline_prompt_tokens": 5505,
-      "mrag_prompt_tokens": 1579,
+      "mrag_prompt_tokens": 1593,
       "history_messages": 30
     },
     {
       "turn": 62,
       "baseline_prompt_tokens": 5591,
-      "mrag_prompt_tokens": 1652,
+      "mrag_prompt_tokens": 1638,
       "history_messages": 32
     },
     {
       "turn": 63,
       "baseline_prompt_tokens": 5678,
-      "mrag_prompt_tokens": 1764,
+      "mrag_prompt_tokens": 1749,
       "history_messages": 34
     },
     {
       "turn": 64,
       "baseline_prompt_tokens": 5767,
-      "mrag_prompt_tokens": 1853,
+      "mrag_prompt_tokens": 1823,
       "history_messages": 36
     },
     {
       "turn": 65,
       "baseline_prompt_tokens": 5870,
-      "mrag_prompt_tokens": 1952,
+      "mrag_prompt_tokens": 1949,
       "history_messages": 38
     },
     {
       "turn": 66,
       "baseline_prompt_tokens": 5956,
-      "mrag_prompt_tokens": 2038,
+      "mrag_prompt_tokens": 2040,
       "history_messages": 40
     },
     {
       "turn": 67,
       "baseline_prompt_tokens": 6042,
-      "mrag_prompt_tokens": 2138,
+      "mrag_prompt_tokens": 2107,
       "history_messages": 42
     },
     {
       "turn": 68,
       "baseline_prompt_tokens": 6129,
-      "mrag_prompt_tokens": 2218,
+      "mrag_prompt_tokens": 2195,
       "history_messages": 44
     },
     {
       "turn": 69,
       "baseline_prompt_tokens": 6217,
-      "mrag_prompt_tokens": 2296,
+      "mrag_prompt_tokens": 2277,
       "history_messages": 46
     },
     {
       "turn": 70,
       "baseline_prompt_tokens": 6321,
-      "mrag_prompt_tokens": 2406,
+      "mrag_prompt_tokens": 2386,
       "history_messages": 48
     },
     {
       "turn": 71,
       "baseline_prompt_tokens": 6408,
-      "mrag_prompt_tokens": 2527,
+      "mrag_prompt_tokens": 2509,
       "history_messages": 50
     },
     {
       "turn": 72,
       "baseline_prompt_tokens": 6497,
-      "mrag_prompt_tokens": 2565,
+      "mrag_prompt_tokens": 2582,
       "history_messages": 52
     },
     {
       "turn": 73,
       "baseline_prompt_tokens": 6584,
-      "mrag_prompt_tokens": 2654,
+      "mrag_prompt_tokens": 2644,
       "history_messages": 54
     },
     {
       "turn": 74,
       "baseline_prompt_tokens": 6670,
-      "mrag_prompt_tokens": 2739,
+      "mrag_prompt_tokens": 2745,
       "history_messages": 56
     },
     {
       "turn": 75,
       "baseline_prompt_tokens": 6775,
-      "mrag_prompt_tokens": 2869,
+      "mrag_prompt_tokens": 2856,
       "history_messages": 58
     },
     {
@@ -519,25 +519,25 @@
     {
       "turn": 77,
       "baseline_prompt_tokens": 6950,
-      "mrag_prompt_tokens": 3079,
+      "mrag_prompt_tokens": 3084,
       "history_messages": 62
     },
     {
       "turn": 78,
       "baseline_prompt_tokens": 7036,
-      "mrag_prompt_tokens": 3134,
+      "mrag_prompt_tokens": 3099,
       "history_messages": 64
     },
     {
       "turn": 79,
       "baseline_prompt_tokens": 7123,
-      "mrag_prompt_tokens": 3237,
+      "mrag_prompt_tokens": 3228,
       "history_messages": 66
     },
     {
       "turn": 80,
       "baseline_prompt_tokens": 7231,
-      "mrag_prompt_tokens": 3362,
+      "mrag_prompt_tokens": 3342,
       "history_messages": 68
     },
     {
@@ -549,259 +549,259 @@
     {
       "turn": 82,
       "baseline_prompt_tokens": 7404,
-      "mrag_prompt_tokens": 3525,
+      "mrag_prompt_tokens": 3528,
       "history_messages": 72
     },
     {
       "turn": 83,
       "baseline_prompt_tokens": 7490,
-      "mrag_prompt_tokens": 3603,
+      "mrag_prompt_tokens": 3610,
       "history_messages": 74
     },
     {
       "turn": 84,
       "baseline_prompt_tokens": 7577,
-      "mrag_prompt_tokens": 3718,
+      "mrag_prompt_tokens": 3683,
       "history_messages": 76
     },
     {
       "turn": 85,
       "baseline_prompt_tokens": 7684,
-      "mrag_prompt_tokens": 3788,
+      "mrag_prompt_tokens": 3775,
       "history_messages": 78
     },
     {
       "turn": 86,
       "baseline_prompt_tokens": 7770,
-      "mrag_prompt_tokens": 3897,
+      "mrag_prompt_tokens": 3862,
       "history_messages": 80
     },
     {
       "turn": 87,
       "baseline_prompt_tokens": 7857,
-      "mrag_prompt_tokens": 3985,
+      "mrag_prompt_tokens": 3970,
       "history_messages": 82
     },
     {
       "turn": 88,
       "baseline_prompt_tokens": 7946,
-      "mrag_prompt_tokens": 4071,
+      "mrag_prompt_tokens": 4064,
       "history_messages": 84
     },
     {
       "turn": 89,
       "baseline_prompt_tokens": 8033,
-      "mrag_prompt_tokens": 4161,
+      "mrag_prompt_tokens": 4144,
       "history_messages": 86
     },
     {
       "turn": 90,
       "baseline_prompt_tokens": 8140,
-      "mrag_prompt_tokens": 4253,
+      "mrag_prompt_tokens": 4262,
       "history_messages": 88
     },
     {
       "turn": 91,
       "baseline_prompt_tokens": 8226,
-      "mrag_prompt_tokens": 4358,
+      "mrag_prompt_tokens": 4360,
       "history_messages": 90
     },
     {
       "turn": 92,
       "baseline_prompt_tokens": 8313,
-      "mrag_prompt_tokens": 4467,
+      "mrag_prompt_tokens": 4463,
       "history_messages": 92
     },
     {
       "turn": 93,
       "baseline_prompt_tokens": 8401,
-      "mrag_prompt_tokens": 4547,
+      "mrag_prompt_tokens": 4541,
       "history_messages": 94
     },
     {
       "turn": 94,
       "baseline_prompt_tokens": 8487,
-      "mrag_prompt_tokens": 4591,
+      "mrag_prompt_tokens": 4607,
       "history_messages": 96
     },
     {
       "turn": 95,
       "baseline_prompt_tokens": 8594,
-      "mrag_prompt_tokens": 4745,
+      "mrag_prompt_tokens": 4720,
       "history_messages": 98
     },
     {
       "turn": 96,
       "baseline_prompt_tokens": 8683,
-      "mrag_prompt_tokens": 4838,
+      "mrag_prompt_tokens": 4808,
       "history_messages": 100
     },
     {
       "turn": 97,
       "baseline_prompt_tokens": 8770,
-      "mrag_prompt_tokens": 4895,
+      "mrag_prompt_tokens": 4896,
       "history_messages": 102
     },
     {
       "turn": 98,
       "baseline_prompt_tokens": 8856,
-      "mrag_prompt_tokens": 5011,
+      "mrag_prompt_tokens": 5007,
       "history_messages": 104
     },
     {
       "turn": 99,
       "baseline_prompt_tokens": 8942,
-      "mrag_prompt_tokens": 5057,
+      "mrag_prompt_tokens": 5056,
       "history_messages": 106
     },
     {
       "turn": 100,
       "baseline_prompt_tokens": 9048,
-      "mrag_prompt_tokens": 5178,
+      "mrag_prompt_tokens": 5164,
       "history_messages": 108
     },
     {
       "turn": 101,
       "baseline_prompt_tokens": 9137,
-      "mrag_prompt_tokens": 5305,
+      "mrag_prompt_tokens": 5306,
       "history_messages": 110
     },
     {
       "turn": 102,
       "baseline_prompt_tokens": 9224,
-      "mrag_prompt_tokens": 5397,
+      "mrag_prompt_tokens": 5401,
       "history_messages": 24
     },
     {
       "turn": 103,
       "baseline_prompt_tokens": 9313,
-      "mrag_prompt_tokens": 1504,
+      "mrag_prompt_tokens": 1503,
       "history_messages": 26
     },
     {
       "turn": 104,
       "baseline_prompt_tokens": 9404,
-      "mrag_prompt_tokens": 1607,
+      "mrag_prompt_tokens": 1590,
       "history_messages": 28
     },
     {
       "turn": 105,
       "baseline_prompt_tokens": 9513,
-      "mrag_prompt_tokens": 1716,
+      "mrag_prompt_tokens": 1690,
       "history_messages": 30
     },
     {
       "turn": 106,
       "baseline_prompt_tokens": 9600,
-      "mrag_prompt_tokens": 1823,
+      "mrag_prompt_tokens": 1802,
       "history_messages": 32
     },
     {
       "turn": 107,
       "baseline_prompt_tokens": 9687,
-      "mrag_prompt_tokens": 1894,
+      "mrag_prompt_tokens": 1854,
       "history_messages": 34
     },
     {
       "turn": 108,
       "baseline_prompt_tokens": 9776,
-      "mrag_prompt_tokens": 1987,
+      "mrag_prompt_tokens": 1978,
       "history_messages": 36
     },
     {
       "turn": 109,
       "baseline_prompt_tokens": 9865,
-      "mrag_prompt_tokens": 2060,
+      "mrag_prompt_tokens": 2028,
       "history_messages": 38
     },
     {
       "turn": 110,
       "baseline_prompt_tokens": 9970,
-      "mrag_prompt_tokens": 2183,
+      "mrag_prompt_tokens": 2164,
       "history_messages": 40
     },
     {
       "turn": 111,
       "baseline_prompt_tokens": 10059,
-      "mrag_prompt_tokens": 2251,
+      "mrag_prompt_tokens": 2272,
       "history_messages": 42
     },
     {
       "turn": 112,
       "baseline_prompt_tokens": 10150,
-      "mrag_prompt_tokens": 2330,
+      "mrag_prompt_tokens": 2335,
       "history_messages": 44
     },
     {
       "turn": 113,
       "baseline_prompt_tokens": 10238,
-      "mrag_prompt_tokens": 2451,
+      "mrag_prompt_tokens": 2406,
       "history_messages": 46
     },
     {
       "turn": 114,
       "baseline_prompt_tokens": 10325,
-      "mrag_prompt_tokens": 2549,
+      "mrag_prompt_tokens": 2505,
       "history_messages": 48
     },
     {
       "turn": 115,
       "baseline_prompt_tokens": 10429,
-      "mrag_prompt_tokens": 2644,
+      "mrag_prompt_tokens": 2609,
       "history_messages": 50
     },
     {
       "turn": 116,
       "baseline_prompt_tokens": 10518,
-      "mrag_prompt_tokens": 2706,
+      "mrag_prompt_tokens": 2703,
       "history_messages": 52
     },
     {
       "turn": 117,
       "baseline_prompt_tokens": 10607,
-      "mrag_prompt_tokens": 2821,
+      "mrag_prompt_tokens": 2811,
       "history_messages": 54
     },
     {
       "turn": 118,
       "baseline_prompt_tokens": 10694,
-      "mrag_prompt_tokens": 2911,
+      "mrag_prompt_tokens": 2869,
       "history_messages": 56
     },
     {
       "turn": 119,
       "baseline_prompt_tokens": 10783,
-      "mrag_prompt_tokens": 2995,
+      "mrag_prompt_tokens": 2955,
       "history_messages": 58
     },
     {
       "turn": 120,
       "baseline_prompt_tokens": 10892,
-      "mrag_prompt_tokens": 3100,
+      "mrag_prompt_tokens": 3066,
       "history_messages": 60
     },
     {
       "turn": 121,
       "baseline_prompt_tokens": 10980,
-      "mrag_prompt_tokens": 3197,
+      "mrag_prompt_tokens": 3180,
       "history_messages": 62
     },
     {
       "turn": 122,
       "baseline_prompt_tokens": 11067,
-      "mrag_prompt_tokens": 3256,
+      "mrag_prompt_tokens": 3261,
       "history_messages": 64
     },
     {
       "turn": 123,
       "baseline_prompt_tokens": 11154,
-      "mrag_prompt_tokens": 3375,
+      "mrag_prompt_tokens": 3359,
       "history_messages": 66
     },
     {
       "turn": 124,
       "baseline_prompt_tokens": 11243,
-      "mrag_prompt_tokens": 3473,
+      "mrag_prompt_tokens": 3476,
       "history_messages": 68
     },
     {
@@ -819,13 +819,13 @@
     {
       "turn": 127,
       "baseline_prompt_tokens": 11527,
-      "mrag_prompt_tokens": 3746,
+      "mrag_prompt_tokens": 3751,
       "history_messages": 74
     },
     {
       "turn": 128,
       "baseline_prompt_tokens": 11618,
-      "mrag_prompt_tokens": 3798,
+      "mrag_prompt_tokens": 3813,
       "history_messages": 76
     },
     {
@@ -837,127 +837,127 @@
     {
       "turn": 130,
       "baseline_prompt_tokens": 11812,
-      "mrag_prompt_tokens": 4026,
+      "mrag_prompt_tokens": 4011,
       "history_messages": 80
     },
     {
       "turn": 131,
       "baseline_prompt_tokens": 11899,
-      "mrag_prompt_tokens": 4125,
+      "mrag_prompt_tokens": 4132,
       "history_messages": 82
     },
     {
       "turn": 132,
       "baseline_prompt_tokens": 11988,
-      "mrag_prompt_tokens": 4226,
+      "mrag_prompt_tokens": 4203,
       "history_messages": 84
     },
     {
       "turn": 133,
       "baseline_prompt_tokens": 12077,
-      "mrag_prompt_tokens": 4313,
+      "mrag_prompt_tokens": 4297,
       "history_messages": 86
     },
     {
       "turn": 134,
       "baseline_prompt_tokens": 12164,
-      "mrag_prompt_tokens": 4360,
+      "mrag_prompt_tokens": 4348,
       "history_messages": 88
     },
     {
       "turn": 135,
       "baseline_prompt_tokens": 12272,
-      "mrag_prompt_tokens": 4502,
+      "mrag_prompt_tokens": 4487,
       "history_messages": 90
     },
     {
       "turn": 136,
       "baseline_prompt_tokens": 12363,
-      "mrag_prompt_tokens": 4591,
+      "mrag_prompt_tokens": 4599,
       "history_messages": 92
     },
     {
       "turn": 137,
       "baseline_prompt_tokens": 12451,
-      "mrag_prompt_tokens": 4689,
+      "mrag_prompt_tokens": 4651,
       "history_messages": 94
     },
     {
       "turn": 138,
       "baseline_prompt_tokens": 12538,
-      "mrag_prompt_tokens": 4769,
+      "mrag_prompt_tokens": 4767,
       "history_messages": 96
     },
     {
       "turn": 139,
       "baseline_prompt_tokens": 12625,
-      "mrag_prompt_tokens": 4843,
+      "mrag_prompt_tokens": 4856,
       "history_messages": 98
     },
     {
       "turn": 140,
       "baseline_prompt_tokens": 12735,
-      "mrag_prompt_tokens": 4936,
+      "mrag_prompt_tokens": 4942,
       "history_messages": 100
     },
     {
       "turn": 141,
       "baseline_prompt_tokens": 12824,
-      "mrag_prompt_tokens": 5068,
+      "mrag_prompt_tokens": 5066,
       "history_messages": 102
     },
     {
       "turn": 142,
       "baseline_prompt_tokens": 12911,
-      "mrag_prompt_tokens": 5159,
+      "mrag_prompt_tokens": 5132,
       "history_messages": 104
     },
     {
       "turn": 143,
       "baseline_prompt_tokens": 13000,
-      "mrag_prompt_tokens": 5234,
+      "mrag_prompt_tokens": 5244,
       "history_messages": 106
     },
     {
       "turn": 144,
       "baseline_prompt_tokens": 13091,
-      "mrag_prompt_tokens": 5328,
+      "mrag_prompt_tokens": 5315,
       "history_messages": 24
     },
     {
       "turn": 145,
       "baseline_prompt_tokens": 13199,
-      "mrag_prompt_tokens": 1655,
+      "mrag_prompt_tokens": 1645,
       "history_messages": 26
     },
     {
       "turn": 146,
       "baseline_prompt_tokens": 13286,
-      "mrag_prompt_tokens": 1738,
+      "mrag_prompt_tokens": 1724,
       "history_messages": 28
     },
     {
       "turn": 147,
       "baseline_prompt_tokens": 13373,
-      "mrag_prompt_tokens": 1805,
+      "mrag_prompt_tokens": 1819,
       "history_messages": 30
     },
     {
       "turn": 148,
       "baseline_prompt_tokens": 13462,
-      "mrag_prompt_tokens": 1915,
+      "mrag_prompt_tokens": 1887,
       "history_messages": 32
     },
     {
       "turn": 149,
       "baseline_prompt_tokens": 13551,
-      "mrag_prompt_tokens": 2003,
+      "mrag_prompt_tokens": 1991,
       "history_messages": 34
     },
     {
       "turn": 150,
       "baseline_prompt_tokens": 13657,
-      "mrag_prompt_tokens": 2108,
+      "mrag_prompt_tokens": 2093,
       "history_messages": 36
     },
     {
@@ -969,55 +969,55 @@
     {
       "turn": 152,
       "baseline_prompt_tokens": 13837,
-      "mrag_prompt_tokens": 2285,
+      "mrag_prompt_tokens": 2288,
       "history_messages": 40
     },
     {
       "turn": 153,
       "baseline_prompt_tokens": 13925,
-      "mrag_prompt_tokens": 2379,
+      "mrag_prompt_tokens": 2331,
       "history_messages": 42
     },
     {
       "turn": 154,
       "baseline_prompt_tokens": 14012,
-      "mrag_prompt_tokens": 2473,
+      "mrag_prompt_tokens": 2462,
       "history_messages": 44
     },
     {
       "turn": 155,
       "baseline_prompt_tokens": 14120,
-      "mrag_prompt_tokens": 2570,
+      "mrag_prompt_tokens": 2575,
       "history_messages": 46
     },
     {
       "turn": 156,
       "baseline_prompt_tokens": 14209,
-      "mrag_prompt_tokens": 2667,
+      "mrag_prompt_tokens": 2669,
       "history_messages": 48
     },
     {
       "turn": 157,
       "baseline_prompt_tokens": 14298,
-      "mrag_prompt_tokens": 2755,
+      "mrag_prompt_tokens": 2754,
       "history_messages": 50
     },
     {
       "turn": 158,
       "baseline_prompt_tokens": 14385,
-      "mrag_prompt_tokens": 2859,
+      "mrag_prompt_tokens": 2858,
       "history_messages": 52
     },
     {
       "turn": 159,
       "baseline_prompt_tokens": 14474,
-      "mrag_prompt_tokens": 2926,
+      "mrag_prompt_tokens": 2928,
       "history_messages": 54
     },
     {
       "turn": 160,
       "baseline_prompt_tokens": 14582,
-      "mrag_prompt_tokens": 3036,
+      "mrag_prompt_tokens": 3039,
       "history_messages": 56
     },
     {
@@ -1035,13 +1035,13 @@
     {
       "turn": 163,
       "baseline_prompt_tokens": 14844,
-      "mrag_prompt_tokens": 3304,
+      "mrag_prompt_tokens": 3292,
       "history_messages": 62
     },
     {
       "turn": 164,
       "baseline_prompt_tokens": 14933,
-      "mrag_prompt_tokens": 3400,
+      "mrag_prompt_tokens": 3386,
       "history_messages": 64
     },
     {
@@ -1059,169 +1059,169 @@
     {
       "turn": 167,
       "baseline_prompt_tokens": 15215,
-      "mrag_prompt_tokens": 3677,
+      "mrag_prompt_tokens": 3680,
       "history_messages": 70
     },
     {
       "turn": 168,
       "baseline_prompt_tokens": 15306,
-      "mrag_prompt_tokens": 3755,
+      "mrag_prompt_tokens": 3769,
       "history_messages": 72
     },
     {
       "turn": 169,
       "baseline_prompt_tokens": 15394,
-      "mrag_prompt_tokens": 3858,
+      "mrag_prompt_tokens": 3841,
       "history_messages": 74
     },
     {
       "turn": 170,
       "baseline_prompt_tokens": 15500,
-      "mrag_prompt_tokens": 3966,
+      "mrag_prompt_tokens": 3969,
       "history_messages": 76
     },
     {
       "turn": 171,
       "baseline_prompt_tokens": 15587,
-      "mrag_prompt_tokens": 4053,
+      "mrag_prompt_tokens": 4058,
       "history_messages": 78
     },
     {
       "turn": 172,
       "baseline_prompt_tokens": 15676,
-      "mrag_prompt_tokens": 4150,
+      "mrag_prompt_tokens": 4149,
       "history_messages": 80
     },
     {
       "turn": 173,
       "baseline_prompt_tokens": 15765,
-      "mrag_prompt_tokens": 4235,
+      "mrag_prompt_tokens": 4241,
       "history_messages": 82
     },
     {
       "turn": 174,
       "baseline_prompt_tokens": 15852,
-      "mrag_prompt_tokens": 4333,
+      "mrag_prompt_tokens": 4296,
       "history_messages": 84
     },
     {
       "turn": 175,
       "baseline_prompt_tokens": 15959,
-      "mrag_prompt_tokens": 4426,
+      "mrag_prompt_tokens": 4425,
       "history_messages": 86
     },
     {
       "turn": 176,
       "baseline_prompt_tokens": 16050,
-      "mrag_prompt_tokens": 4518,
+      "mrag_prompt_tokens": 4527,
       "history_messages": 88
     },
     {
       "turn": 177,
       "baseline_prompt_tokens": 16138,
-      "mrag_prompt_tokens": 4618,
+      "mrag_prompt_tokens": 4609,
       "history_messages": 90
     },
     {
       "turn": 178,
       "baseline_prompt_tokens": 16225,
-      "mrag_prompt_tokens": 4709,
+      "mrag_prompt_tokens": 4708,
       "history_messages": 92
     },
     {
       "turn": 179,
       "baseline_prompt_tokens": 16312,
-      "mrag_prompt_tokens": 4786,
+      "mrag_prompt_tokens": 4787,
       "history_messages": 94
     },
     {
       "turn": 180,
       "baseline_prompt_tokens": 16419,
-      "mrag_prompt_tokens": 4899,
+      "mrag_prompt_tokens": 4889,
       "history_messages": 96
     },
     {
       "turn": 181,
       "baseline_prompt_tokens": 16508,
-      "mrag_prompt_tokens": 4985,
+      "mrag_prompt_tokens": 4986,
       "history_messages": 98
     },
     {
       "turn": 182,
       "baseline_prompt_tokens": 16595,
-      "mrag_prompt_tokens": 5081,
+      "mrag_prompt_tokens": 5048,
       "history_messages": 100
     },
     {
       "turn": 183,
       "baseline_prompt_tokens": 16684,
-      "mrag_prompt_tokens": 5159,
+      "mrag_prompt_tokens": 5155,
       "history_messages": 102
     },
     {
       "turn": 184,
       "baseline_prompt_tokens": 16775,
-      "mrag_prompt_tokens": 5251,
+      "mrag_prompt_tokens": 5258,
       "history_messages": 104
     },
     {
       "turn": 185,
       "baseline_prompt_tokens": 16882,
-      "mrag_prompt_tokens": 5363,
+      "mrag_prompt_tokens": 5366,
       "history_messages": 24
     },
     {
       "turn": 186,
       "baseline_prompt_tokens": 16969,
-      "mrag_prompt_tokens": 1753,
+      "mrag_prompt_tokens": 1746,
       "history_messages": 26
     },
     {
       "turn": 187,
       "baseline_prompt_tokens": 17056,
-      "mrag_prompt_tokens": 1831,
+      "mrag_prompt_tokens": 1802,
       "history_messages": 28
     },
     {
       "turn": 188,
       "baseline_prompt_tokens": 17145,
-      "mrag_prompt_tokens": 1913,
+      "mrag_prompt_tokens": 1901,
       "history_messages": 30
     },
     {
       "turn": 189,
       "baseline_prompt_tokens": 17234,
-      "mrag_prompt_tokens": 2014,
+      "mrag_prompt_tokens": 2002,
       "history_messages": 32
     },
     {
       "turn": 190,
       "baseline_prompt_tokens": 17342,
-      "mrag_prompt_tokens": 2128,
+      "mrag_prompt_tokens": 2123,
       "history_messages": 34
     },
     {
       "turn": 191,
       "baseline_prompt_tokens": 17431,
-      "mrag_prompt_tokens": 2212,
+      "mrag_prompt_tokens": 2208,
       "history_messages": 36
     },
     {
       "turn": 192,
       "baseline_prompt_tokens": 17522,
-      "mrag_prompt_tokens": 2299,
+      "mrag_prompt_tokens": 2303,
       "history_messages": 38
     },
     {
       "turn": 193,
       "baseline_prompt_tokens": 17610,
-      "mrag_prompt_tokens": 2394,
+      "mrag_prompt_tokens": 2396,
       "history_messages": 40
     },
     {
       "turn": 194,
       "baseline_prompt_tokens": 17697,
-      "mrag_prompt_tokens": 2495,
+      "mrag_prompt_tokens": 2490,
       "history_messages": 42
     },
     {
@@ -1233,31 +1233,31 @@
     {
       "turn": 196,
       "baseline_prompt_tokens": 17893,
-      "mrag_prompt_tokens": 2681,
+      "mrag_prompt_tokens": 2635,
       "history_messages": 46
     },
     {
       "turn": 197,
       "baseline_prompt_tokens": 17982,
-      "mrag_prompt_tokens": 2767,
+      "mrag_prompt_tokens": 2722,
       "history_messages": 48
     },
     {
       "turn": 198,
       "baseline_prompt_tokens": 18069,
-      "mrag_prompt_tokens": 2864,
+      "mrag_prompt_tokens": 2847,
       "history_messages": 50
     },
     {
       "turn": 199,
       "baseline_prompt_tokens": 18158,
-      "mrag_prompt_tokens": 2942,
+      "mrag_prompt_tokens": 2939,
       "history_messages": 52
     },
     {
       "turn": 200,
       "baseline_prompt_tokens": 18267,
-      "mrag_prompt_tokens": 3055,
+      "mrag_prompt_tokens": 3058,
       "history_messages": 54
     }
   ],

@@ -177,13 +177,199 @@ class TestDynamicConsolidation(unittest.TestCase):
             vector_store=mock_vs
         )
 
-        # Verify that we merged but preferred the newer content to avoid the stale IP trap
+        # Verify that we merged but preferred the newer content to avoid the stale IP trap,
+        # and that the contradiction was NOT counted as corroborating evidence.
         beliefs = self.belief_store.get_all_beliefs_flat()
         self.assertEqual(len(beliefs), 1)
         b = beliefs[0]
         self.assertEqual(b["id"], "bel_staging_ip")
         self.assertEqual(b["content"], "The staging server is 10.14.9.9") # Updated to newer!
-        self.assertEqual(b["verifications"], 2.0)
+        self.assertEqual(b["verifications"], 1.0)  # evidence trail restarted
+        self.assertEqual(b["confidence"], 0.8)     # newer statement's own confidence, no boost
+        self.assertEqual(b["previous_content"], "The staging server is 10.14.2.1")
+
+    def test_opposite_preference_supersedes_instead_of_reinforcing(self):
+        """'Adam prefers Python' -> 'Adam prefers Rust' must replace, not reinforce."""
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+                self.query_result = []
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return self.query_result
+
+        mock_vs = MockVectorStore()
+        self.belief_store.add_belief(
+            category="preferences",
+            belief_id="bel_adam_lang",
+            content="Adam says he prefers to use Python.",
+            confidence=0.9,
+            stability_index=0.8,
+        )
+        mock_vs.query_result = [("bel_adam_lang", 0.94)]
+
+        self.belief_store.merge_or_add_belief(
+            category="preferences",
+            belief_id="bel_adam_lang_new",
+            content="Adam says he prefers to use Rust.",
+            confidence=0.7,
+            vector_store=mock_vs,
+        )
+
+        beliefs = self.belief_store.get_all_beliefs_flat()
+        self.assertEqual(len(beliefs), 1)
+        b = beliefs[0]
+        self.assertIn("Rust", b["content"])
+        self.assertEqual(b["confidence"], 0.7)          # not boosted above either statement
+        self.assertEqual(b["verifications"], 1.0)       # reset, not incremented
+        self.assertLess(b["stability_index"], 0.8)      # flip-flop destabilizes
+        self.assertIn("Python", b["previous_content"])  # audit trail kept
+
+    def test_paraphrase_merge_boosts_and_reindexes(self):
+        """Same salient tokens -> corroboration; content update drops cached embedding."""
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+                self.query_result = []
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return self.query_result
+
+        mock_vs = MockVectorStore()
+        self.belief_store.add_belief(
+            category="preferences",
+            belief_id="bel_py_love",
+            content="Adam loves Python.",
+            confidence=0.6,
+            embedding=[0.1] * 4,  # simulate a cached embedding of the old wording
+        )
+        mock_vs.query_result = [("bel_py_love", 0.95)]
+
+        self.belief_store.merge_or_add_belief(
+            category="preferences",
+            belief_id="bel_py_love_new",
+            content="Adam really enjoys coding in Python.",
+            confidence=0.7,
+            vector_store=mock_vs,
+        )
+
+        beliefs = self.belief_store.get_all_beliefs_flat()
+        self.assertEqual(len(beliefs), 1)
+        b = beliefs[0]
+        self.assertEqual(b["verifications"], 2.0)       # counted as corroboration
+        self.assertGreater(b["confidence"], 0.6)        # boosted
+        self.assertNotIn("embedding", b)                # stale embedding invalidated
+
+    def test_vaguer_restatement_keeps_specific_content(self):
+        """A vaguer near-duplicate must not erase the specific value."""
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+                self.query_result = []
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return self.query_result
+
+        mock_vs = MockVectorStore()
+        self.belief_store.add_belief(
+            category="propositions",
+            belief_id="bel_ip_specific",
+            content="The staging server is 10.14.9.9.",
+            confidence=0.8,
+        )
+        mock_vs.query_result = [("bel_ip_specific", 0.93)]
+
+        self.belief_store.merge_or_add_belief(
+            category="propositions",
+            belief_id="bel_ip_vague",
+            content="There is a staging server for the team.",
+            confidence=0.6,
+            vector_store=mock_vs,
+        )
+
+        b = self.belief_store.get_belief("bel_ip_specific")
+        self.assertIn("10.14.9.9", b["content"])   # specific value preserved
+        self.assertEqual(b["verifications"], 2.0)  # still counted as corroboration
+
+    def test_template_channel_catches_low_similarity_contradiction(self):
+        """Opposite value statements embed far apart (measured ~0.50 for
+        Python vs Rust with MiniLM), so the vector channel can't see them.
+        The template index must catch the swap anyway."""
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return [("bel_adam_lang", 0.50)]  # realistic: below any sane threshold
+
+        self.belief_store.add_belief(
+            category="preferences",
+            belief_id="bel_adam_lang",
+            content="Adam says he prefers to use Python.",
+            confidence=0.9,
+        )
+
+        self.belief_store.merge_or_add_belief(
+            category="preferences",
+            belief_id="bel_adam_lang_v2",
+            content="Adam says he prefers to use Rust.",
+            confidence=0.7,
+            vector_store=MockVectorStore(),
+        )
+
+        beliefs = self.belief_store.get_all_beliefs_flat()
+        self.assertEqual(len(beliefs), 1)  # no contradictory twin belief
+        b = beliefs[0]
+        self.assertIn("Rust", b["content"])
+        self.assertEqual(b["verifications"], 1.0)
+        self.assertIn("Python", b["previous_content"])
+
+        # Different anchor (Eve, not Adam) must NOT merge into Adam's slot.
+        self.belief_store.merge_or_add_belief(
+            category="preferences",
+            belief_id="bel_eve_lang",
+            content="Eve says he prefers to use Go.",
+            confidence=0.8,
+            vector_store=MockVectorStore(),
+        )
+        self.assertIsNotNone(self.belief_store.get_belief("bel_eve_lang"))
+        self.assertIn("Rust", self.belief_store.get_belief("bel_adam_lang")["content"])
+
+    def test_semantic_merge_respects_category_boundary(self):
+        """A preference must never merge into (and overwrite) a skills belief."""
+        class MockVectorStore(DummyVectorStore):
+            def __init__(self):
+                super().__init__()
+                self.query_result = []
+            def embed_text(self, text):
+                return None
+            def query_top_k(self, query_embedding, k=100):
+                return self.query_result
+
+        mock_vs = MockVectorStore()
+        self.belief_store.add_belief(
+            category="skills",
+            belief_id="tool_get_weather",
+            content="Tool 'get_weather': fetches the weather forecast.",
+            confidence=1.0,
+        )
+        mock_vs.query_result = [("tool_get_weather", 0.95)]
+
+        self.belief_store.merge_or_add_belief(
+            category="preferences",
+            belief_id="bel_weather_pref",
+            content="User likes checking the weather forecast daily.",
+            confidence=0.7,
+            vector_store=mock_vs,
+        )
+
+        tool = self.belief_store.get_belief("tool_get_weather")
+        self.assertIn("Tool 'get_weather'", tool["content"])  # untouched
+        self.assertIsNotNone(self.belief_store.get_belief("bel_weather_pref"))  # added separately
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,7 @@
 import json
 import os
 import math
+import re
 import logging
 from datetime import datetime
 from typing import Optional, List, Dict, Any
@@ -29,6 +30,50 @@ _SINGULAR_MAP = {
 def _canonical_category(category: str) -> str:
     return _SINGULAR_MAP.get(category, category)
 
+# Common sentence-position capitalizations that carry no factual payload.
+_SALIENT_STOPWORDS = {
+    "i", "the", "a", "an", "user", "model", "assistant", "it", "he", "she",
+    "they", "we", "you", "my", "his", "her", "their", "our", "this", "that",
+    "these", "those", "if", "when", "then", "there", "remember", "also",
+}
+
+_TOKEN_PATTERN = re.compile(r"[A-Za-z0-9][\w.\-/]*")
+
+def _salient_tokens(text: str) -> set:
+    """Extract the value-bearing tokens of a belief statement.
+
+    Salient = tokens containing digits (versions, ports, IPs, ids) plus
+    capitalized words that aren't common sentence-position words (names,
+    products, places). Used to tell contradictions apart from paraphrases:
+    two statements that embed as near-duplicates but swap salient tokens
+    ("...prefers Python" vs "...prefers Rust") are conflicting facts, not
+    restatements.
+    """
+    salient = set()
+    for token in _TOKEN_PATTERN.findall(text):
+        lowered = token.lower().rstrip(".-/")
+        if any(ch.isdigit() for ch in token):
+            salient.add(lowered)
+        elif token[0].isupper() and lowered not in _SALIENT_STOPWORDS:
+            salient.add(lowered)
+    return salient
+
+def _statement_template(text: str):
+    """Reduce a statement to its phrasing skeleton plus its salient tokens.
+
+    "Adam says he prefers to use Python." -> ("<v> says he prefers to use <v>",
+    {"adam", "python"}). Two beliefs with the same template that share an
+    anchor token but swap the remaining values are the same fact slot holding
+    conflicting values — detectable regardless of embedding distance (opposite
+    statements like "prefers Python"/"prefers Rust" can embed far apart).
+    """
+    salient = _salient_tokens(text)
+    parts = []
+    for token in _TOKEN_PATTERN.findall(text):
+        lowered = token.lower().rstrip(".-/")
+        parts.append("<v>" if lowered in salient else lowered)
+    return " ".join(parts), salient
+
 class BeliefStore:
     """Categorized belief management for Micro-RAG.
     Maintains structurally connected beliefs across categories.
@@ -49,6 +94,10 @@ class BeliefStore:
         # Reverse relation index (target_id -> ids that point at it).
         # Only authoritative while the cache is loaded.
         self._inbound_relations: Dict[str, set] = {}
+        # Phrasing-skeleton index (template -> belief ids) used to detect
+        # same-fact-slot contradictions that embeddings place far apart.
+        # Only authoritative while the cache is loaded.
+        self._template_index: Dict[str, set] = {}
         # Monotonic mutation counter so consumers (e.g. the injector's index
         # sync) can skip work when nothing has changed.
         self.version = 0
@@ -146,9 +195,24 @@ class BeliefStore:
 
     def _rebuild_inbound_index(self):
         self._inbound_relations.clear()
+        self._template_index.clear()
         for bid, belief in self._beliefs_cache.items():
             for rel_id in belief.get("relations", []):
                 self._inbound_relations.setdefault(rel_id, set()).add(bid)
+            self._index_template(bid, belief.get("content", ""))
+
+    def _index_template(self, belief_id: str, content: str):
+        template, salient = _statement_template(content)
+        if salient:
+            self._template_index.setdefault(template, set()).add(belief_id)
+
+    def _unindex_template(self, belief_id: str, content: str):
+        template, _ = _statement_template(content)
+        ids = self._template_index.get(template)
+        if ids:
+            ids.discard(belief_id)
+            if not ids:
+                self._template_index.pop(template, None)
 
     def _index_relations(self, belief_id: str, relations: List[str]):
         for rel_id in relations:
@@ -173,7 +237,9 @@ class BeliefStore:
             old = self._beliefs_cache.get(bid)
             if old:
                 self._unindex_relations(bid, old.get("relations", []))
+                self._unindex_template(bid, old.get("content", ""))
             self._index_relations(bid, normalized.get("relations", []))
+            self._index_template(bid, normalized.get("content", ""))
         self._beliefs_cache[bid] = normalized
         self.version += 1
 
@@ -243,6 +309,7 @@ class BeliefStore:
         self._beliefs_cache[belief_id] = belief
         if self._cache_loaded:
             self._index_relations(belief_id, belief.get("relations", []))
+            self._index_template(belief_id, belief.get("content", ""))
         self.version += 1
         return True
 
@@ -256,56 +323,139 @@ class BeliefStore:
         relations: list = None,
         memory_refs: list = None,
         vector_store: Optional[Any] = None,
+        similarity_threshold: float = 0.80,
         **extra_fields,
     ) -> bool:
-        """Adds a belief to the store. If an exact duplicate or semantic equivalent is found,
-        it merges their metadata (updating confidence, verifications, and relations) instead
-        of creating a duplicate entry.
+        """Adds a belief to the store, merging instead when it restates or
+        supersedes an existing one.
+
+        Duplicate detection runs through three channels, in order:
+        1. Exact belief id match.
+        2. Template match: same phrasing skeleton, sharing an anchor token but
+           swapping value tokens ("Adam prefers Python" vs "Adam prefers
+           Rust"). Catches contradictions that embeddings place far apart.
+        3. Semantic match: same-category vector hit above
+           ``similarity_threshold``.
+
+        Merges treat paraphrases as corroboration (confidence boost) and
+        contradictions as supersession (newer content wins, evidence resets).
         """
         if not self._cache_loaded:
             self.load_into_cache()
 
+        canonical = _canonical_category(category)
         target_belief_id = belief_id
         is_duplicate = False
+        match_similarity = 1.0
 
         if belief_id in self._beliefs_cache:
             target_belief_id = belief_id
             is_duplicate = True
 
+        if not is_duplicate:
+            # Template channel: O(1) lookup for same-fact-slot statements.
+            new_template, new_salient = _statement_template(content)
+            if new_salient:
+                best_overlap = 0
+                for cid in self._template_index.get(new_template, ()):
+                    cand = self._beliefs_cache.get(cid)
+                    if not cand or cand.get("_category") != canonical:
+                        continue
+                    cand_salient = _salient_tokens(cand.get("content", ""))
+                    shared = cand_salient & new_salient
+                    # Same skeleton + shared anchor + values swapped on both
+                    # sides = conflicting values for the same fact slot.
+                    if shared and (cand_salient - new_salient) and (new_salient - cand_salient):
+                        if len(shared) > best_overlap:
+                            best_overlap = len(shared)
+                            target_belief_id = cid
+                            is_duplicate = True
+                if is_duplicate:
+                    logger.info(
+                        f"Detected same-fact-slot statement via template match. Merging '{content}' "
+                        f"into belief '{self._beliefs_cache[target_belief_id]['content']}'."
+                    )
+
         if not is_duplicate and vector_store is not None:
             try:
                 query_emb = vector_store.embed_text(content)
-                results = vector_store.query_top_k(query_emb, k=1)
-                if results and len(results) > 0:
-                    matched_id, similarity = results[0]
-                    if similarity >= 0.90 and matched_id in self._beliefs_cache:
+                results = vector_store.query_top_k(query_emb, k=5)
+                for matched_id, similarity in results or []:
+                    if similarity < similarity_threshold:
+                        break
+                    matched = self._beliefs_cache.get(matched_id)
+                    # Only merge semantically within the same category: a global
+                    # match could otherwise absorb e.g. a preference into a
+                    # skills/tool belief and overwrite its content.
+                    if matched is not None and matched.get("_category") == canonical:
                         target_belief_id = matched_id
                         is_duplicate = True
-                        logger.info(f"Detected semantic duplicate (similarity {similarity:.4f}). Merging '{content}' into matched belief '{self._beliefs_cache[matched_id]['content']}'.")
+                        match_similarity = similarity
+                        logger.info(f"Detected semantic duplicate (similarity {similarity:.4f}). Merging '{content}' into matched belief '{matched['content']}'.")
+                        break
             except Exception as e:
                 logger.error(f"Semantic deduplication query failed: {e}")
 
         if is_duplicate:
             existing = self._beliefs_cache[target_belief_id]
-            if existing.get("content") != content:
-                logger.info(f"Updating content of belief {target_belief_id} from '{existing.get('content')}' to newer '{content}' (semantic match similarity >= 0.90).")
-                existing["content"] = content
+            old_content = existing.get("content", "")
+            is_contradiction = False
 
-            old_conf = existing.get("confidence", 0.5)
-            existing["confidence"] = max(0.0, min(1.0, old_conf + (1.0 - old_conf) * 0.2))
-            
-            existing["verifications"] = existing.get("verifications", 1.0) + 1.0
-            existing["stability_index"] = max(0.0, min(1.0, existing.get("stability_index", 0.5) + (1.0 - existing.get("stability_index", 0.5)) * 0.1))
-            
+            if old_content != content:
+                old_salient = _salient_tokens(old_content)
+                new_salient = _salient_tokens(content)
+                # Both sides carrying tokens the other lacks means the statements
+                # swap values (Python vs Rust, one IP vs another): a conflicting
+                # fact, not a restatement.
+                is_contradiction = bool(old_salient - new_salient) and bool(new_salient - old_salient)
+
+                # Adopt the newer wording when it supersedes (contradiction),
+                # adds salient information (strict superset), or is a
+                # high-confidence paraphrase. Mid-band paraphrases (0.80-0.90)
+                # and vaguer restatements keep the existing, more established
+                # wording — merging still counts as corroboration below.
+                adopt_newer = (
+                    is_contradiction
+                    or new_salient > old_salient
+                    or (new_salient == old_salient and match_similarity >= 0.90)
+                )
+                if adopt_newer:
+                    logger.info(
+                        f"Updating content of belief {target_belief_id} from '{old_content}' to newer "
+                        f"'{content}' ({'contradiction supersedes' if is_contradiction else 'refinement'})."
+                    )
+                    self._unindex_template(target_belief_id, old_content)
+                    existing["content"] = content
+                    self._index_template(target_belief_id, content)
+                    # Invalidate the cached embedding so retrieval reindexes
+                    # the new wording.
+                    existing.pop("embedding", None)
+                    existing.pop("embedding_384d", None)
+
+            if is_contradiction:
+                # A reversal is not corroborating evidence: restart the evidence
+                # trail at the newer statement's own confidence and destabilize.
+                existing["previous_content"] = old_content
+                existing["confidence"] = max(0.0, min(1.0, confidence))
+                existing["verifications"] = 1.0
+                existing["stability_index"] = max(0.0, min(1.0, existing.get("stability_index", 0.5) * 0.7))
+            else:
+                old_conf = existing.get("confidence", 0.5)
+                existing["confidence"] = max(0.0, min(1.0, old_conf + (1.0 - old_conf) * 0.2))
+                existing["verifications"] = existing.get("verifications", 1.0) + 1.0
+                existing["stability_index"] = max(0.0, min(1.0, existing.get("stability_index", 0.5) + (1.0 - existing.get("stability_index", 0.5)) * 0.1))
+
             new_rels = relations or []
             existing["relations"] = list(dict.fromkeys(existing.get("relations", []) + new_rels))
-            
+
             new_refs = memory_refs or []
             existing["memory_refs"] = list(dict.fromkeys(existing.get("memory_refs", []) + new_refs))
-            
+
             existing["last_accessed"] = _now_iso()
-            existing["source"] = f"{existing.get('source', '')}; {source}"
-            
+            merged_source = f"{existing.get('source', '')}; {source}"
+            # Keep the provenance chain bounded across many merges.
+            existing["source"] = merged_source[-300:]
+
             for key, val in extra_fields.items():
                 if key not in existing:
                     existing[key] = val
@@ -351,6 +501,7 @@ class BeliefStore:
         removed = self._beliefs_cache.pop(belief_id, None)
         if self._cache_loaded and removed:
             self._unindex_relations(belief_id, removed.get("relations", []))
+            self._unindex_template(belief_id, removed.get("content", ""))
         beliefs = self._read_category(category)
         original_count = len(beliefs)
         beliefs = [b for b in beliefs if b.get("id") != belief_id]
@@ -465,6 +616,7 @@ class BeliefStore:
                     pruned = self._beliefs_cache.pop(b.get("id", ""), None)
                     if self._cache_loaded and pruned:
                         self._unindex_relations(pruned.get("id", ""), pruned.get("relations", []))
+                        self._unindex_template(pruned.get("id", ""), pruned.get("content", ""))
                     continue
 
                 old_weight = self._resolve_weight(old_conf)
