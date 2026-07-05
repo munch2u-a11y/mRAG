@@ -1,6 +1,6 @@
 # Micro-RAG Associative Multi-Hop Benchmark
 
-- Timestamp: `2026-07-05T13:51:35-04:00`
+- Timestamp: `2026-07-05T14:18:45-04:00`
 - Query: `"What is Alice's favorite flower?"`
 - Distractors: `5,000`
 - Warmups per mode: `3`
@@ -10,20 +10,20 @@
 
 | Mode | Fact A hit rate | Fact B hit rate |
 | :--- | ---: | ---: |
-| Pure semantic | 1.000 | 1.000 |
+| Pure semantic | 1.000 | 0.000 |
 | Graph-expanded | 1.000 | 1.000 |
 
 ## Latency
 
 | Mode | Mean | Median | P95 |
 | :--- | ---: | ---: | ---: |
-| Pure semantic | 150.05 ms | 149.04 ms | 157.44 ms |
-| Graph-expanded | 147.99 ms | 147.99 ms | 151.87 ms |
+| Pure semantic | 141.01 ms | 141.04 ms | 142.95 ms |
+| Graph-expanded | 142.40 ms | 141.80 ms | 145.00 ms |
 
 ## Overhead
 
-- Graph expansion overhead, mean: `-2.06 ms`
-- Graph expansion overhead, p95: `-5.57 ms`
+- Graph expansion overhead, mean: `1.39 ms`
+- Graph expansion overhead, p95: `2.05 ms`
 
 ## Methodology Notes
 

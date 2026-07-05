@@ -1,35 +1,35 @@
 {
-  "timestamp": "2026-07-05T13:51:35-04:00",
+  "timestamp": "2026-07-05T14:18:45-04:00",
   "query_text": "What is Alice's favorite flower?",
   "num_distractors": 5000,
   "warmup_runs": 3,
   "measured_runs": 20,
   "semantic": {
     "latency_ms": {
-      "mean_ms": 150.05,
-      "median_ms": 149.04,
-      "p95_ms": 157.44,
-      "min_ms": 140.51,
-      "max_ms": 168.88
+      "mean_ms": 141.01,
+      "median_ms": 141.04,
+      "p95_ms": 142.95,
+      "min_ms": 138.8,
+      "max_ms": 143.71
     },
     "fact_a_hit_rate": 1.0,
-    "fact_b_hit_rate": 1.0,
-    "sample_context": "--- Injected Context ---\n\u2022 Alice's favorite flower is Bob's favorite food. [0.90]\n\u2022 Bob's favorite food is Sushi. [0.90]\n\u2022 The standard engine operating temperature is 1644 degrees. [0.50]\n\u2022 The standard engine operating temperature is 2495 degrees. [0.50]\n\u2022 The standard engine operating temperature is 4044 degrees. [0.50]\n------------------------"
+    "fact_b_hit_rate": 0.0,
+    "sample_context": "--- Injected Context ---\n\u2022 Alice's favorite flower is Bob's favorite food. [0.90]\n\u2022 The standard engine operating temperature is 1287 degrees. [0.50]\n\u2022 The standard engine operating temperature is 3151 degrees. [0.50]\n\u2022 The standard engine operating temperature is 2045 degrees. [0.50]\n\u2022 The standard engine operating temperature is 3813 degrees. [0.50]\n------------------------"
   },
   "graph_expanded": {
     "latency_ms": {
-      "mean_ms": 147.99,
-      "median_ms": 147.99,
-      "p95_ms": 151.87,
-      "min_ms": 142.63,
-      "max_ms": 153.22
+      "mean_ms": 142.4,
+      "median_ms": 141.8,
+      "p95_ms": 145.0,
+      "min_ms": 140.04,
+      "max_ms": 146.4
     },
     "fact_a_hit_rate": 1.0,
     "fact_b_hit_rate": 1.0,
-    "sample_context": "--- Injected Context ---\n\u2022 Alice's favorite flower is Bob's favorite food. [0.90]\n\u2022 Bob's favorite food is Sushi. [0.90]\n\u2022 The standard engine operating temperature is 1644 degrees. [0.50]\n\u2022 The standard engine operating temperature is 2495 degrees. [0.50]\n\u2022 The standard engine operating temperature is 4044 degrees. [0.50]\n------------------------"
+    "sample_context": "--- Injected Context ---\n\u2022 Alice's favorite flower is Bob's favorite food. [0.90]\n\u2022 Bob's favorite food is Sushi. [0.90]\n\u2022 The standard engine operating temperature is 1287 degrees. [0.50]\n\u2022 The standard engine operating temperature is 3151 degrees. [0.50]\n\u2022 The standard engine operating temperature is 2045 degrees. [0.50]\n------------------------"
   },
-  "graph_overhead_mean_ms": -2.06,
-  "graph_overhead_p95_ms": -5.57,
+  "graph_overhead_mean_ms": 1.39,
+  "graph_overhead_p95_ms": 2.05,
   "methodology": {
     "distractor_embeddings": "synthetic random normalized vectors",
     "chain_facts_embeddings": "real embeddings from Chroma DefaultEmbeddingFunction",

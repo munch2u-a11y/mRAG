@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-05T13:50:32-04:00",
+  "timestamp": "2026-07-05T14:19:10-04:00",
   "num_memories": 100000,
   "batch_size": 5000,
   "num_runs": 20,
@@ -7,7 +7,7 @@
   "top_k": 100,
   "query_text": "What is the status of agent state number 55000?",
   "target_belief_id": "bel_55000",
-  "index_build_seconds": 28.08,
+  "index_build_seconds": 24.32,
   "methodology": {
     "vector_store": "ChromaDB PersistentClient with DefaultEmbeddingFunction",
     "query_embedding": "real all-MiniLM-L6-v2 embedding via Chroma DefaultEmbeddingFunction",
@@ -17,25 +17,25 @@
   },
   "stats": {
     "embed_ms": {
-      "mean_ms": 156.23,
-      "median_ms": 156.01,
-      "p95_ms": 167.87,
-      "min_ms": 144.95,
-      "max_ms": 172.76
+      "mean_ms": 134.59,
+      "median_ms": 134.22,
+      "p95_ms": 137.36,
+      "min_ms": 131.2,
+      "max_ms": 137.4
     },
     "retrieve_ms": {
-      "mean_ms": 2.82,
-      "median_ms": 2.72,
-      "p95_ms": 3.31,
-      "min_ms": 2.41,
-      "max_ms": 3.33
+      "mean_ms": 2.46,
+      "median_ms": 2.44,
+      "p95_ms": 2.63,
+      "min_ms": 2.29,
+      "max_ms": 2.86
     },
     "rerank_ms": {
-      "mean_ms": 0.18,
-      "median_ms": 0.17,
-      "p95_ms": 0.21,
-      "min_ms": 0.16,
-      "max_ms": 0.23
+      "mean_ms": 0.16,
+      "median_ms": 0.16,
+      "p95_ms": 0.17,
+      "min_ms": 0.15,
+      "max_ms": 0.17
     },
     "format_ms": {
       "mean_ms": 0.01,
@@ -45,18 +45,18 @@
       "max_ms": 0.01
     },
     "split_total_ms": {
-      "mean_ms": 159.24,
-      "median_ms": 158.91,
-      "p95_ms": 170.63,
-      "min_ms": 147.71,
-      "max_ms": 175.69
+      "mean_ms": 137.21,
+      "median_ms": 136.83,
+      "p95_ms": 139.93,
+      "min_ms": 133.92,
+      "max_ms": 139.99
     },
     "inject_total_ms": {
-      "mean_ms": 156.08,
-      "median_ms": 154.12,
-      "p95_ms": 167.17,
-      "min_ms": 142.49,
-      "max_ms": 176.99
+      "mean_ms": 136.87,
+      "median_ms": 136.74,
+      "p95_ms": 139.85,
+      "min_ms": 132.25,
+      "max_ms": 140.12
     }
   },
   "target_hit_rate": 1.0,

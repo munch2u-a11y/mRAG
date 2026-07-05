@@ -1,6 +1,6 @@
 # Needle in a Haystack (NIAH) Benchmark Results
 
-- Timestamp: `2026-07-05T13:51:27-04:00`
+- Timestamp: `2026-07-05T14:18:34-04:00`
 - Query: `"What is the vault code?"`
 - Haystack size: `5,000`
 - Warmups: `3`
@@ -10,14 +10,14 @@
 
 - Recall rate: `1.000`
 - Average needle score: `0.8020`
-- Average highest distractor score: `0.1616`
-- Average precision margin: `0.6404`
+- Average highest distractor score: `0.1835`
+- Average precision margin: `0.6185`
 
 ## Latency
 
-- Mean: `148.00 ms`
-- Median: `147.12 ms`
-- P95: `156.89 ms`
+- Mean: `141.93 ms`
+- Median: `141.95 ms`
+- P95: `144.43 ms`
 
 ## Methodology Notes
 

@@ -1,23 +1,23 @@
 # Micro-RAG 100k Benchmark Results
 
-- Timestamp: `2026-07-05T13:50:32-04:00`
+- Timestamp: `2026-07-05T14:19:10-04:00`
 - Command: `python tests/run_100k_benchmark.py`
 - Vector store: `ChromaDB PersistentClient`
 - Query embedding model: `DefaultEmbeddingFunction / all-MiniLM-L6-v2`
 - Corpus size: `100,000` beliefs
 - Query runs: `20` after `5` warmups
-- Index build time: `28.08 s`
+- Index build time: `24.32 s`
 
 ## Steady-State Latency
 
 | Stage | Mean | Median | P95 |
 | :--- | ---: | ---: | ---: |
-| Embed | 156.23 ms | 156.01 ms | 167.87 ms |
-| Retrieve top-100 | 2.82 ms | 2.72 ms | 3.31 ms |
-| Rerank | 0.18 ms | 0.17 ms | 0.21 ms |
+| Embed | 134.59 ms | 134.22 ms | 137.36 ms |
+| Retrieve top-100 | 2.46 ms | 2.44 ms | 2.63 ms |
+| Rerank | 0.16 ms | 0.16 ms | 0.17 ms |
 | Format | 0.01 ms | 0.01 ms | 0.01 ms |
-| Split total | 159.24 ms | 158.91 ms | 170.63 ms |
-| Actual `inject()` total | 156.08 ms | 154.12 ms | 167.17 ms |
+| Split total | 137.21 ms | 136.83 ms | 139.93 ms |
+| Actual `inject()` total | 136.87 ms | 136.74 ms | 139.85 ms |
 
 ## Sanity Checks
 
