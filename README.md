@@ -1,6 +1,6 @@
 # Micro-RAG (mRAG)
 
-Micro-RAG is a lightweight, framework-agnostic agentic memory management system. It provides a clean decoupling of memory retrieval, belief storage, and context rolling for integration with any LLM harness or orchestrator (like LangGraph, AutoGen, or LangChain).
+Micro-RAG is a lightweight, framework-agnostic memory management system. It provides a clean decoupling of memory retrieval, belief storage, and context rolling for integration with any LLM harness or orchestrator.
 
 ## Core Philosophy
 
