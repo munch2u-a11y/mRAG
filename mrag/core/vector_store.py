@@ -1,4 +1,6 @@
+import hashlib
 import json
+import random
 import urllib.request
 import logging
 import os
@@ -188,8 +190,18 @@ class DummyVectorStore(VectorStore):
         )
 
     def embed_text(self, text: str) -> np.ndarray:
-        # Returns deterministic constant vector so it behaves predictably in testing
-        return np.ones(self.dimension, dtype=np.float32)
+        # Deterministic but content-differentiated: a constant vector for
+        # every input would make all beliefs cosine-identical to each other,
+        # which degenerates any ranking or near-duplicate comparison (every
+        # belief becomes indistinguishable "noise"). Hashing the text into a
+        # seed keeps this reproducible for tests while still letting
+        # different content actually differ, with no real dependency added.
+        if not text.strip():
+            return np.zeros(self.dimension, dtype=np.float32)
+        seed = int(hashlib.sha256(text.encode("utf-8")).hexdigest(), 16) % (2**32)
+        rng = random.Random(seed)
+        vec = [rng.gauss(0.0, 1.0) for _ in range(self.dimension)]
+        return np.array(vec, dtype=np.float32)
 
     def add_vectors(self, ids: List[str], embeddings: List[np.ndarray], metadatas: Optional[List[dict]] = None):
         for belief_id, emb in zip(ids, embeddings):

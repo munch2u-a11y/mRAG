@@ -44,7 +44,9 @@ class TestDynamicConsolidation(unittest.TestCase):
             resolve_context_limit(model_name="unknown-model-name")
 
     def test_backlog_consolidation_trigger(self):
-        # Setup consolidator with small context limit so backlog triggers quickly
+        # Setup consolidator with small context limit; backlog_threshold_tokens
+        # is still derived from context_limit * ratio (capped at 10k) and
+        # exposed for callers that want to batch turns themselves.
         # 2000 tokens * 0.4 = 800 tokens threshold (approx 3200 characters)
         consolidator = BeliefConsolidator(
             belief_store=self.belief_store,
@@ -54,28 +56,16 @@ class TestDynamicConsolidation(unittest.TestCase):
             vector_store=self.vector_store
         )
         self.assertEqual(consolidator.backlog_threshold_tokens, 800)
-        
-        # Inject standard mocked extraction output
-        self.mock_extracted_beliefs = [
-            {
-                "category": "premises",
-                "content": "User lives in Oregon.",
-                "confidence": 0.9,
-                "source": "Turn 1"
-            }
-        ]
-        
-        # Add turns that are small (under 800 tokens total)
-        consolidator.add_conversation_turn({"role": "user", "content": "Hello there."})
-        self.assertEqual(len(self.belief_store.get_all_beliefs_flat()), 0) # shouldn't trigger yet
-        
-        # Add a large turn (exceeding 800 tokens / 3200 chars)
-        large_content = "A" * 3500
-        consolidator.add_conversation_turn({"role": "user", "content": large_content})
-        
-        # Should have auto-triggered consolidation and seeded the mock belief
+
+        # Consolidation now runs immediately per conversation turn (session-by-
+        # session extraction) rather than waiting for a backlog threshold.
+        self.mock_extracted_beliefs = ["User lives in Oregon."]
+        consolidator.add_conversation_turn({"content": "Hello there, I live in Oregon now."})
         self.assertEqual(len(self.belief_store.get_all_beliefs_flat()), 1)
-        self.assertEqual(consolidator._backlog_tokens, 0) # backlog cleared
+
+        self.mock_extracted_beliefs = ["User adopted a cat."]
+        consolidator.add_conversation_turn({"content": "I adopted a cat yesterday."})
+        self.assertEqual(len(self.belief_store.get_all_beliefs_flat()), 2)
 
     def test_semantic_deduplication_and_merging(self):
         # We will use a MockVectorStore to control query_top_k return values
@@ -370,6 +360,32 @@ class TestDynamicConsolidation(unittest.TestCase):
         tool = self.belief_store.get_belief("tool_get_weather")
         self.assertIn("Tool 'get_weather'", tool["content"])  # untouched
         self.assertIsNotNone(self.belief_store.get_belief("bel_weather_pref"))  # added separately
+
+    def test_extraction_prompt_forbids_detail_loss_and_fluff_over_pruning(self):
+        """Pattern C regression lock (LoCoMo miss report): the consolidator's
+        extraction prompt must instruct against generalizing away concrete
+        objects and against discarding casually-phrased facts as filler.
+        Guards against these guardrails silently getting removed later.
+        """
+        consolidator = BeliefConsolidator(
+            belief_store=self.belief_store,
+            llm_callable=self.mock_llm,
+            vector_store=self.vector_store,
+        )
+        captured_prompts = []
+
+        def capturing_llm(prompt: str) -> str:
+            captured_prompts.append(prompt)
+            return "[]"
+
+        consolidator.llm = capturing_llm
+        consolidator.add_conversation_turn({"content": "Some session dialogue."})
+
+        self.assertEqual(len(captured_prompts), 1)
+        prompt = captured_prompts[0]
+        self.assertIn("NEVER generalize away a concrete noun", prompt)
+        self.assertIn("adoption agencies", prompt)
+        self.assertIn("casual tone does NOT make a sentence fluff", prompt)
 
 if __name__ == "__main__":
     unittest.main()

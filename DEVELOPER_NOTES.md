@@ -43,3 +43,31 @@ This document tracks known issues, deployment hurdles, and best practices for de
 - Smoke tests and benchmarks are located in the `tests/` directory.
 - We use the standard `unittest` library for smoke testing and `timeit` for latency benchmarking to minimize external dependencies.
 - When running benchmarks, be aware that LLM API calls are naturally high-variance in latency. The benchmarks in `test_benchmarks.py` specifically measure the *overhead* of the `PreGenerativeInjector` query and the `ContextCompressor` string serialization, rather than network I/O. For full LLM benchmarks, ensure you set a valid API key and run against a fast model (e.g., Gemini 1.5 Flash or Claude 3 Haiku).
+- `tests/run_locomo_benchmark.py` and `tests/run_longmemeval_benchmark.py` run
+  the full pipeline against a real LLM and real datasets — see the README's
+  "Real-conversation QA benchmarks" section. Set `GEMINI_API_KEY` via `.env`
+  (copy `.env.example`) or `MRAG_CREDENTIALS_ENV=/path/to/file` if you keep
+  credentials outside the repo tree.
+
+## 5. Consolidation LLM Call Volume
+
+`BeliefConsolidator.add_conversation_turn` issues one LLM call per turn for
+fact extraction. Two additional call sites add to this, both toggleable:
+
+- **Concept/relation-expansion tagging** rides on the same extraction call
+  (no extra LLM call) — the extraction prompt asks for `category`/`instance`
+  and `subject`/`relation`/`entities` fields alongside each fact.
+- **Session synthesis** (`enable_session_synthesis`, default `True`) issues
+  one additional LLM call per turn, but only when 3 or more facts were
+  extracted from that turn. It reviews the turn's own facts for genuine
+  parallel-list groups (e.g. three distinct hobbies for the same person) and
+  adds one combined belief without removing the originals. Set
+  `enable_session_synthesis=False` on `BeliefConsolidator` to skip this call
+  entirely if the extra LLM cost isn't worth it for your use case — nothing
+  downstream depends on it being present.
+- **Structural cluster discovery** (`discover_and_consolidate_clusters`) is
+  not automatic — call it periodically/on-demand (like a nightly job), not
+  per-turn; it re-clusters a subject's entire history each time it runs, so
+  calling it every turn is wasted work. It also has no benefit on a
+  single-use, short-lived store (e.g. a benchmark harness that discards the
+  store after one query) — skip it in that case.

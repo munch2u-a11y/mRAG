@@ -192,6 +192,7 @@ class ContextCompressor:
 - Use direct quotes for what people said.
 - Include responses and thoughts naturally.
 - Maintain strict chronological order with explicit [USER] and [MODEL] turn identifiers where relevant so belief extractors can parse it.
+- Explicitly preserve and include all dates, timelines, times, schedules, and specific temporal details mentioned in the turns.
 - Preserve specific facts, names, and unresolved threads exactly.
 - Do not add commentary, analysis, or anything that wasn't in the original turns.
 Only output the recollection, no preamble."""

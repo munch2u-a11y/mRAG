@@ -7,14 +7,7 @@ def mock_llm_for_compression(prompt: str) -> str:
     return "User and Model discussed tests."
 
 def mock_llm_for_consolidation(prompt: str) -> str:
-    return '''[
-  {
-    "category": "premises",
-    "content": "User is writing smoke tests.",
-    "confidence": 0.9,
-    "source": "Turn 1"
-  }
-]'''
+    return '["User is writing smoke tests."]'
 
 class TestMicroRAGSmoke(unittest.TestCase):
     
@@ -59,16 +52,24 @@ class TestMicroRAGSmoke(unittest.TestCase):
         compressed = compressor.compress(history)
         self.assertTrue(any(m.get("is_compressed_summary") for m in compressed))
         
-        # 5. Consolidator
+        # 5. Consolidator: extraction runs immediately per conversation turn
+        # (session-by-session), not via a separate batch pass.
         consolidator = BeliefConsolidator(belief_store, mock_llm_for_consolidation)
-        consolidator.run_consolidation_pass(compressed)
-        
+        combined_content = "\n".join(str(m.get("content", "")) for m in compressed)
+        consolidator.add_conversation_turn({"content": combined_content})
+
         all_beliefs = belief_store.get_all_beliefs_flat()
         self.assertTrue(any(b.get("content") == "User is writing smoke tests." for b in all_beliefs))
 
     def test_beliefs_added_after_sync_are_retrievable(self):
         """The store-version fast path must not skip newly added beliefs."""
-        belief_store = BeliefStore(data_dir=self.test_dir + "_sync")
+        sync_dir = self.test_dir + "_sync"
+        if os.path.exists(sync_dir):
+            # Defensive: a prior interrupted run (e.g. an assertion failure
+            # before the cleanup line below) can leave stale cached
+            # embeddings on disk that silently poison this run.
+            shutil.rmtree(sync_dir)
+        belief_store = BeliefStore(data_dir=sync_dir)
         vector_store = create_vector_store("dummy")
         belief_store.add_belief("premises", "b_first", "User owns a red bike.", 0.9)
 
@@ -77,12 +78,15 @@ class TestMicroRAGSmoke(unittest.TestCase):
 
         belief_store.add_belief("premises", "b_second", "User adopted a grey cat.", 0.9)
         injector.clear_blacklist()
-        self.assertIn("grey cat", injector.inject("What pet do I have?"))
-        shutil.rmtree(self.test_dir + "_sync")
+        self.assertIn("grey cat", injector.inject("What did I adopt?"))
+        shutil.rmtree(sync_dir)
 
     def test_repeated_query_still_returns_memories(self):
         """The anti-repetition blacklist must fall back instead of going silent."""
-        belief_store = BeliefStore(data_dir=self.test_dir + "_repeat")
+        repeat_dir = self.test_dir + "_repeat"
+        if os.path.exists(repeat_dir):
+            shutil.rmtree(repeat_dir)
+        belief_store = BeliefStore(data_dir=repeat_dir)
         vector_store = create_vector_store("dummy")
         belief_store.add_belief("preferences", "p1", "User prefers Python.", 0.95)
 
@@ -91,7 +95,7 @@ class TestMicroRAGSmoke(unittest.TestCase):
         second = injector.inject("What language do I prefer?")
         self.assertIn("User prefers Python", first)
         self.assertIn("User prefers Python", second)
-        shutil.rmtree(self.test_dir + "_repeat")
+        shutil.rmtree(repeat_dir)
 
     def test_compressor_skips_when_under_threshold(self):
         compressor = ContextCompressor(

@@ -1,17 +1,17 @@
 # Micro-RAG (mRAG)
 
-Micro-RAG is a lightweight, framework-agnostic memory management system. It provides a clean decoupling of memory retrieval, belief storage, and context rolling for integration with any LLM harness or orchestrator.
+Micro-RAG is a lightweight, framework-agnostic memory management system for LLM agents. It decouples fact extraction, storage, retrieval, and context-window management into independent components that integrate with any LLM harness or orchestrator.
 
-## Core Philosophy
+## Design
 
-`MicroRAG` provides only the bare bones *memory components*. It replaces hard memory resets with rolling context compression and injects structured "beliefs" directly into the agent's prompt via a pre-generation pipeline.
+Rather than resetting context or prompting with full conversation history, Micro-RAG extracts structured facts ("beliefs") from conversation turns, stores them with metadata (confidence, relevance, category, relations to other facts), and retrieves a relevance-ranked, token-budget-limited subset before each generation call.
 
 ### Components
 
-- **BeliefStore**: A JSON-based storage engine for cognitive beliefs (premises, propositions, preferences). Evaluates importance via structural graph connections and confidence.
-- **PreGenerativeInjector**: A text pre-filtering pipeline that screens incoming trigger text and weaves semantically and structurally relevant beliefs into the injected context of the agent.
-- **ContextCompressor**: A rolling context window manager that summarizes middle turns while preserving recent history and specific structural turn identifiers.
-- **BeliefConsolidator**: A cognitive processing pipeline that converts raw memory logs into formatted, categorized beliefs.
+- **BeliefStore**: JSON-backed storage for structured facts (premises, propositions, preferences, skills, desires). On write, distinguishes a paraphrase of an existing fact (corroborates, no new belief) from a value change to the same fact slot (supersedes the prior value) using template + salient-token matching rather than similarity alone. Tracks confidence, computed relevance, and explicit relations between facts.
+- **PreGenerativeInjector**: Retrieves relevant beliefs for a given input text via multi-head candidate gathering — parallel search terms are generated from the input (proper nouns, noun-phrase bigrams, individual significant words, and an auto-learned concept/relation-expansion vocabulary), each matched against stored fact content by exact stemmed-word matching; the raw input text itself is matched separately via embedding cosine similarity for genuine paraphrase recall. Candidates are ranked primarily by how many independent search terms matched (a fact relevant to more of the query's distinct aspects outranks a single strong match), with near-duplicate restatements and synthesis-covered constituents collapsed before token-budget selection.
+- **ContextCompressor**: Rolling context-window manager that summarizes older turns into a compact recollection once a token/turn threshold is crossed, while preserving recent turns verbatim and explicit turn identifiers for downstream fact extraction.
+- **BeliefConsolidator**: Converts raw conversation turns into structured facts via a single LLM extraction call per turn. Also performs: (a) tag-based immediate consolidation of a same-subject/same-category fact cluster into one rollup once it crosses a size/token threshold, (b) a periodic embedding-geometry (HDBSCAN) pass that finds clusters the tag-based path misses, and (c) an additive per-session pass that combines multiple parallel same-relation facts (e.g. several distinct hobbies for the same person) into one compact statement without removing the originals, with duplicate-fact suppression at retrieval time so the combined statement doesn't compete against its own constituents for context budget.
 
 ## Installation
 
@@ -106,6 +106,50 @@ No vendor comparison numbers are published here on purpose: other systems'
 published results are not normalized to these protocols. The scripts are
 self-contained, so you can run the same protocol against any system you want
 to compare with.
+
+### Real-conversation QA benchmarks
+
+The benchmarks above use deterministic extractive mocks for the LLM-dependent
+steps. The results below run the full pipeline end to end against real long-
+form conversation datasets, with an actual LLM (`gemini-3.1-flash-lite`) doing
+fact extraction, answer generation, and grading. Full per-question logs are
+in `benchmarks/benchmark-results-locomo-2026-07-05.md` and
+`benchmarks/benchmark-results-longmemeval-s.md`.
+
+| Dataset | Questions | Accuracy | Avg. injected tokens |
+| :--- | ---: | ---: | ---: |
+| [LoCoMo](https://github.com/snap-research/locomo) (3 conversations) | 60 | 85.0% | 711 (min 457, max 734) |
+| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (stratified, all 6 categories + abstention) | 20 | 85.0% | 719 (min 630, max 759) |
+| LongMemEval_S (single-session-user only) | 10 | 90.0% | 707 |
+
+LongMemEval's per-question haystack (38-62 conversation sessions, independently
+sampled per question) runs roughly double the scale of LoCoMo's per-conversation
+session count, with no haystack shared across questions. Average injected
+tokens held within a ~60-token band (657-719) across both datasets and across
+every question category tested (single-session recall, multi-session
+reasoning, temporal reasoning, knowledge updates, preference tracking, and
+abstention) — the fixed token-budget selection in `PreGenerativeInjector` caps
+injected context size independent of how large the underlying belief store
+grows, so retrieval cost does not scale up with conversation length.
+
+Caveats: these are LLM-graded (lenient semantic-match grading, not exact
+string match) and sample sizes are modest (90 total questions across both
+datasets so far) — treat this as an initial scale-up signal, not a final
+claim. Fact extraction is non-deterministic (temperature > 0), so re-running
+the same protocol on freshly-ingested data will shift individual question
+results by a few points even with no code changes; this session observed a
+noise band of roughly ±3 questions out of 60 between otherwise-identical runs.
+No vendor comparison numbers are included, per the policy above.
+
+Reproduce with:
+```bash
+python tests/run_locomo_benchmark.py
+python tests/run_longmemeval_benchmark.py
+```
+Both require a `GEMINI_API_KEY` (see the scripts for how credentials are
+loaded) and download/reference their respective datasets separately — see
+each script's header for dataset paths and environment variables that scope
+the run size.
 
 ## Testing
 
