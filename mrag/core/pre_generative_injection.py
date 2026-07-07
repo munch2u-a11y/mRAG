@@ -510,6 +510,8 @@ class PreGenerativeInjector:
 
         if not all_beliefs:
             return []
+            
+        dynamic_top_k = max(30, min(60, int(len(all_beliefs) * 0.10)))
 
         # 3. Compute keyword and tag matches for all beliefs
         keyword_scores = {}
@@ -551,28 +553,28 @@ class PreGenerativeInjector:
             key=lambda b: (keyword_scores[b["id"]], b.get("relevance", 0.0)),
             reverse=True
         )
-        keyword_top_30 = sorted_kw_candidates[:30]
+        keyword_top_k = sorted_kw_candidates[:dynamic_top_k]
 
         # B. Vector Candidates: query vector store
         query_embedding = self._vector_store.embed_text(text)
-        vector_top_k_results = self._vector_store.query_top_k(query_embedding, k=30)
-        vector_top_30_ids = [res[0] for res in vector_top_k_results]
+        vector_top_k_results = self._vector_store.query_top_k(query_embedding, k=dynamic_top_k)
+        vector_top_k_ids = [res[0] for res in vector_top_k_results]
 
-        vector_top_30 = []
-        for bid in vector_top_30_ids:
+        vector_top_k = []
+        for bid in vector_top_k_ids:
             if bid in self._belief_store._beliefs_cache:
-                vector_top_30.append(self._belief_store._beliefs_cache[bid])
+                vector_top_k.append(self._belief_store._beliefs_cache[bid])
 
         # C. Construct the Union candidate pool
         union_dict = {}
-        for b in keyword_top_30:
+        for b in keyword_top_k:
             union_dict[b["id"]] = b
-        for b in vector_top_30:
+        for b in vector_top_k:
             union_dict[b["id"]] = b
 
         union_candidates = list(union_dict.values())
         if not union_candidates:
-            union_candidates = all_beliefs[:30]
+            union_candidates = all_beliefs[:dynamic_top_k]
 
         # 5. Three-Way Soft-Score Fusion
         # Compute cosine similarity for all candidates in union
@@ -589,6 +591,14 @@ class PreGenerativeInjector:
             emb_np = np.array(cached_embedding, dtype=np.float32)
             cosine_similarities[bid] = self._vector_store.cosine_similarity(query_embedding, emb_np)
 
+        import math
+        # Compute dynamic nudge weight based on the standard deviation of similarities
+        # This ensures the bump is always meaningful relative to the local score gradient,
+        # but never overpowering. We cap it between 0.01 and 0.10.
+        cos_sims = [cosine_similarities[b["id"]] for b in union_candidates]
+        sim_std = np.std(cos_sims) if cos_sims else 0.05
+        nudge_weight = max(0.01, min(0.10, sim_std * 1.5))
+        
         fused_candidates = []
         for b in union_candidates:
             bid = b["id"]
@@ -596,8 +606,11 @@ class PreGenerativeInjector:
             kw_match = keyword_scores.get(bid, 0)
             tag_match = tag_scores.get(bid, 0)
             
-            # Fused score = cosine_similarity + 0.00 * keyword_matches + 0.00 * tag_matches
-            fused_score = cos_sim + 0.00 * kw_match + 0.00 * tag_match
+            # Logarithmic scaling so 1 match gives a good nudge, but multiple matches don't blow up the score
+            kw_boost = nudge_weight * math.log(1 + kw_match)
+            tag_boost = nudge_weight * 0.5 * math.log(1 + tag_match)
+            
+            fused_score = cos_sim + kw_boost + tag_boost
             fused_candidates.append((b, fused_score))
 
         # 6. Repetition Prevention and Sorting
@@ -630,7 +643,6 @@ class PreGenerativeInjector:
         else:
             avg_belief_tokens = 30.0
 
-        min_tokens = 5.0 * avg_belief_tokens
         max_tokens = min(15.0 * avg_belief_tokens, self.max_injected_tokens)
 
         final_beliefs = []
@@ -650,11 +662,8 @@ class PreGenerativeInjector:
             if new_tokens > max_tokens:
                 break
                 
-            if current_tokens < min_tokens or len(final_beliefs) < 10:
-                final_beliefs.append(b)
-                current_tokens += b_tokens
-            else:
-                break
+            final_beliefs.append(b)
+            current_tokens += b_tokens
                 
         if limit is not None:
             return final_beliefs[:limit]

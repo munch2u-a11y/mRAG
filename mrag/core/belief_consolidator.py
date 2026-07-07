@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from mrag.memory.belief_store import BeliefStore
 from mrag.core.pre_generative_injection import estimate_tokens, _strip_timestamp_prefix
+from mrag.core.token_counting import count_text_tokens
 
 logger = logging.getLogger("mrag.core.belief_consolidator")
 
@@ -58,6 +59,7 @@ class BeliefConsolidator:
         self.backlog_threshold_tokens = min(int(self.context_limit * ratio), 10000)
         self._backlog: List[Dict[str, Any]] = []
         self._backlog_tokens = 0
+        self.token_usage = {"input": 0, "output": 0}
 
     def add_conversation_turn(self, turn: Dict[str, Any]):
         """Directly extracts and summarizes factual statements from the conversation session
@@ -277,7 +279,10 @@ relevant, not just "has done many things".
 Return ONLY the rollup sentence. No preamble, no markdown, no quotes.
 """
         try:
-            return self.llm(prompt).strip().strip('"')
+            self.token_usage["input"] += count_text_tokens(prompt)
+            response = self.llm(prompt).strip().strip('"')
+            self.token_usage["output"] += count_text_tokens(response)
+            return response
         except Exception as e:
             logger.error(f"Failed to generate cluster rollup for ({subject}, {category}): {e}")
             return None
@@ -517,7 +522,9 @@ Output format: Return ONLY a JSON object, for example:
 }}
 """
         try:
+            self.token_usage["input"] += count_text_tokens(prompt)
             response = self.llm(prompt).strip()
+            self.token_usage["output"] += count_text_tokens(response)
 
             # Clean up markdown if the LLM leaked it
             if response.startswith("```json"):

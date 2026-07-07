@@ -155,14 +155,15 @@ def main():
             consolidator._backlog = []
             consolidator._backlog_tokens = 0
 
-        logger.info(f"Ingestion complete. Total beliefs in store: {len(belief_store.get_all_beliefs_flat())}")
-
         if not os.environ.get("MRAG_LME_SKIP_CLUSTER_DISCOVERY"):
             try:
                 cluster_stats = consolidator.discover_and_consolidate_clusters(min_cluster_size=8)
                 logger.info(f"Structural cluster discovery: {cluster_stats}")
             except ImportError as e:
                 logger.warning(f"Skipping structural cluster discovery (scikit-learn not installed): {e}")
+
+        ingestion_tokens = consolidator.token_usage.copy() if hasattr(consolidator, 'token_usage') else {"input": 0, "output": 0}
+        logger.info(f"Belief Formation Token Cost - Input: {ingestion_tokens['input']}, Output: {ingestion_tokens['output']}")
 
         injector = PreGenerativeInjector(
             belief_store=belief_store,
@@ -182,15 +183,7 @@ def main():
         injected_tokens = count_text_tokens(beliefs_context) if beliefs_context else 0
         all_injected_tokens.append(injected_tokens)
 
-        qa_prompt = f"""You are a helpful assistant answering questions about a long-term conversation history.
-Using the following beliefs/context extracted from the conversation, write a short, concise answer to the question.
-If the beliefs do not contain the information needed to answer, say so plainly rather than guessing.
-You should make logical deductions or draw direct implications from the retrieved beliefs to answer the question accurately (since the beliefs are summarized representations).
-
-{beliefs_context}
-
-Question: {question}
-Short answer:"""
+        qa_prompt = f"Context:\n{beliefs_context}\n\nQuestion: {question}\nAnswer:"
 
         try:
             response_text = llm_callable(qa_prompt).strip()
@@ -241,6 +234,8 @@ Criteria:
             "actual": response_text,
             "status": "CORRECT" if is_correct else "MISSED",
             "injected_tokens": injected_tokens,
+            "formation_input_tokens": ingestion_tokens['input'],
+            "formation_output_tokens": ingestion_tokens['output'],
         })
 
         if os.environ.get("MRAG_LME_SKIP_CLEANUP"):
@@ -256,11 +251,18 @@ Criteria:
     max_tokens = max(all_injected_tokens) if all_injected_tokens else 0
     min_tokens = min(all_injected_tokens) if all_injected_tokens else 0
 
+    all_formation_input = [d['formation_input_tokens'] for d in qa_details]
+    all_formation_output = [d['formation_output_tokens'] for d in qa_details]
+    avg_formation_input = sum(all_formation_input) / len(all_formation_input) if all_formation_input else 0
+    avg_formation_output = sum(all_formation_output) / len(all_formation_output) if all_formation_output else 0
+
     logger.info("\n================ OVERALL BENCHMARK RESULTS ================")
     logger.info(f"Total evaluated: {total_questions}")
     logger.info(f"Correct/Matched: {total_correct}")
     logger.info(f"Overall Accuracy/Recall rate: {overall_accuracy:.3f}")
     logger.info(f"Average Injected Tokens: {avg_tokens:.1f} (Min: {min_tokens}, Max: {max_tokens})")
+    logger.info(f"Average Belief Formation Tokens (Input): {avg_formation_input:.1f}")
+    logger.info(f"Average Belief Formation Tokens (Output): {avg_formation_output:.1f}")
     logger.info("==================================================")
 
     os.makedirs("./benchmarks", exist_ok=True)
@@ -274,12 +276,14 @@ Criteria:
         f.write(f"- Total Matches: `{total_correct}`\n")
         f.write(f"- Overall Accuracy: `{overall_accuracy:.3f}`\n")
         f.write(f"- Avg Injected Context Tokens: `{avg_tokens:.1f}` (Min: `{min_tokens}`, Max: `{max_tokens}`)\n")
+        f.write(f"- Avg Belief Formation Input Tokens: `{avg_formation_input:.1f}`\n")
+        f.write(f"- Avg Belief Formation Output Tokens: `{avg_formation_output:.1f}`\n")
         f.write(f"- Token counter: `{token_counter['backend']}` via `{token_counter['source']}`\n\n")
         f.write("## QA Details\n\n")
-        f.write("| Q# | Type | Question | Expected | Micro-RAG Answer | Tokens | Status |\n")
-        f.write("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
+        f.write("| Q# | Type | Question | Expected | Micro-RAG Answer | Injected Tokens | Formation In | Formation Out | Status |\n")
+        f.write("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
         for d in qa_details:
-            f.write(f"| {d['q_idx']} | {d['question_type']} | {d['question']} | {d['expected']} | {d['actual']} | {d['injected_tokens']} | {d['status']} |\n")
+            f.write(f"| {d['q_idx']} | {d['question_type']} | {d['question']} | {d['expected']} | {d['actual']} | {d['injected_tokens']} | {d['formation_input_tokens']} | {d['formation_output_tokens']} | {d['status']} |\n")
 
     logger.info(f"Saved Markdown report to {report_path}")
 
