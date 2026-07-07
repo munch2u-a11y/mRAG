@@ -612,9 +612,20 @@ class PreGenerativeInjector:
         purged = self._purge_near_duplicates([(1.0, b) for b in final_candidates], query_embedding)
         final_candidates = [b for _, b in purged]
 
-        # Dynamically limit context based on token budget fraction of overall context limit (capped at max_injected_tokens)
-        token_limit = min(int(self.context_limit * self.token_budget_fraction), self.max_injected_tokens)
-        
+        # Get average token length of all beliefs in the store
+        all_store_beliefs = [
+            b for b in self._belief_store.get_all_beliefs_flat()
+            if b.get("_category") != "concepts"
+        ]
+        if all_store_beliefs:
+            total_store_tokens = sum(estimate_tokens(b.get("content", "")) for b in all_store_beliefs)
+            avg_belief_tokens = total_store_tokens / len(all_store_beliefs)
+        else:
+            avg_belief_tokens = 30.0
+
+        min_tokens = 5.0 * avg_belief_tokens
+        max_tokens = min(15.0 * avg_belief_tokens, self.max_injected_tokens)
+
         final_beliefs = []
         current_tokens = 0
         
@@ -623,10 +634,16 @@ class PreGenerativeInjector:
             b_tokens = estimate_tokens(content)
             
             if not final_beliefs:
-                # Minimum 1: Always include the top heaviest belief
+                # Always include at least one belief
                 final_beliefs.append(b)
                 current_tokens += b_tokens
-            elif current_tokens + b_tokens <= token_limit:
+                continue
+                
+            new_tokens = current_tokens + b_tokens
+            if new_tokens > max_tokens:
+                break
+                
+            if current_tokens < min_tokens or len(final_beliefs) < 10:
                 final_beliefs.append(b)
                 current_tokens += b_tokens
             else:
