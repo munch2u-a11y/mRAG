@@ -121,22 +121,23 @@ in `benchmarks/benchmark-results-locomo-*.md` and
 
 | Dataset | Questions | Accuracy | Avg. injected tokens |
 | :--- | ---: | ---: | ---: |
-| [LoCoMo](https://github.com/snap-research/locomo) (3 conversations) | 60 | 85.0% | 711 (min 457, max 734) |
-| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (stratified, all 6 categories + abstention) | 20 | 85.0% | 719 (min 630, max 759) |
-| LongMemEval_S (single-session-user only) | 10 | 90.0% | 707 |
+| [LoCoMo](https://github.com/snap-research/locomo) (3 conversations) | 300 | 89.7% | 446 (min 381, max 510) |
+| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (stratified, all 6 categories + abstention) | 30 | 90.0% | 496 (min 459, max 533) |
 
 LongMemEval's per-question haystack (38-62 conversation sessions, independently
 sampled per question) runs roughly double the scale of LoCoMo's per-conversation
 session count, with no haystack shared across questions. Average injected
-tokens held within a ~60-token band (657-719) across both datasets and across
+tokens held within a ~500-token band across both datasets and across
 every question category tested (single-session recall, multi-session
 reasoning, temporal reasoning, knowledge updates, preference tracking, and
 abstention) — the fixed token-budget selection in `PreGenerativeInjector` caps
 injected context size independent of how large the underlying belief store
 grows, so retrieval cost does not scale up with conversation length.
 
+**Token Efficiency:** During ingestion, the `BeliefConsolidator` typically processes ~155k raw conversation tokens for a LongMemEval context block into structured beliefs. At retrieval time, the context payload sent to the LLM averages only ~496 tokens, demonstrating a **>300x reduction in latency-critical prompt tokens** while maintaining 90% accuracy.
+
 Caveats: these are LLM-graded (lenient semantic-match grading, not exact
-string match) and sample sizes are modest (90 total questions across both
+string match) and sample sizes are modest (330 total questions across both
 datasets so far) — treat this as an initial scale-up signal, not a final
 claim. Fact extraction is non-deterministic (temperature > 0), so re-running
 the same protocol on freshly-ingested data will shift individual question
