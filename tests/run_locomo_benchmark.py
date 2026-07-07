@@ -71,67 +71,85 @@ def main():
         logger.info(f"Evaluating Conversation {conv_idx + 1} ({position + 1}/{len(dataset)} in this run)...")
         logger.info(f"==================================================")
 
-        # Re-initialize fresh database files for each conversation to avoid cross-contamination
-        db_dir = f"./locomo_mrag_data_conv_{conv_idx}"
-        if os.path.exists(db_dir):
-            shutil.rmtree(db_dir)
-
-        belief_store = BeliefStore(data_dir=db_dir)
-        vector_store = create_vector_store("chromadb", persist_dir=os.path.join(db_dir, "chroma"))
-        
-        consolidator = BeliefConsolidator(
-            belief_store=belief_store,
-            llm_callable=llm_callable,
-            context_limit=8192,
-            ratio=0.40,
-            vector_store=vector_store,
-            enable_session_synthesis=not os.environ.get("MRAG_LOCOMO_DISABLE_SESSION_SYNTHESIS"),
-        )
-
         conversation = conv_data["conversation"]
         qa_list = conv_data["qa"]
 
-        # Ingest sessions chronologically
-        session_keys = sorted(
-            [k for k in conversation.keys() if k.startswith("session_") and not k.endswith("_date_time")],
-            key=lambda x: int(x.split("_")[1])
-        )
+        # Re-initialize fresh database files for each conversation to avoid cross-contamination
+        db_dir = f"./locomo_mrag_data_conv_{conv_idx}"
         
-        for session_key in session_keys:
-            session_num = session_key.split("_")[1]
-            date_time = conversation.get(f"session_{session_num}_date_time", "")
-            turns = conversation[session_key]
+        # Check if we should reuse existing db from backup or local
+        use_existing = False
+        if os.environ.get("MRAG_LOCOMO_USE_EXISTING_DB"):
+            backup_dir = f"./locomo_mrag_data_conv_backup/locomo_mrag_data_conv_{conv_idx}"
+            if os.path.exists(db_dir):
+                use_existing = True
+            elif os.path.exists(backup_dir):
+                logger.info(f"Restoring database from backup: {backup_dir} -> {db_dir}")
+                shutil.copytree(backup_dir, db_dir)
+                use_existing = True
+
+        if not use_existing:
+            if os.path.exists(db_dir):
+                shutil.rmtree(db_dir)
+
+            belief_store = BeliefStore(data_dir=db_dir)
+            vector_store = create_vector_store("chromadb", persist_dir=os.path.join(db_dir, "chroma"))
             
-            session_lines = []
-            for turn in turns:
-                speaker = turn["speaker"]
-                text = turn["text"]
-                line = f"{speaker}: {text}"
-                if "blip_caption" in turn:
-                    line += f" (shared image: {turn['blip_caption']})"
-                session_lines.append(line)
+            consolidator = BeliefConsolidator(
+                belief_store=belief_store,
+                llm_callable=llm_callable,
+                context_limit=8192,
+                ratio=0.40,
+                vector_store=vector_store,
+                enable_session_synthesis=not os.environ.get("MRAG_LOCOMO_DISABLE_SESSION_SYNTHESIS"),
+            )
+
+            
+            # Ingest sessions chronologically
+            session_keys = sorted(
+                [k for k in conversation.keys() if k.startswith("session_") and not k.endswith("_date_time")],
+                key=lambda x: int(x.split("_")[1])
+            )
+            
+            for session_key in session_keys:
+                session_num = session_key.split("_")[1]
+                date_time = conversation.get(f"session_{session_num}_date_time", "")
+                turns = conversation[session_key]
                 
-            session_text = f"Date: {date_time}\n" + "\n".join(session_lines)
-            logger.info(f"Ingesting {session_key} ({len(session_lines)} turns)...")
-            consolidator.add_conversation_turn({"content": session_text})
+                session_lines = []
+                for turn in turns:
+                    speaker = turn["speaker"]
+                    text = turn["text"]
+                    line = f"{speaker}: {text}"
+                    if "blip_caption" in turn:
+                        line += f" (shared image: {turn['blip_caption']})"
+                    session_lines.append(line)
+                    
+                session_text = f"Date: {date_time}\n" + "\n".join(session_lines)
+                logger.info(f"Ingesting {session_key} ({len(session_lines)} turns)...")
+                consolidator.add_conversation_turn({"content": session_text})
 
-        # Flush remaining backlog
-        if consolidator._backlog:
-            logger.info("Flushing final consolidation backlog...")
-            consolidator.run_consolidation_pass(consolidator._backlog)
-            consolidator._backlog = []
-            consolidator._backlog_tokens = 0
+            # Flush remaining backlog
+            if consolidator._backlog:
+                logger.info("Flushing final consolidation backlog...")
+                consolidator.run_consolidation_pass(consolidator._backlog)
+                consolidator._backlog = []
+                consolidator._backlog_tokens = 0
 
-        logger.info(f"Ingestion complete. Total beliefs in store: {len(belief_store.get_all_beliefs_flat())}")
+            logger.info(f"Ingestion complete. Total beliefs in store: {len(belief_store.get_all_beliefs_flat())}")
 
-        # Structural cluster discovery is a periodic/on-demand pass (like a
-        # nightly job), not automatic per-turn -- run it once after a full
-        # conversation's history has been ingested, before querying.
-        try:
-            cluster_stats = consolidator.discover_and_consolidate_clusters(min_cluster_size=8)
-            logger.info(f"Structural cluster discovery: {cluster_stats}")
-        except ImportError as e:
-            logger.warning(f"Skipping structural cluster discovery (scikit-learn not installed): {e}")
+            # Structural cluster discovery is a periodic/on-demand pass (like a
+            # nightly job), not automatic per-turn -- run it once after a full
+            # conversation's history has been ingested, before querying.
+            try:
+                cluster_stats = consolidator.discover_and_consolidate_clusters(min_cluster_size=8)
+                logger.info(f"Structural cluster discovery: {cluster_stats}")
+            except ImportError as e:
+                logger.warning(f"Skipping structural cluster discovery (scikit-learn not installed): {e}")
+        else:
+            logger.info(f"Reusing existing database at {db_dir} (skipping Ingestion)")
+            belief_store = BeliefStore(data_dir=db_dir)
+            vector_store = create_vector_store("chromadb", persist_dir=os.path.join(db_dir, "chroma"))
 
         injector = PreGenerativeInjector(
             belief_store=belief_store,

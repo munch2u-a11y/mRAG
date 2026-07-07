@@ -481,8 +481,9 @@ class PreGenerativeInjector:
         return [(c["score"], c["belief"]) for c in clusters]
 
     def _pull_relevant_beliefs(self, text: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Finds beliefs relevant to the text using K-types keyword parsing,
-        tag overlap, cosine reranking, and rank-averaging."""
+        """Finds beliefs relevant to the text using Hybrid Union candidate selection
+        (keyword + vector top 30) and Three-Way Rank Averaging (keyword rank,
+        cosine rank, and meta subject tag rank)."""
         self.sync_index()
 
         from mrag.core.tagger import extract_keywords_and_phrases, get_tag_counts
@@ -507,9 +508,14 @@ class PreGenerativeInjector:
             if b.get("_category") != "concepts"
         ]
 
-        # 3. Gather candidates and compute keyword & tag overlap
-        candidates = []
+        if not all_beliefs:
+            return []
+
+        # 3. Compute keyword and tag matches for all beliefs
+        keyword_scores = {}
+        tag_scores = {}
         for b in all_beliefs:
+            bid = b["id"]
             content_lower = _strip_timestamp_prefix(b.get("content", "")).lower()
             
             # Count how many of the query's keyword groups this belief matches
@@ -535,73 +541,74 @@ class PreGenerativeInjector:
                 b_count = b_tags.count(tag) if isinstance(b_tags, list) else 0
                 tag_matches += min(q_count, b_count)
 
-            # Filter candidates that have at least one keyword or tag match
-            if keyword_matches > 0 or tag_matches > 0:
-                relevance = b.get("relevance", 0.0)
-                # Primary sort is keyword_matches, secondary is tag_matches, tertiary is relevance
-                keyword_score = keyword_matches + 0.01 * tag_matches + 0.0001 * relevance
-                candidates.append((b, keyword_score))
+            keyword_scores[bid] = keyword_matches
+            tag_scores[bid] = tag_matches
 
-        # Fallback if no beliefs matched keywords or tags
-        if not candidates:
-            for b in all_beliefs:
-                candidates.append((b, b.get("relevance", 0.0)))
+        # 4. Hybrid Union Candidate Selection
+        # A. Keyword Candidates: sort by (keyword_matches, relevance) descending
+        sorted_kw_candidates = sorted(
+            all_beliefs,
+            key=lambda b: (keyword_scores[b["id"]], b.get("relevance", 0.0)),
+            reverse=True
+        )
+        keyword_top_30 = sorted_kw_candidates[:30]
 
-        # Sort candidates to produce the "pure keyword search ordering"
-        candidates.sort(key=lambda x: x[1], reverse=True)
-
-        # Apply rolling blacklist/repetition prevention, keeping blacklisted ones as fallback
-        non_blacklisted = []
-        blacklisted = []
-        for b, kw_score in candidates:
-            if b["id"] in self._recent_injections:
-                blacklisted.append((b, kw_score))
-            else:
-                non_blacklisted.append((b, kw_score))
-
-        selected_candidates = non_blacklisted[:30]
-        if len(selected_candidates) < 30 and blacklisted:
-            needed = 30 - len(selected_candidates)
-            selected_candidates.extend(blacklisted[:needed])
-
-        if not selected_candidates:
-            return []
-
-        # 4. Value the top 30 results for pure cosine similarity against full incoming text
+        # B. Vector Candidates: query vector store
         query_embedding = self._vector_store.embed_text(text)
-        cosine_candidates = []
-        for b, kw_score in selected_candidates:
+        vector_top_k_results = self._vector_store.query_top_k(query_embedding, k=30)
+        vector_top_30_ids = [res[0] for res in vector_top_k_results]
+
+        vector_top_30 = []
+        for bid in vector_top_30_ids:
+            if bid in self._belief_store._beliefs_cache:
+                vector_top_30.append(self._belief_store._beliefs_cache[bid])
+
+        # C. Construct the Union candidate pool
+        union_dict = {}
+        for b in keyword_top_30:
+            union_dict[b["id"]] = b
+        for b in vector_top_30:
+            union_dict[b["id"]] = b
+
+        union_candidates = list(union_dict.values())
+        if not union_candidates:
+            union_candidates = all_beliefs[:30]
+
+        # 5. Three-Way Soft-Score Fusion
+        # Compute cosine similarity for all candidates in union
+        cosine_similarities = {}
+        for b in union_candidates:
+            bid = b["id"]
             cached_embedding = b.get("embedding") or b.get("embedding_384d")
             if not cached_embedding:
                 emb = self._vector_store.embed_text(_strip_timestamp_prefix(b.get("content", "")))
                 cached_embedding = emb.tolist()
                 b["embedding"] = cached_embedding
-                self._belief_store._beliefs_cache[b["id"]] = b
+                self._belief_store._beliefs_cache[bid] = b
             
             emb_np = np.array(cached_embedding, dtype=np.float32)
-            cosine_sim = self._vector_store.cosine_similarity(query_embedding, emb_np)
-            cosine_candidates.append((b, cosine_sim))
+            cosine_similarities[bid] = self._vector_store.cosine_similarity(query_embedding, emb_np)
 
-        # Sort by cosine similarity to get cosine ordering rank
-        cosine_candidates.sort(key=lambda x: (x[1], x[0].get("relevance", 0.0)), reverse=True)
-
-        # 5. Average the new order based on cosine similarity with the pure keyword search ordering
-        cosine_ranks = {item[0]["id"]: idx + 1 for idx, item in enumerate(cosine_candidates)}
-        keyword_ranks = {item[0]["id"]: idx + 1 for idx, item in enumerate(selected_candidates)}
-
-        averaged_candidates = []
-        for b, _ in selected_candidates:
+        fused_candidates = []
+        for b in union_candidates:
             bid = b["id"]
-            kw_rank = keyword_ranks[bid]
-            cos_rank = cosine_ranks[bid]
-            avg_rank = (kw_rank + cos_rank) / 2.0
-            averaged_candidates.append((b, avg_rank))
+            cos_sim = cosine_similarities[bid]
+            kw_match = keyword_scores.get(bid, 0)
+            tag_match = tag_scores.get(bid, 0)
+            
+            # Fused score = cosine_similarity + 0.00 * keyword_matches + 0.00 * tag_matches
+            fused_score = cos_sim + 0.00 * kw_match + 0.00 * tag_match
+            fused_candidates.append((b, fused_score))
 
-        # Sort by averaged rank (ascending, smaller rank is better)
-        averaged_candidates.sort(key=lambda x: (x[1], -x[0].get("relevance", 0.0)))
+        # 6. Repetition Prevention and Sorting
+        # Sort by: (is_blacklisted, -fused_score, -relevance)
+        fused_candidates.sort(key=lambda x: (
+            x[0]["id"] in self._recent_injections,
+            -x[1],
+            -x[0].get("relevance", 0.0)
+        ))
 
-        # 6. Top 10 beliefs from that averaged list are what get injected
-        final_candidates = [b for b, avg_rank in averaged_candidates]
+        final_candidates = [b for b, fused_score in fused_candidates]
 
         # Suppress constituents covered by turn synthesis merges
         final_candidates_with_dummy_scores = [(1.0, b) for b in final_candidates]
