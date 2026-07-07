@@ -33,8 +33,8 @@ session: roughly ±3 questions out of 60 between otherwise-identical LoCoMo
 runs. Draw conclusions from aggregate trends and repeated runs, not a single
 number.
 
-**Results as of 2026-07-06** (see `benchmark-results-locomo-2026-07-05.md` and
-`benchmark-results-longmemeval-s.md` for full per-question logs):
+**Results as of 2026-07-06** (see `benchmark-results-locomo-*.md` and
+`benchmark-results-longmemeval-s-*.md` for full per-question logs):
 
 | Dataset | Sample | Accuracy | Avg. injected tokens |
 | :--- | :--- | ---: | ---: |
@@ -49,7 +49,8 @@ running roughly double LoCoMo's per-conversation session count. The token
 budget in `PreGenerativeInjector` (`max_injected_tokens`, `token_budget_fraction`)
 caps injected context size regardless of underlying belief-store size, so
 retrieval cost does not grow with conversation length — this is the main
-claim these two benchmarks support.
+claim these two benchmarks support. Current benchmark code now records
+tokenizer-backed counts when the tokenizer assets are locally available.
 
 **Known failure modes observed** (see full logs for detail): a handful of
 misses are generation-side (the answering LLM retrieved the correct facts but

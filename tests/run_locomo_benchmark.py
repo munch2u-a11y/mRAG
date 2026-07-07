@@ -2,10 +2,12 @@ import os
 import json
 import logging
 import shutil
+from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from mrag.memory.belief_store import BeliefStore
 from mrag.core.belief_consolidator import BeliefConsolidator
+from mrag.core.token_counting import count_text_tokens, describe_token_counter
 from mrag.core.vector_store import create_vector_store
 from mrag import PreGenerativeInjector
 
@@ -60,6 +62,9 @@ def main():
     total_questions = 0
     all_injected_tokens = []
     qa_details = []
+    token_counter = describe_token_counter()
+    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
+    date_slug = timestamp[:10]
 
     for position, (conv_idx, conv_data) in enumerate(dataset):
         logger.info(f"\n==================================================")
@@ -139,9 +144,17 @@ def main():
         # MRAG_LOCOMO_Q_START offsets into qa_list so repeat runs on the same
         # conversation can exercise fresh questions instead of re-grading the
         # same first-N every time.
-        q_start = int(os.environ.get("MRAG_LOCOMO_Q_START", "0"))
         q_count = int(os.environ.get("MRAG_LOCOMO_Q_COUNT", "30"))
-        for q_idx, qa in enumerate(qa_list[q_start : q_start + q_count]):
+        if os.environ.get("MRAG_LOCOMO_RANDOM_Q"):
+            import random
+            rng = random.Random(42)
+            selected_qas = rng.sample(qa_list, min(q_count, len(qa_list)))
+            q_start = 0
+        else:
+            q_start = int(os.environ.get("MRAG_LOCOMO_Q_START", "0"))
+            selected_qas = qa_list[q_start : q_start + q_count]
+
+        for q_idx, qa in enumerate(selected_qas):
             question = qa["question"]
             expected = qa.get("answer") or qa.get("adversarial_answer") or "Not mentioned"
             category = qa["category"]
@@ -149,8 +162,7 @@ def main():
             injector.clear_blacklist()
             beliefs_context = injector.inject(question)
             
-            from mrag.core.pre_generative_injection import estimate_tokens
-            injected_tokens = estimate_tokens(beliefs_context) if beliefs_context else 0
+            injected_tokens = count_text_tokens(beliefs_context) if beliefs_context else 0
             all_injected_tokens.append(injected_tokens)
 
             qa_prompt = f"""You are a helpful assistant answering questions about a long-term conversation.
@@ -206,7 +218,8 @@ Criteria:
                 "question": question,
                 "expected": expected,
                 "actual": response_text,
-                "status": "CORRECT" if is_correct else "MISSED"
+                "status": "CORRECT" if is_correct else "MISSED",
+                "injected_tokens": injected_tokens
             })
 
     overall_accuracy = total_correct / total_questions if total_questions else 0
@@ -223,19 +236,21 @@ Criteria:
 
     # Save markdown report
     os.makedirs("./benchmarks", exist_ok=True)
-    report_path = "./benchmarks/benchmark-results-locomo-2026-07-05.md"
+    report_path = f"./benchmarks/benchmark-results-locomo-{date_slug}.md"
     with open(report_path, "w") as f:
         f.write(f"# Micro-RAG LoCoMo QA Full Benchmark Results\n\n")
-        f.write(f"- Model: `gemini-2.5-flash`\n")
+        f.write(f"- Timestamp: `{timestamp}`\n")
+        f.write(f"- Model: `gemini-3.1-flash-lite`\n")
+        f.write(f"- Token counter: `{token_counter['backend']}` via `{token_counter['source']}`\n")
         f.write(f"- Total Evaluated Questions: `{total_questions}`\n")
         f.write(f"- Total Matches: `{total_correct}`\n")
         f.write(f"- Overall Accuracy: `{overall_accuracy:.3f}`\n")
         f.write(f"- Avg Injected Context Tokens: `{avg_tokens:.1f}` (Min: `{min_tokens}`, Max: `{max_tokens}`)\n\n")
         f.write(f"## QA Details\n\n")
-        f.write(f"| Conv | Question | Expected | Micro-RAG Answer | Status |\n")
-        f.write(f"| :--- | :--- | :--- | :--- | :--- |\n")
+        f.write(f"| Conv | Question | Expected | Micro-RAG Answer | Tokens | Status |\n")
+        f.write(f"| :--- | :--- | :--- | :--- | :--- | :--- |\n")
         for detail in qa_details:
-            f.write(f"| {detail['conv_idx']} | {detail['question']} | {detail['expected']} | {detail['actual']} | {detail['status']} |\n")
+            f.write(f"| {detail['conv_idx']} | {detail['question']} | {detail['expected']} | {detail['actual']} | {detail['injected_tokens']} | {detail['status']} |\n")
 
     logger.info(f"Saved Markdown report to {report_path}")
 

@@ -19,6 +19,9 @@ chromadb = [
 pinecone = [
     "pinecone"
 ]
+benchmarks = [
+    "tiktoken>=0.12.0"
+]
 clustering = [
     "scikit-learn>=1.3"
 ]
@@ -40,4 +43,3 @@ packages = ["mrag"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = ["state_bench", "beam", "venv", ".git"]
-

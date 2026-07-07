@@ -3,6 +3,8 @@ import json
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
+from mrag.core.token_counting import count_text_tokens
+
 logger = logging.getLogger("mrag.core.context_compressor")
 
 def resolve_context_limit(
@@ -99,10 +101,10 @@ class ContextCompressor:
         return current_tokens >= self.threshold_tokens
 
     def _estimate_tokens(self, text: str) -> int:
-        """Rough token estimate (1 token ~= 4 chars)."""
-        return len(text) // 4
+        """Best-effort token count backed by tiktoken when available."""
+        return count_text_tokens(text)
 
-    def compress(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def compress(self, messages: List[Dict[str, Any]], is_end_of_session: bool = False) -> List[Dict[str, Any]]:
         """Compress conversation messages by summarizing middle turns.
         
         Expects messages like: {"role": "user", "content": "Hello"}
@@ -116,15 +118,19 @@ class ContextCompressor:
             self._estimate_tokens(str(message.get("content", "")))
             for message in messages
         )
-        if not self.should_compress(total_tokens):
+        if not is_end_of_session and not self.should_compress(total_tokens):
             return messages
 
-        # 1. Find tail boundary
+        # 1. Find tail boundary (save 10 turns up to 10% of total tokens)
         tail_start = n_messages
         accumulated_tail = 0
+        limit_tokens = int(total_tokens * 0.10)
+        
         for i in range(n_messages - 1, self.protect_first_n - 1, -1):
             msg_tokens = self._estimate_tokens(str(messages[i].get("content", "")))
-            if accumulated_tail + msg_tokens > self.tail_token_budget and (n_messages - i) >= 3:
+            if (n_messages - i) > 10:
+                break
+            if accumulated_tail + msg_tokens > limit_tokens and (n_messages - i) > 1:
                 break
             accumulated_tail += msg_tokens
             tail_start = i
@@ -137,8 +143,10 @@ class ContextCompressor:
         # 2. Summarize middle turns. A previous compression summary sitting in
         # the middle is adopted as the "previous recollection" instead of being
         # re-serialized into the prompt (which would duplicate its content).
+        # If is_end_of_session, summarize every turn from protect_first_n to the end.
         turns_to_summarize = []
-        for msg in messages[self.protect_first_n:tail_start]:
+        target_end = n_messages if is_end_of_session else tail_start
+        for msg in messages[self.protect_first_n:target_end]:
             if msg.get("is_compressed_summary"):
                 content = str(msg.get("content", ""))
                 if content.startswith(SUMMARY_PREFIX):
@@ -172,6 +180,56 @@ class ContextCompressor:
         # Tail
         for i in range(tail_start, n_messages):
             compressed.append(messages[i])
+
+        # 4. If end of session, add a divider indicating time passed since compression
+        if is_end_of_session and n_messages > 0:
+            import re
+            from datetime import datetime
+            
+            # Extract timestamp from last turn of the compressed session
+            last_turn_content = str(messages[-1].get("content", ""))
+            
+            def _parse_raw_date(raw: str) -> Optional[datetime]:
+                for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d", "%B %d, %Y %I:%M %p", "%B %d, %Y", "%I:%M %p on %d %B, %Y"):
+                    try:
+                        return datetime.strptime(raw, fmt)
+                    except ValueError:
+                        continue
+                return None
+
+            last_time = None
+            m1 = re.search(r'Date:\s*([^\n]+)', last_turn_content)
+            if m1:
+                last_time = _parse_raw_date(m1.group(1).strip())
+            if not last_time:
+                m2 = re.search(r'^\[([\d\-: ]+)\]', last_turn_content)
+                if m2:
+                    last_time = _parse_raw_date(m2.group(1).strip())
+
+            now = datetime.now()
+            last_timestamp = last_time.strftime("%Y-%m-%d %H:%M") if last_time else "Unknown"
+            new_timestamp = now.strftime("%Y-%m-%d %H:%M")
+            
+            time_diff_str = "Unknown"
+            if last_time:
+                elapsed = now - last_time
+                if elapsed.days > 0:
+                    time_diff_str = f"{elapsed.days} days, {elapsed.seconds // 3600} hours"
+                else:
+                    time_diff_str = f"{elapsed.seconds // 3600} hours, {(elapsed.seconds % 3600) // 60} minutes"
+
+            divider_msg = {
+                "role": "system",
+                "content": (
+                    f"--------------------------------------------------\n"
+                    f"[Session Ended at: {last_timestamp}]\n"
+                    f"[Time Elapsed since compression: {time_diff_str}]\n"
+                    f"[New Session Started at: {new_timestamp}]\n"
+                    f"--------------------------------------------------"
+                ),
+                "is_session_divider": True
+            }
+            compressed.append(divider_msg)
 
         return compressed
 

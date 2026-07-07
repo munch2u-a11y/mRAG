@@ -83,6 +83,10 @@ def _statement_template(text: str):
         parts.append("<v>" if lowered in salient else lowered)
     return " ".join(parts), salient
 
+_TIMESTAMP_PREFIX_RE = re.compile(r'^\[([\d\-: ]+)\]\s*')
+def _strip_timestamp_prefix_local(text: str) -> str:
+    return _TIMESTAMP_PREFIX_RE.sub("", text)
+
 class BeliefStore:
     """Categorized belief management for Micro-RAG.
     Maintains structurally connected beliefs across categories.
@@ -126,6 +130,13 @@ class BeliefStore:
         belief["memory_refs"] = list(dict.fromkeys(belief.get("memory_refs", []) or []))
         belief["tags"] = list(dict.fromkeys(belief.get("tags", []) or []))
         belief["weight"] = self._resolve_weight(belief["confidence"])
+
+        # Extract conceptual tags automatically if not already present
+        if "conceptual_tags" not in belief:
+            from mrag.core.tagger import extract_tags
+            content = belief.get("content", "")
+            clean_content = _strip_timestamp_prefix_local(content)
+            belief["conceptual_tags"] = extract_tags(clean_content)
 
         # Relevance replaces affect-based mass, computed purely structurally.
         belief["relevance"] = round(self.compute_relevance(belief), 4)

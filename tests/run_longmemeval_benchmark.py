@@ -3,10 +3,13 @@ import json
 import logging
 import re
 import shutil
+import random
+from datetime import datetime
 from dotenv import load_dotenv
 import google.generativeai as genai
 from mrag.memory.belief_store import BeliefStore
 from mrag.core.belief_consolidator import BeliefConsolidator
+from mrag.core.token_counting import count_text_tokens, describe_token_counter
 from mrag.core.vector_store import create_vector_store
 from mrag import PreGenerativeInjector
 
@@ -24,6 +27,53 @@ def _lme_date_to_timestamp(date_str: str) -> str:
         return date_str
     y, mo, d, h, mi = m.groups()
     return f"{y}-{mo}-{d} {h}:{mi}"
+
+
+def _select_longmemeval_instances(dataset):
+    profile = os.environ.get("MRAG_LME_PROFILE", "quick").strip().lower()
+    q_indices_env = os.environ.get("MRAG_LME_Q_INDICES")
+    max_questions = os.environ.get("MRAG_LME_MAX_QUESTIONS", "3")
+    q_start = int(os.environ.get("MRAG_LME_Q_START", "0"))
+
+    if q_indices_env:
+        indices = [int(i) for i in q_indices_env.split(",") if i.strip() != ""]
+        logger.info(f"Scoped to explicit question indices {indices} via MRAG_LME_Q_INDICES.")
+        return [(idx, dataset[idx]) for idx in indices], "indices"
+
+    if profile == "full":
+        logger.info("Using full LongMemEval_S dataset via MRAG_LME_PROFILE=full.")
+        return list(enumerate(dataset)), "full"
+
+    if profile in {"long", "longer", "readme"}:
+        sample_size = int(os.environ.get("MRAG_LME_STRATIFIED_COUNT", "20"))
+        seed = int(os.environ.get("MRAG_LME_STRATIFY_SEED", "7"))
+        rng = random.Random(seed)
+        buckets = {}
+        for idx, inst in enumerate(dataset):
+            key = (inst.get("question_type", "unknown"), inst.get("question_id", "").endswith("_abs"))
+            buckets.setdefault(key, []).append((idx, inst))
+        for items in buckets.values():
+            rng.shuffle(items)
+
+        ordered_keys = sorted(buckets.keys(), key=lambda item: (item[1], item[0]))
+        selected = []
+        while len(selected) < sample_size and any(buckets.values()):
+            for key in ordered_keys:
+                if buckets[key] and len(selected) < sample_size:
+                    selected.append(buckets[key].pop())
+
+        logger.info(
+            "Using deterministic stratified LongMemEval_S sample via MRAG_LME_PROFILE=%s "
+            "(count=%s, seed=%s).",
+            profile,
+            sample_size,
+            seed,
+        )
+        return selected, profile
+
+    scoped = list(enumerate(dataset))[q_start: q_start + int(max_questions)]
+    logger.info(f"Scoped to questions [{q_start}:{q_start + int(max_questions)}) via MRAG_LME_Q_START/MAX_QUESTIONS.")
+    return scoped, "quick"
 
 
 def main():
@@ -54,21 +104,10 @@ def main():
     )
     with open(data_path) as f:
         dataset = json.load(f)
-
-    # Scope-down, mirroring the LoCoMo harness's env-var pattern. Unlike
-    # LoCoMo (one shared conversation, many questions), every LongMemEval
-    # instance has its OWN independent ~40-60-session haystack -- cost
-    # scales per-question, not amortized -- so default to a small sample.
-    q_indices_env = os.environ.get("MRAG_LME_Q_INDICES")
-    max_questions = os.environ.get("MRAG_LME_MAX_QUESTIONS", "3")
-    q_start = int(os.environ.get("MRAG_LME_Q_START", "0"))
-    if q_indices_env:
-        indices = [int(i) for i in q_indices_env.split(",") if i.strip() != ""]
-        dataset = [(idx, dataset[idx]) for idx in indices]
-        logger.info(f"Scoped to explicit question indices {indices} via MRAG_LME_Q_INDICES.")
-    else:
-        dataset = list(enumerate(dataset))[q_start: q_start + int(max_questions)]
-        logger.info(f"Scoped to questions [{q_start}:{q_start + int(max_questions)}) via MRAG_LME_Q_START/MAX_QUESTIONS.")
+    dataset, profile = _select_longmemeval_instances(dataset)
+    token_counter = describe_token_counter()
+    timestamp = datetime.now().astimezone().isoformat(timespec="seconds")
+    date_slug = timestamp[:10]
 
     total_correct = 0
     total_questions = 0
@@ -140,8 +179,7 @@ def main():
         injector.clear_blacklist()
         beliefs_context = injector.inject(question)
 
-        from mrag.core.pre_generative_injection import estimate_tokens
-        injected_tokens = estimate_tokens(beliefs_context) if beliefs_context else 0
+        injected_tokens = count_text_tokens(beliefs_context) if beliefs_context else 0
         all_injected_tokens.append(injected_tokens)
 
         qa_prompt = f"""You are a helpful assistant answering questions about a long-term conversation history.
@@ -226,14 +264,17 @@ Criteria:
     logger.info("==================================================")
 
     os.makedirs("./benchmarks", exist_ok=True)
-    report_path = "./benchmarks/benchmark-results-longmemeval-s.md"
+    report_path = f"./benchmarks/benchmark-results-longmemeval-s-{profile}-{date_slug}.md"
     with open(report_path, "w") as f:
         f.write("# Micro-RAG LongMemEval_S QA Benchmark Results\n\n")
         f.write("- Model: `gemini-3.1-flash-lite`\n")
+        f.write(f"- Profile: `{profile}`\n")
+        f.write(f"- Timestamp: `{timestamp}`\n")
         f.write(f"- Total Evaluated Questions: `{total_questions}`\n")
         f.write(f"- Total Matches: `{total_correct}`\n")
         f.write(f"- Overall Accuracy: `{overall_accuracy:.3f}`\n")
-        f.write(f"- Avg Injected Context Tokens: `{avg_tokens:.1f}` (Min: `{min_tokens}`, Max: `{max_tokens}`)\n\n")
+        f.write(f"- Avg Injected Context Tokens: `{avg_tokens:.1f}` (Min: `{min_tokens}`, Max: `{max_tokens}`)\n")
+        f.write(f"- Token counter: `{token_counter['backend']}` via `{token_counter['source']}`\n\n")
         f.write("## QA Details\n\n")
         f.write("| Q# | Type | Question | Expected | Micro-RAG Answer | Tokens | Status |\n")
         f.write("| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")

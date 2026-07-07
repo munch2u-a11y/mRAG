@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Tuple, Optional
 
 from mrag._compat import np
+from mrag.core.token_counting import count_text_tokens
 from mrag.memory.belief_store import BeliefStore
 from mrag.core.vector_store import VectorStore
 
@@ -133,9 +134,7 @@ def _stem_word(word: str) -> str:
     return word
 
 def estimate_tokens(text: str) -> int:
-    # 1 word ~ 1.3 tokens, plus formatting overhead
-    words = text.split()
-    return max(1, int(len(words) * 1.3) + 4)
+    return count_text_tokens(text)
 
 
 class PreGenerativeInjector:
@@ -482,219 +481,144 @@ class PreGenerativeInjector:
         return [(c["score"], c["belief"]) for c in clusters]
 
     def _pull_relevant_beliefs(self, text: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Finds beliefs relevant to the text using multi-head candidate
-        gathering + local structural reranking."""
+        """Finds beliefs relevant to the text using K-types keyword parsing,
+        tag overlap, cosine reranking, and rank-averaging."""
         self.sync_index()
 
-        # 1. Generate search heads (Multi-Head Retrieval)
-        heads = self._generate_search_heads(text)
+        from mrag.core.tagger import extract_keywords_and_phrases, get_tag_counts
 
-        # 2. Gather candidates across all heads.
-        #
-        # heads[0] is always the raw, unmodified query text (see
-        # _generate_search_heads) — this is the ONE head that uses
-        # embedding cosine search, since it's the only head meant to catch
-        # a semantic/paraphrase match where the belief's wording genuinely
-        # differs from the query's.
-        #
-        # Every other head (proper nouns, bigrams, significant single
-        # words, concept/relation-expansion vocabulary) is a specific
-        # keyword or phrase chosen because a matching belief is expected to
-        # actually contain it — so those heads use exact stemmed-word
-        # matching over belief content instead of cosine search. Cosine
-        # similarity between a single word/short phrase and a belief
-        # sentence is distorted by the belief's length (a short belief
-        # merely containing "John" can out-cosine a long, detailed belief
-        # that also genuinely contains "John"), which buries real matches
-        # behind irrelevant short ones — confirmed at real-benchmark scale
-        # this session. Multi-head retrieval's job is to pull a definite
-        # candidate list from actual keyword/phrase usage (including the
-        # learned concept/relation vocabulary); ranking those candidates is
-        # what the fused score below is for.
-        all_candidates: Dict[str, Dict[str, Any]] = {}
-        raw_head = heads[0]
-        full_query_embedding = self._vector_store.embed_text(raw_head)
-        for belief_id, sim in self._vector_store.query_top_k(full_query_embedding, k=self.top_k_candidates):
-            all_candidates[belief_id] = {"sims": [sim], "match_count": 1, "keyword_hits": 0}
+        # 1. Parse incoming text for up to 4 keyword and keyphrase searchterms
+        query_keywords = extract_keywords_and_phrases(text, limit=4)
+        query_tag_counts = get_tag_counts(text)
 
-        keyword_heads = heads[1:]
-        if keyword_heads:
-            belief_tokens: Dict[str, set] = {}
-            for belief_id, belief in self._belief_store._beliefs_cache.items():
-                if belief.get("_category") == "concepts":
-                    continue
-                content = _strip_timestamp_prefix(belief.get("content", "")).lower()
-                words = re.findall(r"\b[a-zA-Z]{2,}\b", content)
-                belief_tokens[belief_id] = {_stem_word(w) for w in words}
+        # 2. Split keywords into conceptually similar terms based on ever expanding vocabulary (concept expansion)
+        keyword_search_groups = []
+        for kw in query_keywords:
+            terms = {kw.lower()}
+            kw_lower = kw.lower()
+            for trigger, expansions in self._concept_expansions.items():
+                if trigger in kw_lower:
+                    for exp in expansions:
+                        terms.add(exp.lower())
+            keyword_search_groups.append(terms)
 
-            for head in keyword_heads:
-                head_stems = {_stem_word(w) for w in re.findall(r"\b[a-zA-Z]{2,}\b", head.lower())}
-                if not head_stems:
-                    continue
-                for belief_id, token_set in belief_tokens.items():
-                    if not head_stems <= token_set:
-                        continue
-                    if belief_id not in all_candidates:
-                        all_candidates[belief_id] = {"sims": [], "match_count": 1, "keyword_hits": 1}
-                    else:
-                        all_candidates[belief_id]["match_count"] += 1
-                        all_candidates[belief_id]["keyword_hits"] += 1
+        all_beliefs = [
+            b for b in self._belief_store.get_all_beliefs_flat()
+            if b.get("_category") != "concepts"
+        ]
 
-        # 3. Apply local structural reranking on candidates
-        scored_beliefs = []
-        blacklisted_beliefs = []
-        
-        # Compute general stemmed keyword overlap boost (Hybrid Search Heuristic)
-        query_words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
-        query_stems = {_stem_word(w) for w in query_words if w not in STOPWORDS}
-        
-        for belief_id, info in all_candidates.items():
-            belief = self._belief_store.get_belief(belief_id)
-            if not belief:
-                continue
-
-            # Compute structural relevance
-            relevance = belief.get("relevance", self._belief_store.compute_relevance(belief))
+        # 3. Gather candidates and compute keyword & tag overlap
+        candidates = []
+        for b in all_beliefs:
+            content_lower = _strip_timestamp_prefix(b.get("content", "")).lower()
             
-            # Hybrid search overlap score boost (10% boost per matching stemmed word)
-            boost = 1.0
-            if query_stems:
-                belief_content = _strip_timestamp_prefix(belief.get("content", "")).lower()
-                belief_words = re.findall(r'\b[a-zA-Z]{3,}\b', belief_content)
-                belief_stems = {_stem_word(w) for w in belief_words if w not in STOPWORDS}
-                
-                overlap = len(query_stems.intersection(belief_stems))
-                if overlap > 0:
-                    boost += (overlap * 0.1)
-                    
-            # Match-count-primary scoring: a belief pulled by more independent
-            # search heads (i.e. relevant to more distinct aspects of the
-            # query — "John", "Maria", "shelter", "volunteering", ...) ranks
-            # above one that only matches a single head strongly, even if
-            # that head's raw cosine similarity is higher. An additive bonus
-            # (previously: max_sim + 0.1*(match_count-1)) let one dominant
-            # single-head match outrank a genuine multi-head match, which
-            # measurably buried compound-topic beliefs behind single-topic
-            # ones at real-benchmark scale.
-            #
-            # The noise-filtering gate keeps the original fused formula
-            # (still folds the match_count bonus additively into the
-            # similarity signal itself) so weak-embedding backends (e.g. the
-            # DummyVectorStore fallback, whose per-word cosine similarities
-            # sit near 0) still clear it via multi-head corroboration alone.
-            # match_count is then broken out as the dominant, integer part of
-            # the ranking composite so ordering is decided by it first;
-            # raw_score is bounded well under 1.0 by construction (max_sim<=1,
-            # relevance<=~1.5, boost typically <=~2), so dividing by 10 and
-            # clamping keeps the fractional part from ever spilling into the
-            # next match_count tier.
-            # A candidate pulled in only via keyword-head exact matches (no
-            # hit from the raw-query cosine search) has no "sims" entries —
-            # fall back to a direct cosine comparison against the full
-            # query embedding so it still gets a real quality/tie-break
-            # signal instead of defaulting to 0.
-            if info["sims"]:
-                max_sim = max(info["sims"])
+            # Count how many of the query's keyword groups this belief matches
+            keyword_matches = 0
+            for terms in keyword_search_groups:
+                matched = False
+                for term in terms:
+                    if " " in term:
+                        if term in content_lower:
+                            matched = True
+                            break
+                    else:
+                        if re.search(r'\b' + re.escape(term) + r'\b', content_lower):
+                            matched = True
+                            break
+                if matched:
+                    keyword_matches += 1
+
+            # Count tag overlaps
+            b_tags = b.get("conceptual_tags", [])
+            tag_matches = 0
+            for tag, q_count in query_tag_counts.items():
+                b_count = b_tags.count(tag) if isinstance(b_tags, list) else 0
+                tag_matches += min(q_count, b_count)
+
+            # Filter candidates that have at least one keyword or tag match
+            if keyword_matches > 0 or tag_matches > 0:
+                relevance = b.get("relevance", 0.0)
+                # Primary sort is keyword_matches, secondary is tag_matches, tertiary is relevance
+                keyword_score = keyword_matches + 0.01 * tag_matches + 0.0001 * relevance
+                candidates.append((b, keyword_score))
+
+        # Fallback if no beliefs matched keywords or tags
+        if not candidates:
+            for b in all_beliefs:
+                candidates.append((b, b.get("relevance", 0.0)))
+
+        # Sort candidates to produce the "pure keyword search ordering"
+        candidates.sort(key=lambda x: x[1], reverse=True)
+
+        # Apply rolling blacklist/repetition prevention, keeping blacklisted ones as fallback
+        non_blacklisted = []
+        blacklisted = []
+        for b, kw_score in candidates:
+            if b["id"] in self._recent_injections:
+                blacklisted.append((b, kw_score))
             else:
-                cached_embedding = belief.get("embedding") or belief.get("embedding_384d")
-                if cached_embedding:
-                    max_sim = self._vector_store.cosine_similarity(
-                        full_query_embedding, np.array(cached_embedding, dtype=np.float32)
-                    )
-                else:
-                    max_sim = 0.0
-            match_count = info["match_count"]
-            fused_sim = min(1.0, max_sim + 0.1 * (match_count - 1))
-            gate_score = fused_sim * relevance * boost
-            raw_score = max_sim * relevance * boost
-            score = match_count + min(0.999, raw_score / 10.0)
+                non_blacklisted.append((b, kw_score))
 
-            # A belief that literally contains one of the query's own
-            # keywords/phrases (or its learned concept/relation vocabulary)
-            # is relevant by construction — that's the whole point of using
-            # exact matching for those heads instead of cosine search. It
-            # must not be gate-kept by a noisy or unlucky cosine value the
-            # way a pure semantic/paraphrase match legitimately should be;
-            # cosine similarity's job past this point is only to rank
-            # candidates against each other, not to veto a literal match.
-            has_keyword_support = info.get("keyword_hits", 0) > 0
+        selected_candidates = non_blacklisted[:30]
+        if len(selected_candidates) < 30 and blacklisted:
+            needed = 30 - len(selected_candidates)
+            selected_candidates.extend(blacklisted[:needed])
 
-            if has_keyword_support or gate_score > 0.05: # Threshold
-                # Recently injected beliefs are held back to avoid repetition,
-                # but kept as a fallback so a repeated query never comes up empty.
-                if belief_id in self._recent_injections:
-                    blacklisted_beliefs.append((score, belief))
-                else:
-                    scored_beliefs.append((score, belief))
+        if not selected_candidates:
+            return []
 
-        # Sort initial semantic matches
-        scored_beliefs.sort(key=lambda x: x[0], reverse=True)
-        
-        # 4. Graph relation expansion (1-hop)
-        if self.enable_graph_expansion:
-            expanded_candidates = {}
-            for score, belief in scored_beliefs[:15]: # Expand on top 15 matches
-                expanded_candidates[belief["id"]] = (score, belief)
-                
-                # Fetch related beliefs
-                related = self._belief_store.get_related(belief["id"])
-                # Sort related by relevance/confidence to expand the most important links first
-                related.sort(key=lambda x: x.get("relevance", 0.5), reverse=True)
+        # 4. Value the top 30 results for pure cosine similarity against full incoming text
+        query_embedding = self._vector_store.embed_text(text)
+        cosine_candidates = []
+        for b, kw_score in selected_candidates:
+            cached_embedding = b.get("embedding") or b.get("embedding_384d")
+            if not cached_embedding:
+                emb = self._vector_store.embed_text(_strip_timestamp_prefix(b.get("content", "")))
+                cached_embedding = emb.tolist()
+                b["embedding"] = cached_embedding
+                self._belief_store._beliefs_cache[b["id"]] = b
+            
+            emb_np = np.array(cached_embedding, dtype=np.float32)
+            cosine_sim = self._vector_store.cosine_similarity(query_embedding, emb_np)
+            cosine_candidates.append((b, cosine_sim))
 
-                # Cap expansion to top 3 related beliefs to avoid hub flooding
-                for rel_belief in related[:3]:
-                    rel_id = rel_belief.get("id")
-                    if rel_id in self._recent_injections:
-                        continue
-                        
-                    # Attenuate relation score (inherits 40% of parent match score)
-                    rel_score = score * 0.4
-                    
-                    if rel_id not in expanded_candidates or expanded_candidates[rel_id][0] < rel_score:
-                        expanded_candidates[rel_id] = (rel_score, rel_belief)
+        # Sort by cosine similarity to get cosine ordering rank
+        cosine_candidates.sort(key=lambda x: (x[1], x[0].get("relevance", 0.0)), reverse=True)
 
-            # The [:15] window above is a relation-lookup optimization only —
-            # it decides which beliefs are worth spending a graph fetch on,
-            # not which beliefs are allowed to survive. Everything ranked
-            # 16th or lower already cleared the relevance gate and must still
-            # reach duplicate-purge/token-budget selection unexpanded,
-            # otherwise a real, correctly-scored match past rank 15 (e.g. a
-            # compound multi-head match in a large candidate pool) is
-            # silently dropped regardless of how good its score is.
-            for score, belief in scored_beliefs[15:]:
-                bid = belief["id"]
-                if bid not in expanded_candidates:
-                    expanded_candidates[bid] = (score, belief)
+        # 5. Average the new order based on cosine similarity with the pure keyword search ordering
+        cosine_ranks = {item[0]["id"]: idx + 1 for idx, item in enumerate(cosine_candidates)}
+        keyword_ranks = {item[0]["id"]: idx + 1 for idx, item in enumerate(selected_candidates)}
 
-            final_candidates = list(expanded_candidates.values())
-        else:
-            final_candidates = scored_beliefs
+        averaged_candidates = []
+        for b, _ in selected_candidates:
+            bid = b["id"]
+            kw_rank = keyword_ranks[bid]
+            cos_rank = cosine_ranks[bid]
+            avg_rank = (kw_rank + cos_rank) / 2.0
+            averaged_candidates.append((b, avg_rank))
 
-        # Fallback: everything relevant was recently injected — surface the
-        # blacklisted matches rather than pretending no memory exists.
-        if not final_candidates and blacklisted_beliefs:
-            final_candidates = blacklisted_beliefs
+        # Sort by averaged rank (ascending, smaller rank is better)
+        averaged_candidates.sort(key=lambda x: (x[1], -x[0].get("relevance", 0.0)))
 
-        final_candidates.sort(key=lambda x: x[0], reverse=True)
+        # 6. Top 10 beliefs from that averaged list are what get injected
+        final_candidates = [b for b, avg_rank in averaged_candidates]
 
-        # 4.4 Suppress constituents already covered by a present turn_synthesis
-        # merge — see _suppress_merged_constituents for why this is scoped to
-        # that source only (not cluster/structural rollups).
-        final_candidates = self._suppress_merged_constituents(final_candidates)
+        # Suppress constituents covered by turn synthesis merges
+        final_candidates_with_dummy_scores = [(1.0, b) for b in final_candidates]
+        suppressed = self._suppress_merged_constituents(final_candidates_with_dummy_scores)
+        final_candidates = [b for _, b in suppressed]
 
-        # 4.5 Results-overlap purge: collapse near-duplicate beliefs (the same
-        # fact restated across sessions) so N restatements of one fact don't
-        # crowd distinct facts out of the limited injection slots.
-        final_candidates = self._purge_near_duplicates(final_candidates, full_query_embedding)
-        final_candidates.sort(key=lambda x: x[0], reverse=True)
+        # Results-overlap near-duplicate purge
+        purged = self._purge_near_duplicates([(1.0, b) for b in final_candidates], query_embedding)
+        final_candidates = [b for _, b in purged]
 
-        # 5. Dynamically limit context based on token budget fraction of overall context limit (capped at max_injected_tokens)
+        # Dynamically limit context based on token budget fraction of overall context limit (capped at max_injected_tokens)
         token_limit = min(int(self.context_limit * self.token_budget_fraction), self.max_injected_tokens)
         
         final_beliefs = []
         current_tokens = 0
         
-        for score, b in final_candidates:
+        for b in final_candidates:
             content = b.get("content", "")
             b_tokens = estimate_tokens(content)
             

@@ -66,6 +66,9 @@ repository; the full reports (JSON + Markdown, with methodology notes) live in
 `benchmarks/`. Retrieval always uses real embeddings (Chroma's default
 all-MiniLM-L6-v2); LLM-dependent steps in the token-efficiency protocol use
 deterministic extractive mocks so every run is reproducible without API keys.
+Prompt and injection token counts use a tokenizer-backed counter when
+available (`tiktoken` by default; override with `MRAG_TOKENIZER_MODEL` or
+`MRAG_TOKENIZER_ENCODING`) instead of a chars-per-token heuristic.
 
 ### Token efficiency over time (`run_token_efficiency_benchmark.py`)
 
@@ -113,8 +116,8 @@ The benchmarks above use deterministic extractive mocks for the LLM-dependent
 steps. The results below run the full pipeline end to end against real long-
 form conversation datasets, with an actual LLM (`gemini-3.1-flash-lite`) doing
 fact extraction, answer generation, and grading. Full per-question logs are
-in `benchmarks/benchmark-results-locomo-2026-07-05.md` and
-`benchmarks/benchmark-results-longmemeval-s.md`.
+in `benchmarks/benchmark-results-locomo-*.md` and
+`benchmarks/benchmark-results-longmemeval-s-*.md`.
 
 | Dataset | Questions | Accuracy | Avg. injected tokens |
 | :--- | ---: | ---: | ---: |
@@ -144,12 +147,14 @@ No vendor comparison numbers are included, per the policy above.
 Reproduce with:
 ```bash
 python tests/run_locomo_benchmark.py
-python tests/run_longmemeval_benchmark.py
+MRAG_LME_PROFILE=long python tests/run_longmemeval_benchmark.py
 ```
 Both require a `GEMINI_API_KEY` (see the scripts for how credentials are
 loaded) and download/reference their respective datasets separately — see
 each script's header for dataset paths and environment variables that scope
-the run size.
+the run size. `MRAG_LME_PROFILE=quick` keeps the small smoke sample;
+`MRAG_LME_PROFILE=long` runs a deterministic stratified 20-question slice for
+README-grade checks; `MRAG_LME_PROFILE=full` evaluates the full dataset.
 
 ## Testing
 
@@ -202,4 +207,3 @@ You can import a directory of skill files:
 adapters.import_from_directory("./my_skills_dir", belief_store)
 ```
 You can also pass a `custom_parser` to extract name/description mapping from any proprietary schema structure.
-

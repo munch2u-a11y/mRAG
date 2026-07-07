@@ -34,6 +34,7 @@ from mrag import (
     adapters,
     create_vector_store,
 )
+from mrag.core.token_counting import count_chat_tokens, describe_token_counter
 
 TOTAL_TURNS = 200
 FACT_EVERY_N_TURNS = 5
@@ -126,11 +127,6 @@ def build_facts():
             "question": f"What is the {subject} for milestone {cycle}?",
         })
     return facts
-
-
-def estimate_tokens(text: str) -> int:
-    return len(text) // 4
-
 
 def mock_summarizer(prompt: str) -> str:
     """Deterministic extractive stand-in for the compression LLM.
@@ -229,9 +225,10 @@ def run_benchmark():
     facts = build_facts()
     fact_iter = iter(facts)
     introduced_facts = []
+    token_counter = describe_token_counter()
 
     history = [{"role": "system", "content": SYSTEM_PROMPT}]
-    baseline_tokens_running = estimate_tokens(SYSTEM_PROMPT)
+    baseline_history = [{"role": "system", "content": SYSTEM_PROMPT}]
 
     per_turn = []
     probes = []
@@ -254,19 +251,24 @@ def run_benchmark():
         injection = injector.inject(trigger_text=user_text)
         inject_latencies.append((time.perf_counter() - t0) * 1000)
 
-        history.append({"role": "user", "content": user_text})
-        mrag_context_text = "\n".join(str(m.get("content", "")) for m in history)
-        mrag_prompt_tokens = estimate_tokens(mrag_context_text) + estimate_tokens(injection)
+        mrag_messages = list(history)
+        if injection:
+            mrag_messages.append({"role": "system", "content": injection})
+        mrag_messages.append({"role": "user", "content": user_text})
+        mrag_prompt_tokens = count_chat_tokens(mrag_messages)
         mrag_cumulative += mrag_prompt_tokens
+        history.append({"role": "user", "content": user_text})
 
         # --- Baseline condition (full history, no compression/injection) ---
-        baseline_tokens_running += estimate_tokens(user_text)
-        baseline_prompt_tokens = baseline_tokens_running
+        baseline_messages = list(baseline_history)
+        baseline_messages.append({"role": "user", "content": user_text})
+        baseline_prompt_tokens = count_chat_tokens(baseline_messages)
         baseline_cumulative += baseline_prompt_tokens
+        baseline_history.append({"role": "user", "content": user_text})
 
         assistant_text = assistant_turn_text(turn)
         history.append({"role": "model", "content": assistant_text})
-        baseline_tokens_running += estimate_tokens(assistant_text)
+        baseline_history.append({"role": "model", "content": assistant_text})
 
         # Rolling compression keeps the working set bounded.
         history = compressor.compress(history)
@@ -367,7 +369,7 @@ def run_benchmark():
         "per_turn": per_turn,
         "probes": probes,
         "methodology": {
-            "token_estimator": "chars/4 heuristic, applied identically to both conditions",
+            "token_counter": token_counter,
             "retrieval_embeddings": "real Chroma DefaultEmbeddingFunction (all-MiniLM-L6-v2) for beliefs, skills, and queries",
             "summarizer": "deterministic extractive mock that retains explicit fact sentences plus bounded narrative filler",
             "belief_extractor": "deterministic extractive mock emitting the same JSON schema a production LLM extractor would",
@@ -433,8 +435,9 @@ def run_benchmark():
   mocks so the run is reproducible without API keys. They model an LLM that
   retains salient facts; with a production LLM, summary wording differs but the
   token accounting protocol is identical.
-- Token counts use the same chars/4 estimator for both conditions, so the
-  relative saving is estimator-independent to first order.
+- Token counts use `{token_counter["backend"]}` via `{token_counter["source"]}`.
+- Prompt counting uses chat-style message framing, so per-turn totals include
+  message overhead instead of raw text alone.
 - No vendor comparison numbers are included: published numbers for other memory
   systems are not normalized to this protocol. The scripts are runnable as-is
   for anyone who wants to reproduce or adapt the protocol.
