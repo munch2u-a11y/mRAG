@@ -122,7 +122,12 @@ in `benchmarks/benchmark-results-locomo-*.md` and
 | Dataset | Questions | Accuracy | Avg. injected tokens |
 | :--- | ---: | ---: | ---: |
 | [LoCoMo](https://github.com/snap-research/locomo) (3 conversations) | 300 | 89.7% | 446 (min 381, max 510) |
-| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (stratified, all 6 categories + abstention) | 30 | 90.0% | 496 (min 459, max 533) |
+| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (two stratified seeds, all 6 categories + abstention) | 70† | 82.9% end-to-end · ~94% retrieval | 496 (min 459, max 533) |
+| [ConvoMem](https://huggingface.co/datasets/Salesforce/ConvoMem) (8 per category × 6)‡ | 48 | 77.1% end-to-end · ~90% retrieval | 406 |
+
+† Pooled across two independent stratified samples (seed 7: 27/30 = 90.0%; seed 42: 31/40 = 77.5%, a temporal-reasoning-heavy draw). 9 questions recur across both samples, so this is 70 question-runs over 61 unique questions; deduping (correct-if-correct-in-either) gives 51/61 = 83.6%. *Retrieval accuracy* is separate from *end-to-end* accuracy: a manual audit of the 12 misses found only ~3 were genuine retrieval failures (the answer was absent from the pulled context — assistant-turn content the extractor drops), so retrieval surfaced sufficient context for ~66/70 (~94%). The remaining ~9 misses had evidence retrieved and failed downstream — temporal computation (the event date was present, the "N days ago" arithmetic was not), stale-value reasoning, failure-to-abstain, or the subset-match grading rule — none of which are retrieval-layer faults.
+
+‡ **ConvoMem uses `gemini-2.5-flash`** for answer generation + grading (via the external [memorybench](https://huggingface.co/datasets/Salesforce/ConvoMem) harness), not `gemini-3.1-flash-lite` like the rows above. The 77.1% is *end-to-end answer accuracy*; a manual audit of the 11 misses found retrieval surfaced sufficient context for 43/48 (**~90% retrieval accuracy**) — the remaining gap was answering-model reasoning (4 cases where the belief was retrieved but the model still erred) and strict subset-match grading (2 correct-but-terse answers scored 0), **not retrieval**.
 
 LongMemEval's per-question haystack (38-62 conversation sessions, independently
 sampled per question) runs roughly double the scale of LoCoMo's per-conversation
@@ -134,7 +139,7 @@ abstention) — the fixed token-budget selection in `PreGenerativeInjector` caps
 injected context size independent of how large the underlying belief store
 grows, so retrieval cost does not scale up with conversation length.
 
-**Token Efficiency:** During ingestion, the `BeliefConsolidator` typically processes ~155k raw conversation tokens for a LongMemEval context block into structured beliefs. At retrieval time, the context payload sent to the LLM averages only ~496 tokens, demonstrating a **>300x reduction in latency-critical prompt tokens** while maintaining 90% accuracy.
+**Token Efficiency:** During ingestion, the `BeliefConsolidator` typically processes ~155k raw conversation tokens for a LongMemEval context block into structured beliefs. At retrieval time, the context payload sent to the LLM averages only ~496 tokens, demonstrating a **>300x reduction in latency-critical prompt tokens** while maintaining ~83% end-to-end accuracy on the 70-question LongMemEval composite — and **~94% retrieval accuracy**, since retrieval surfaces the answer-bearing context far more often than the small answering model actually uses it correctly (see the row footnotes for the retrieval-vs-answering distinction on both datasets).
 
 Caveats: these are LLM-graded (lenient semantic-match grading, not exact
 string match) and sample sizes are modest (330 total questions across both
@@ -144,6 +149,16 @@ the same protocol on freshly-ingested data will shift individual question
 results by a few points even with no code changes; this session observed a
 noise band of roughly ±3 questions out of 60 between otherwise-identical runs.
 No vendor comparison numbers are included, per the policy above.
+
+**Model disclaimer:** every figure here uses small, low-cost models
+(`gemini-3.1-flash-lite`; `gemini-2.5-flash` for ConvoMem) chosen deliberately,
+not the frontier models (GPT-4o, Gemini Pro, etc.) typical of published
+leaderboards — so absolute accuracy is lower *by design*. The signal of interest
+is **retrieval quality and token reduction on a fixed model**, not a leaderboard
+rank. Where a stronger answering model would close a gap (e.g. a belief was
+retrieved but reasoned over incorrectly), that is a model choice, not a limit of
+the retrieval layer — which is why the ConvoMem row reports retrieval accuracy
+(~90%) separately from end-to-end answer accuracy (77.1%).
 
 Reproduce with:
 ```bash
