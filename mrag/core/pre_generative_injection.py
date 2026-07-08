@@ -191,9 +191,19 @@ class PreGenerativeInjector:
         self._indexed_belief_ids: set[str] = set()
         self._last_synced_version: Optional[int] = None
 
-    def inject(self, trigger_text: str, current_context: str = "", limit: Optional[int] = None) -> str:
-        """Process incoming trigger text and return formatted injected context."""
-        
+    def inject(self, trigger_text: str, current_context: str = "", limit: Optional[int] = None,
+               current_time: Optional[Any] = None) -> str:
+        """Process incoming trigger text and return formatted injected context.
+
+        current_time is the reference "now" stamped at the top of the context so
+        the model can resolve relative-date questions ("how many days ago?")
+        against the "[YYYY-MM-DD HH:MM]" prefix each belief carries. It accepts a
+        datetime or a pre-formatted string and defaults to the real wall-clock
+        time. Callers replaying historical or simulated conversations (e.g.
+        benchmarks) must pass the simulated present rather than the machine clock,
+        otherwise relative-date arithmetic anchors to the wrong year.
+        """
+
         # Clean text
         text_for_query = f"{current_context} {trigger_text}".strip()
         if not text_for_query:
@@ -204,7 +214,16 @@ class PreGenerativeInjector:
         if not beliefs:
             return ""
 
-        lines = ["--- Injected Context ---"]
+        # Stamp the current time in the same "[YYYY-MM-DD HH:MM]" form the beliefs
+        # use, so the model can diff it directly against any belief's timestamp.
+        if current_time is None:
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        elif isinstance(current_time, datetime):
+            now_str = current_time.strftime("%Y-%m-%d %H:%M")
+        else:
+            now_str = str(current_time).strip()
+
+        lines = [f"Current time: [{now_str}]", "--- Injected Context ---"]
         for b in beliefs:
             content = b.get("content", "")
             lines.append(f"• {content}")

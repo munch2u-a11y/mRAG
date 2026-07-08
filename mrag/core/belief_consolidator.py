@@ -10,6 +10,50 @@ from mrag.core.token_counting import count_text_tokens
 
 logger = logging.getLogger("mrag.core.belief_consolidator")
 
+# Cap the conversation turns fed to a single extraction call. Fact-dense
+# sessions can otherwise produce a JSON facts-list longer than the model's
+# output window, which truncates mid-stream and (without salvage) loses the
+# whole session. Splitting the turns keeps each call's output bounded — scaling
+# with session size instead of silently discarding once a cap is hit.
+_EXTRACTION_TURN_TOKEN_BUDGET = 1500
+
+
+def _salvage_truncated_json(raw: str) -> Any:
+    """Best-effort recovery of records from a truncated/broken JSON payload.
+
+    When a model stops generating mid-stream (safety/recitation/length), the
+    ``{"facts": [ {..}, {..}, {.. <cut>`` array is left unterminated and a strict
+    ``json.loads`` throws away every fact — including the ones that WERE fully
+    emitted. This decodes the complete leading objects out of the first array
+    and re-wraps them under their key, returning the recovered structure (dict or
+    list) or ``None`` if nothing usable was found.
+    """
+    if not raw:
+        return None
+    lb = raw.find("[")
+    if lb == -1:
+        return None
+    key_match = re.search(r'"(\w+)"\s*:\s*$', raw[:lb].rstrip())
+    key = key_match.group(1) if key_match else None
+    decoder = json.JSONDecoder()
+    i, n = lb + 1, len(raw)
+    items: List[Any] = []
+    while i < n:
+        while i < n and raw[i] in " \t\r\n,":
+            i += 1
+        if i >= n or raw[i] == "]":
+            break
+        try:
+            obj, end = decoder.raw_decode(raw, i)
+        except ValueError:
+            break  # first incomplete object — stop, keep what we have
+        items.append(obj)
+        i = end
+    if not items:
+        return None
+    return {key: items} if key else items
+
+
 class BeliefConsolidator:
     """Consolidates conversational logs into structured beliefs.
 
@@ -451,6 +495,44 @@ Return ONLY the rollup sentence. No preamble, no markdown, no quotes.
         return date_str
 
     def _extract_session_factual_summaries(self, turns_text: str, date_context: str) -> List[Dict[str, Any]]:
+        """Extract facts from a session, splitting oversized sessions into
+        token-bounded batches so no single extraction call outgrows the model's
+        output window (see _EXTRACTION_TURN_TOKEN_BUDGET). Batch results are
+        concatenated; downstream session-merge/consolidation dedupes them."""
+        batches = self._split_turns_for_extraction(turns_text)
+        if len(batches) <= 1:
+            return self._extract_facts_batch(turns_text, date_context)
+        facts: List[Dict[str, Any]] = []
+        for batch in batches:
+            facts.extend(self._extract_facts_batch(batch, date_context))
+        logger.info(
+            "Session too long for one extraction call: split into %d batches "
+            "(%d turn tokens); extracted %d facts total.",
+            len(batches), count_text_tokens(turns_text), len(facts),
+        )
+        return facts
+
+    def _split_turns_for_extraction(self, turns_text: str) -> List[str]:
+        """Split newline-delimited turns into batches under the per-call token
+        budget. Returns a single-element list when the session already fits, so
+        normal-sized sessions take exactly the same path as before."""
+        if count_text_tokens(turns_text) <= _EXTRACTION_TURN_TOKEN_BUDGET:
+            return [turns_text]
+        batches: List[str] = []
+        current: List[str] = []
+        current_tokens = 0
+        for line in turns_text.split("\n"):
+            line_tokens = count_text_tokens(line) or 0
+            if current and current_tokens + line_tokens > _EXTRACTION_TURN_TOKEN_BUDGET:
+                batches.append("\n".join(current))
+                current, current_tokens = [], 0
+            current.append(line)
+            current_tokens += line_tokens
+        if current:
+            batches.append("\n".join(current))
+        return batches or [turns_text]
+
+    def _extract_facts_batch(self, turns_text: str, date_context: str) -> List[Dict[str, Any]]:
         """Returns a list of {"content", "category", "instance", "subject",
         "relation", "entities"} dicts (all but "content" optional/None).
         Tagging a fact serves three purposes downstream:
@@ -534,7 +616,24 @@ Output format: Return ONLY a JSON object, for example:
             if response.endswith("```"):
                 response = response[:-3]
 
-            data = json.loads(response.strip())
+            try:
+                data = json.loads(response.strip())
+            except (json.JSONDecodeError, ValueError) as parse_exc:
+                # The model stopped mid-stream, leaving truncated JSON. Salvage the
+                # facts it DID finish rather than dropping the whole session.
+                data = _salvage_truncated_json(response)
+                if data is not None:
+                    recovered = len(data.get("facts", data)) if isinstance(data, dict) else len(data)
+                    logger.warning(
+                        "Extraction JSON truncated (%s); salvaged %d complete fact(s) from partial output.",
+                        parse_exc, recovered,
+                    )
+                else:
+                    logger.error(
+                        "Extraction JSON unparseable and unsalvageable (%s); dropping this batch. Raw head: %.200r",
+                        parse_exc, response,
+                    )
+                    return []
 
             # Backward/defensive compatibility: accept a bare list of plain
             # strings (older schema, or a model that ignores the tagging

@@ -29,6 +29,20 @@ def _lme_date_to_timestamp(date_str: str) -> str:
     return f"{y}-{mo}-{d} {h}:{mi}"
 
 
+def _resolve_max_output_tokens(model: str) -> int:
+    """Model-aware output-token ceiling. Lite/small models keep a conservative
+    budget (chunking, not a bigger cap, handles fact-dense sessions); larger
+    Gemini families get more room for long extractions."""
+    m = (model or "").lower()
+    if "lite" in m:  # flash-lite class: smaller, realistic output ceiling
+        return 8192
+    if any(k in m for k in ("gemini-3", "gemini-2.5", "gemini-1.5")):
+        return 16384
+    if "flash" in m or "gemini" in m:
+        return 8192
+    return 4096
+
+
 def _select_longmemeval_instances(dataset):
     profile = os.environ.get("MRAG_LME_PROFILE", "quick").strip().lower()
     q_indices_env = os.environ.get("MRAG_LME_Q_INDICES")
@@ -91,11 +105,27 @@ def main():
         return
 
     genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel("gemini-3.1-flash-lite")
+    _lme_model_name = "gemini-3.1-flash-lite"
+    gemini_model = genai.GenerativeModel(
+        _lme_model_name,
+        generation_config={"max_output_tokens": _resolve_max_output_tokens(_lme_model_name)},
+    )
 
     def llm_callable(prompt: str) -> str:
-        response = gemini_model.generate_content(prompt)
-        return response.text
+        import concurrent.futures
+        for attempt in range(5):
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(gemini_model.generate_content, prompt)
+                    response = future.result(timeout=45.0)
+                return response.text
+            except concurrent.futures.TimeoutError:
+                logger.warning(f"LLM generation timed out (attempt {attempt+1}/5)")
+            except Exception as e:
+                logger.warning(f"LLM generation failed (attempt {attempt+1}/5): {e}")
+            import time
+            time.sleep(2 ** attempt)
+        return ""
 
     logger.info("Loading LongMemEval_S dataset...")
     data_path = os.environ.get(
@@ -178,7 +208,12 @@ def main():
         is_abstention = inst["question_id"].endswith("_abs")
 
         injector.clear_blacklist()
-        beliefs_context = injector.inject(question)
+        # The benchmark replays historical conversations, so "now" is the
+        # question's reference date (question_date), not the wall clock — pass it
+        # through so relative-date questions ("how many days ago?") anchor to the
+        # simulated present instead of the model's ~present-day training prior.
+        reference_now = _lme_date_to_timestamp(inst.get("question_date", "")) or None
+        beliefs_context = injector.inject(question, current_time=reference_now)
 
         injected_tokens = count_text_tokens(beliefs_context) if beliefs_context else 0
         all_injected_tokens.append(injected_tokens)
