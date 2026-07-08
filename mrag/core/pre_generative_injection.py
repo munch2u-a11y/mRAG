@@ -187,9 +187,15 @@ class PreGenerativeInjector:
         enable_graph_expansion: bool = True,
         top_k_candidates: int = 30,
         token_budget_fraction: float = 0.15,
-        max_injected_tokens: int = 800,
+        max_injected_tokens: Optional[int] = None,
         concept_expansions: Optional[Dict[str, List[str]]] = None,
     ):
+        """max_injected_tokens: explicit hard ceiling on injected content
+        tokens. Default None means NO fixed constant: the budget is fully
+        dynamic — 15x the store's average memory length, bounded only by
+        token_budget_fraction of the model's context window (so the bound
+        scales with the model, not a magic number). Pass a value only when
+        an external constraint (a strict prompt-size SLA) demands one."""
         self._belief_store = belief_store
         self._vector_store = vector_store
         self._blacklist_memory_size = blacklist_memory_size
@@ -854,7 +860,7 @@ class PreGenerativeInjector:
         else:
             avg_belief_tokens = 30.0
 
-        max_tokens = min(15.0 * avg_belief_tokens, self.max_injected_tokens)
+        max_tokens = min(15.0 * avg_belief_tokens, self._effective_token_ceiling())
 
         # Phase 1: fill the base budget from the fused ranking. When raw
         # memory chunks exist, hold back ADJACENCY_RESERVE_FRACTION of the
@@ -980,6 +986,17 @@ class PreGenerativeInjector:
             return final_beliefs[:limit]
 
         return final_beliefs
+
+    def _effective_token_ceiling(self) -> float:
+        """Upper bound on injected content tokens. An explicit
+        max_injected_tokens wins when the caller set one; otherwise the
+        ceiling scales with the model's context window
+        (token_budget_fraction of context_limit) instead of a fixed
+        constant, so bigger-context models get proportionally bigger
+        injection budgets with no code change."""
+        if self.max_injected_tokens:
+            return float(self.max_injected_tokens)
+        return self.context_limit * self.token_budget_fraction
 
     def clear_blacklist(self):
         """Reset the rolling blacklist."""

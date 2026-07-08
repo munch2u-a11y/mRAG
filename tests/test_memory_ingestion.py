@@ -350,7 +350,7 @@ class TestAdjacencyExpansion(unittest.TestCase):
         injector = PreGenerativeInjector(self.store, self.vs)
         beliefs = injector._pull_relevant_beliefs("Any fun plans for the summer?")
         total = sum(count_text_tokens(b.get("content", "")) for b in beliefs)
-        self.assertLessEqual(total, injector.max_injected_tokens)
+        self.assertLessEqual(total, injector._effective_token_ceiling())
 
     def test_no_metadata_store_unchanged(self):
         # Beliefs without session/turn metadata: adjacency must stay inert
