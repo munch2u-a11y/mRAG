@@ -285,5 +285,101 @@ class TestLexiconRetrieval(unittest.TestCase):
         self.assertEqual(injector._match_lexicon_terms("anything at all"), [])
 
 
+class TestAdjacencyExpansion(unittest.TestCase):
+    def setUp(self):
+        self.store_dir = "./tests/test_adjacency_data"
+        if os.path.exists(self.store_dir):
+            shutil.rmtree(self.store_dir)
+        self.store = BeliefStore(data_dir=self.store_dir)
+        self.vs = DummyVectorStore()
+        self.ingestor = MemoryIngestor(self.store)
+
+    def tearDown(self):
+        if os.path.exists(self.store_dir):
+            shutil.rmtree(self.store_dir)
+
+    def _ingest_session(self):
+        turns = [
+            ("Melanie", "The weather has been lovely this week."),
+            ("Caroline", "It really has, perfect for being outside."),
+            ("Melanie", "My kids are so excited about summer break! Any fun plans for the summer?"),
+            ("Caroline", "Researching adoption agencies - it's been a dream to have a family."),
+            ("Melanie", "That is wonderful news, I am so happy for you."),
+            ("Caroline", "Thanks! It means a lot to have your support."),
+        ]
+        for t_idx, (speaker, text) in enumerate(turns):
+            self.ingestor.add_event(
+                text, source="conversation", timestamp="May 25, 2023",
+                session_id="s1", turn_id=f"t{t_idx}", speaker=speaker,
+            )
+
+    def test_neighbor_turn_is_pulled_in(self):
+        self._ingest_session()
+        # Distractors so the reply turn isn't trivially retrieved on its own.
+        for i in range(30):
+            self.ingestor.add_event(_sentence(i), timestamp="May 1, 2023",
+                                    session_id="sx", turn_id=f"t{i}", speaker="Filler")
+        injector = PreGenerativeInjector(self.store, self.vs)
+        result = injector.inject("Any fun plans for the summer?")
+        self.assertIn("Any fun plans for the summer?", result)
+        # The payload reply one turn away must ride in via adjacency even
+        # though the query shares no vocabulary with it.
+        self.assertIn("Researching adoption agencies", result)
+
+    def test_neighbors_are_woven_in_turn_order(self):
+        self._ingest_session()
+        # Distractors force the neighbor turns out of the base selection so
+        # they enter via adjacency and get woven around the anchor.
+        for i in range(30):
+            self.ingestor.add_event(_sentence(i), timestamp="May 1, 2023",
+                                    session_id="sx", turn_id=f"t{i}", speaker="Filler")
+        injector = PreGenerativeInjector(self.store, self.vs)
+        result = injector.inject("Any fun plans for the summer?")
+        bullets = [l for l in result.split("\n") if l.startswith("•")]
+        anchor_pos = next(i for i, l in enumerate(bullets) if "Any fun plans" in l)
+        reply_pos = next(i for i, l in enumerate(bullets) if "Researching adoption agencies" in l)
+        prev_pos = next(i for i, l in enumerate(bullets) if "perfect for being outside" in l)
+        self.assertEqual(reply_pos, anchor_pos + 1)
+        self.assertEqual(prev_pos, anchor_pos - 1)
+
+    def test_budget_cap_still_respected(self):
+        self._ingest_session()
+        for i in range(60):
+            self.ingestor.add_event(_sentence(i), timestamp="May 1, 2023",
+                                    session_id="sx", turn_id=f"t{i}", speaker="Filler")
+        injector = PreGenerativeInjector(self.store, self.vs)
+        beliefs = injector._pull_relevant_beliefs("Any fun plans for the summer?")
+        total = sum(count_text_tokens(b.get("content", "")) for b in beliefs)
+        self.assertLessEqual(total, injector.max_injected_tokens)
+
+    def test_no_metadata_store_unchanged(self):
+        # Beliefs without session/turn metadata: adjacency must stay inert
+        # and the full budget must go to the ranked candidates.
+        for i in range(10):
+            self.store.add_belief(
+                category="premises", belief_id=f"bel_{i}",
+                content=f"Plain extracted fact number {i} about topic {i}.",
+                confidence=1.0,
+            )
+        injector = PreGenerativeInjector(self.store, self.vs)
+        injector.sync_index()
+        self.assertEqual(injector._memory_turn_index, {})
+        self.assertEqual(injector._memory_event_index, {})
+        beliefs = injector._pull_relevant_beliefs("topic")
+        self.assertEqual(len(beliefs), 10)
+
+    def test_multichunk_event_siblings_adjacent(self):
+        long_text = "The trip started badly. " + " ".join(_sentence(i) for i in range(20)) + \
+                    " In the end we camped in the forest by the lake."
+        ids = self.ingestor.add_event(long_text, timestamp="May 25, 2023",
+                                      session_id="s1", turn_id="t0", speaker="Melanie")
+        self.assertGreater(len(ids), 1)
+        injector = PreGenerativeInjector(self.store, self.vs)
+        injector.sync_index()
+        first = self.store.get_belief(ids[0])
+        neighbors = injector._adjacent_memory_chunks(first, turn_window=1)
+        self.assertIn(ids[1], [n.get("id") for n in neighbors])
+
+
 if __name__ == "__main__":
     unittest.main()

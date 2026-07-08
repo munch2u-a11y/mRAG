@@ -85,6 +85,30 @@ MAX_RELATION_EXPANSION_HEADS = 6
 # naming several known terms can't fill the whole token budget with Layer 2
 # entries and crowd out the raw memory evidence they summarize.
 MAX_LEXICON_PRIORITY_BELIEFS = 5
+
+# Conversational adjacency expansion for raw memory chunks: retrieval often
+# lands on the lead-in turn ("Any fun plans for the summer?") while the
+# payload is the reply one turn away. A slice of the token budget is
+# reserved to pull the immediate neighbors (same-event sibling chunks and
+# same-session adjacent turns) of the top-ranked raw chunks. Scoped tightly
+# — top few anchors, ±1 turn — because neighbors are guaranteed contiguous
+# but not guaranteed relevant; rank-audit data showed the budget this
+# reserve displaces (the tail of the fused ranking) carried no sole answer
+# evidence, while a ±1 window from top-ranked chunks did. Unused reserve is
+# backfilled with the next-ranked candidates, so no matched belief is
+# silently dropped when anchors have no useful neighbors.
+ADJACENCY_RESERVE_FRACTION = 0.20
+ADJACENCY_TOP_RAW_ANCHORS = 3
+ADJACENCY_TURN_WINDOW = 1
+ADJACENCY_TURN_WINDOW_TOP1 = 2
+
+_TURN_ID_RE = re.compile(r'^t?(\d+)$')
+
+def _turn_number(turn_id: Any) -> Optional[int]:
+    if turn_id is None:
+        return None
+    m = _TURN_ID_RE.match(str(turn_id).strip())
+    return int(m.group(1)) if m else None
 # How many salient content words one Layer 2 belief contributes to the
 # concept-expansion vocabulary under its term/alias triggers.
 MAX_LEXICON_EXPANSION_WORDS = 8
@@ -188,6 +212,11 @@ class PreGenerativeInjector:
         self._lexicon_terms: Dict[str, List[str]] = {}
         self._lexicon_concept_expansions: Dict[str, List[str]] = {}
         self._concept_expansions = self._compute_concept_expansions()
+        # Conversational-position indexes over raw memory chunks, for
+        # adjacency expansion: (session_id, turn_number) -> chunks of that
+        # turn, and event_id -> that event's chunks (both chunk_index-sorted).
+        self._memory_turn_index: Dict[Tuple[Any, int], List[Dict[str, Any]]] = {}
+        self._memory_event_index: Dict[str, List[Dict[str, Any]]] = {}
         # Named-entity relation expansions (e.g. John -> {"friends": ["Bob",
         # "Cindy"]}) are purely learned, never hand-curated defaults — unlike
         # concept vocabulary, named entities are specific to one conversation
@@ -318,6 +347,55 @@ class PreGenerativeInjector:
             self._lexicon_concept_expansions = expansions
             self._concept_expansions = self._compute_concept_expansions()
 
+    def _rebuild_memory_adjacency(self):
+        """Rebuilds the conversational-position indexes over raw memory
+        chunks (see MemoryIngestor's session_id/turn_id/event_id metadata)."""
+        turn_index: Dict[Tuple[Any, int], List[Dict[str, Any]]] = {}
+        event_index: Dict[str, List[Dict[str, Any]]] = {}
+        for belief in self._belief_store._beliefs_cache.values():
+            if belief.get("_category") != "memory":
+                continue
+            turn_num = _turn_number(belief.get("turn_id"))
+            session_id = belief.get("session_id")
+            if session_id is not None and turn_num is not None:
+                turn_index.setdefault((session_id, turn_num), []).append(belief)
+            event_id = belief.get("event_id")
+            if event_id:
+                event_index.setdefault(event_id, []).append(belief)
+        for chunks in turn_index.values():
+            chunks.sort(key=lambda b: b.get("chunk_index") or 0)
+        for chunks in event_index.values():
+            chunks.sort(key=lambda b: b.get("chunk_index") or 0)
+        self._memory_turn_index = turn_index
+        self._memory_event_index = event_index
+
+    def _adjacent_memory_chunks(self, anchor: Dict[str, Any], turn_window: int) -> List[Dict[str, Any]]:
+        """The anchor chunk's immediate conversational neighbors, nearest
+        first: same-event sibling chunks (chunk_index ±1), then chunks of
+        same-session turns at distance 1, 2, ... up to turn_window."""
+        neighbors: List[Dict[str, Any]] = []
+        seen = {anchor.get("id")}
+
+        anchor_index = anchor.get("chunk_index")
+        event_id = anchor.get("event_id")
+        if event_id and isinstance(anchor_index, int):
+            for sibling in self._memory_event_index.get(event_id, []):
+                sib_index = sibling.get("chunk_index")
+                if isinstance(sib_index, int) and abs(sib_index - anchor_index) == 1 and sibling.get("id") not in seen:
+                    neighbors.append(sibling)
+                    seen.add(sibling.get("id"))
+
+        session_id = anchor.get("session_id")
+        turn_num = _turn_number(anchor.get("turn_id"))
+        if session_id is not None and turn_num is not None:
+            for distance in range(1, turn_window + 1):
+                for adjacent_turn in (turn_num - distance, turn_num + distance):
+                    for chunk in self._memory_turn_index.get((session_id, adjacent_turn), []):
+                        if chunk.get("id") not in seen:
+                            neighbors.append(chunk)
+                            seen.add(chunk.get("id"))
+        return neighbors
+
     def _match_lexicon_terms(self, text: str) -> List[str]:
         """Returns belief ids whose term/alias appears in the trigger text —
         multi-word keys as a substring, single-word keys by stemmed word
@@ -365,6 +443,7 @@ class PreGenerativeInjector:
         # Layer 2 lexicon rides the same version gate: nightly review bumps
         # the store version when it forms term-carrying beliefs.
         self._rebuild_lexicon()
+        self._rebuild_memory_adjacency()
 
         all_beliefs = [
             b for b in self._belief_store._beliefs_cache.values()
@@ -777,29 +856,129 @@ class PreGenerativeInjector:
 
         max_tokens = min(15.0 * avg_belief_tokens, self.max_injected_tokens)
 
+        # Phase 1: fill the base budget from the fused ranking. When raw
+        # memory chunks exist, hold back ADJACENCY_RESERVE_FRACTION of the
+        # budget for their conversational neighbors (phase 2); the reserve
+        # displaces only the tail of the ranking, and any of it left unused
+        # is returned to the ranking in phase 3.
+        adjacency_possible = bool(self._memory_turn_index or self._memory_event_index)
+        base_budget = max_tokens * (1.0 - ADJACENCY_RESERVE_FRACTION) if adjacency_possible else max_tokens
+
         final_beliefs = []
         current_tokens = 0
-        
+        overflow: List[Dict[str, Any]] = []
+
         for b in final_candidates:
             content = b.get("content", "")
             b_tokens = estimate_tokens(content)
-            
+
             if not final_beliefs:
                 # Always include at least one belief
                 final_beliefs.append(b)
                 current_tokens += b_tokens
                 continue
-                
-            new_tokens = current_tokens + b_tokens
-            if new_tokens > max_tokens:
-                break
-                
+
+            if current_tokens + b_tokens > base_budget:
+                overflow.append(b)
+                continue
+
             final_beliefs.append(b)
             current_tokens += b_tokens
-                
+
+        # Phase 2: adjacency expansion. Retrieval often lands on the lead-in
+        # turn while the payload is the reply one turn away, so pull the
+        # immediate neighbors of the top-ranked raw chunks — ±1 turn, ±2 for
+        # the single strongest anchor.
+        selected_ids = {b.get("id") for b in final_beliefs}
+        neighbors_by_anchor: Dict[str, List[Dict[str, Any]]] = {}
+        raw_anchors: List[Dict[str, Any]] = []
+        if adjacency_possible:
+            raw_anchors = [b for b in final_beliefs if b.get("_category") == "memory"]
+            raw_anchors = raw_anchors[:ADJACENCY_TOP_RAW_ANCHORS]
+            for rank, anchor in enumerate(raw_anchors):
+                window = ADJACENCY_TURN_WINDOW_TOP1 if rank == 0 else ADJACENCY_TURN_WINDOW
+                for neighbor in self._adjacent_memory_chunks(anchor, window):
+                    nid = neighbor.get("id")
+                    if nid in selected_ids:
+                        continue
+                    n_tokens = estimate_tokens(neighbor.get("content", ""))
+                    if current_tokens + n_tokens > max_tokens:
+                        continue
+                    neighbors_by_anchor.setdefault(anchor.get("id"), []).append(neighbor)
+                    selected_ids.add(nid)
+                    current_tokens += n_tokens
+
+        # Phase 3: backfill whatever reserve the neighbors didn't use with
+        # the next-ranked candidates, so reserving never silently drops a
+        # matched belief the old single-pass fill would have kept.
+        for b in overflow:
+            if b.get("id") in selected_ids:
+                continue
+            b_tokens = estimate_tokens(b.get("content", ""))
+            if current_tokens + b_tokens > max_tokens:
+                break
+            final_beliefs.append(b)
+            selected_ids.add(b.get("id"))
+            current_tokens += b_tokens
+
+        # Weave each anchor's window into one contiguous exchange in
+        # conversational order — both the neighbors adjacency added AND any
+        # window-mate the ranking selected independently, so the model reads
+        # the exchange in sequence rather than as shuffled fragments.
+        if adjacency_possible and raw_anchors:
+            def _position(belief: Dict[str, Any]):
+                return (
+                    _turn_number(belief.get("turn_id")) or 0,
+                    belief.get("chunk_index") or 0,
+                )
+
+            member_to_group: Dict[str, str] = {}
+            groups: Dict[str, List[Dict[str, Any]]] = {}
+            for rank, anchor in enumerate(raw_anchors):
+                anchor_id = anchor.get("id")
+                if anchor_id in member_to_group:
+                    continue  # already absorbed into an earlier anchor's window
+                window = ADJACENCY_TURN_WINDOW_TOP1 if rank == 0 else ADJACENCY_TURN_WINDOW
+                members = [anchor] + neighbors_by_anchor.get(anchor_id, [])
+                anchor_turn = _turn_number(anchor.get("turn_id"))
+                if anchor_turn is not None:
+                    for b in final_beliefs:
+                        bid = b.get("id")
+                        if bid == anchor_id or bid in member_to_group:
+                            continue
+                        if b.get("_category") != "memory":
+                            continue
+                        if b.get("session_id") != anchor.get("session_id"):
+                            continue
+                        b_turn = _turn_number(b.get("turn_id"))
+                        if b_turn is not None and abs(b_turn - anchor_turn) <= window:
+                            members.append(b)
+                if len(members) > 1:
+                    groups[anchor_id] = sorted(members, key=_position)
+                    for m in members:
+                        member_to_group[m.get("id")] = anchor_id
+
+            if groups:
+                woven: List[Dict[str, Any]] = []
+                emitted = set()
+                for b in final_beliefs:
+                    bid = b.get("id")
+                    if bid in emitted:
+                        continue
+                    group_anchor = member_to_group.get(bid)
+                    if group_anchor is not None:
+                        for m in groups[group_anchor]:
+                            if m.get("id") not in emitted:
+                                woven.append(m)
+                                emitted.add(m.get("id"))
+                    else:
+                        woven.append(b)
+                        emitted.add(bid)
+                final_beliefs = woven
+
         if limit is not None:
             return final_beliefs[:limit]
-            
+
         return final_beliefs
 
     def clear_blacklist(self):
