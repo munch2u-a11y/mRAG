@@ -112,23 +112,54 @@ def main():
                 key=lambda x: int(x.split("_")[1])
             )
             
-            for session_key in session_keys:
-                session_num = session_key.split("_")[1]
-                date_time = conversation.get(f"session_{session_num}_date_time", "")
-                turns = conversation[session_key]
-                
-                session_lines = []
-                for turn in turns:
-                    speaker = turn["speaker"]
-                    text = turn["text"]
-                    line = f"{speaker}: {text}"
-                    if "blip_caption" in turn:
-                        line += f" (shared image: {turn['blip_caption']})"
-                    session_lines.append(line)
-                    
-                session_text = f"Date: {date_time}\n" + "\n".join(session_lines)
-                logger.info(f"Ingesting {session_key} ({len(session_lines)} turns)...")
-                consolidator.add_conversation_turn({"content": session_text})
+            # MRAG_LOCOMO_INGEST=memory switches to the LLM-free ingestion
+            # path: every turn is stored as raw ~100-token chunks
+            # (MemoryIngestor), then one nightly-review pass forms Layer 2
+            # beliefs from the whole conversation in large batches — versus
+            # the default "extract" path's one extraction LLM call per
+            # session at ingest time.
+            ingest_mode = os.environ.get("MRAG_LOCOMO_INGEST", "extract").strip().lower()
+            if ingest_mode == "memory":
+                from mrag import MemoryIngestor
+                ingestor = MemoryIngestor(belief_store)
+                for session_key in session_keys:
+                    session_num = session_key.split("_")[1]
+                    date_time = conversation.get(f"session_{session_num}_date_time", "")
+                    turns = conversation[session_key]
+                    logger.info(f"Ingesting {session_key} as raw memory ({len(turns)} turns)...")
+                    for t_idx, turn in enumerate(turns):
+                        text = turn["text"]
+                        if "blip_caption" in turn:
+                            text += f" (shared image: {turn['blip_caption']})"
+                        ingestor.add_event(
+                            text,
+                            source="conversation",
+                            timestamp=date_time,
+                            session_id=session_key,
+                            turn_id=f"t{t_idx}",
+                            speaker=turn["speaker"],
+                        )
+                if not os.environ.get("MRAG_LOCOMO_SKIP_NIGHTLY_REVIEW"):
+                    review_stats = consolidator.run_nightly_review()
+                    logger.info(f"Nightly memory review: {review_stats}")
+            else:
+                for session_key in session_keys:
+                    session_num = session_key.split("_")[1]
+                    date_time = conversation.get(f"session_{session_num}_date_time", "")
+                    turns = conversation[session_key]
+
+                    session_lines = []
+                    for turn in turns:
+                        speaker = turn["speaker"]
+                        text = turn["text"]
+                        line = f"{speaker}: {text}"
+                        if "blip_caption" in turn:
+                            line += f" (shared image: {turn['blip_caption']})"
+                        session_lines.append(line)
+
+                    session_text = f"Date: {date_time}\n" + "\n".join(session_lines)
+                    logger.info(f"Ingesting {session_key} ({len(session_lines)} turns)...")
+                    consolidator.add_conversation_turn({"content": session_text})
 
             # Flush remaining backlog
             if consolidator._backlog:
@@ -187,13 +218,24 @@ def main():
             q_start = int(os.environ.get("MRAG_LOCOMO_Q_START", "0"))
             selected_qas = qa_list[q_start : q_start + q_count]
 
+        # Replayed conversations must anchor "now" to the conversation's own
+        # timeline, not the machine clock (see inject()'s current_time
+        # contract): LoCoMo's gold answers for relative-date questions
+        # ("how long ago...") are relative to the final session's date.
+        from mrag.core.belief_consolidator import parse_date_to_timestamp
+        date_keys = sorted(
+            [k for k in conversation if k.endswith("_date_time")],
+            key=lambda x: int(x.split("_")[1]),
+        )
+        reference_now = parse_date_to_timestamp(conversation[date_keys[-1]]) if date_keys else None
+
         for q_idx, qa in enumerate(selected_qas):
             question = qa["question"]
             expected = qa.get("answer") or qa.get("adversarial_answer") or "Not mentioned"
             category = qa["category"]
-            
+
             injector.clear_blacklist()
-            beliefs_context = injector.inject(question)
+            beliefs_context = injector.inject(question, current_time=reference_now)
             
             injected_tokens = count_text_tokens(beliefs_context) if beliefs_context else 0
             all_injected_tokens.append(injected_tokens)
