@@ -285,6 +285,61 @@ class TestLexiconRetrieval(unittest.TestCase):
         self.assertEqual(injector._match_lexicon_terms("anything at all"), [])
 
 
+class TestRarityWeightedKeywords(unittest.TestCase):
+    def setUp(self):
+        self.store_dir = "./tests/test_rarity_scoring_data"
+        if os.path.exists(self.store_dir):
+            shutil.rmtree(self.store_dir)
+        self.store = BeliefStore(data_dir=self.store_dir)
+        self.vs = DummyVectorStore()
+
+    def tearDown(self):
+        if os.path.exists(self.store_dir):
+            shutil.rmtree(self.store_dir)
+
+    def _beliefs(self):
+        beliefs = []
+        for i in range(20):
+            beliefs.append({"id": f"b{i}", "content": f"Jon is working hard on his dance studio business, item {i}."})
+        beliefs.append({"id": "target", "content": "Jon: Check my ideal dance studio by the water."})
+        return beliefs
+
+    def test_rare_exact_term_dominates_generic_topic_words(self):
+        injector = PreGenerativeInjector(self.store, self.vs)
+        groups = [
+            [("ideal dance studio", True)],
+            [("ideal", True)],
+            [("dance", True)],
+            [("jon", True)],
+        ]
+        scores = injector._score_keyword_matches(self._beliefs(), groups)
+        generic_best = max(v for k, v in scores.items() if k != "target")
+        # The rare exact-phrase + rare-term matches must beat ubiquitous
+        # topic-word matches by a wide margin, not a rounding error.
+        self.assertGreater(scores["target"], generic_best * 2)
+
+    def test_expanded_match_counts_less_than_direct(self):
+        injector = PreGenerativeInjector(self.store, self.vs)
+        beliefs = [
+            {"id": "direct", "content": "She calls gardening her favorite hobby."},
+            {"id": "expanded", "content": "She spends weekends on pottery."},
+        ]
+        groups = [[("hobby", True), ("pottery", False)]]
+        scores = injector._score_keyword_matches(beliefs, groups)
+        # Equal rarity, but the direct query word outweighs vocabulary
+        # reached only through the expansion map.
+        self.assertGreater(scores["direct"], scores["expanded"] * 2)
+
+    def test_triggers_fire_on_word_boundaries_only(self):
+        injector = PreGenerativeInjector(
+            self.store, self.vs, concept_expansions={"art": ["painting"]}
+        )
+        fired = injector._generate_search_heads("the quartet started playing")
+        self.assertNotIn("painting", fired)
+        fired = injector._generate_search_heads("tell me about her art collection")
+        self.assertIn("painting", fired)
+
+
 class TestAdjacencyExpansion(unittest.TestCase):
     def setUp(self):
         self.store_dir = "./tests/test_adjacency_data"

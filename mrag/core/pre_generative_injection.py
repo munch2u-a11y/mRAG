@@ -109,6 +109,21 @@ def _turn_number(turn_id: Any) -> Optional[int]:
         return None
     m = _TURN_ID_RE.match(str(turn_id).strip())
     return int(m.group(1)) if m else None
+
+# A keyword-group match reached only through concept-expansion vocabulary
+# counts a fraction of a match on the query's own keyword. Expansion exists
+# for recall (abstract wording -> concrete memory phrasing); letting its
+# co-occurrence vocabulary count at full weight erased the precision signal
+# of a literal match — with per-term rarity weighting below, a generic
+# expansion word ("business") contributes ~nothing while a rare direct
+# term ("ideal") dominates, so expansion pollution self-neutralizes.
+EXPANDED_MATCH_WEIGHT = 0.3
+
+def _term_pattern(term: str) -> "re.Pattern":
+    """Word/phrase-boundary pattern for a keyword term. Multi-word terms
+    match as a bounded phrase; single words never match inside longer
+    words ("dance" does not fire on "dancer")."""
+    return re.compile(r'\b' + re.escape(term) + r'\b')
 # How many salient content words one Layer 2 belief contributes to the
 # concept-expansion vocabulary under its term/alias triggers.
 MAX_LEXICON_EXPANSION_WORDS = 8
@@ -416,7 +431,7 @@ class PreGenerativeInjector:
         matched: List[str] = []
         for key, bids in self._lexicon_terms.items():
             if " " in key:
-                if key in text_lower:
+                if _term_pattern(key).search(text_lower):
                     matched.extend(bids)
             elif _stem_word(key) in word_stems:
                 matched.extend(bids)
@@ -557,10 +572,13 @@ class PreGenerativeInjector:
 
         # Concept expansion (Pattern A fix): abstract query wording gets
         # mapped to the concrete vocabulary a memory would actually use.
+        # Word/phrase-boundary matching only — a substring trigger let a
+        # common lexicon term ("dance") fire from inside unrelated phrases
+        # and flood the heads with its co-occurrence vocabulary.
         text_lower = text.lower()
         expansion_heads: List[str] = []
         for trigger, expansions in self._concept_expansions.items():
-            if trigger in text_lower:
+            if _term_pattern(trigger).search(text_lower):
                 expansion_heads.extend(expansions)
         expansion_heads = list(dict.fromkeys(expansion_heads))[:MAX_CONCEPT_EXPANSION_HEADS]
 
@@ -671,6 +689,65 @@ class PreGenerativeInjector:
 
         return [(c["score"], c["belief"]) for c in clusters]
 
+    def _score_keyword_matches(
+        self,
+        all_beliefs: List[Dict[str, Any]],
+        keyword_search_groups: List[List[Tuple[str, bool]]],
+    ) -> Dict[str, float]:
+        """Rarity-weighted keyword scoring.
+
+        For each belief and each keyword group, the group's contribution is
+        the best-scoring matching term: idf(term) x 1.0 for the query's own
+        keyword, x EXPANDED_MATCH_WEIGHT for expansion vocabulary. idf is
+        normalized to [~0, 1] over this store, so a term appearing in one
+        memory out of hundreds ("ideal") scores near 1.0 while a term half
+        the store contains ("dance") scores near 0 — a match's value scales
+        with how much it actually narrows the store, with no fixed
+        constants to tune. Replaces the flat count where an exact rare
+        match and a ubiquitous topic word were worth the same.
+        """
+        import math
+
+        unique_terms = {t for group in keyword_search_groups for t, _ in group}
+        patterns = {t: _term_pattern(t) for t in unique_terms}
+
+        contents = [
+            (b["id"], _strip_timestamp_prefix(b.get("content", "")).lower())
+            for b in all_beliefs
+        ]
+
+        n = max(1, len(contents))
+        doc_freq = {t: 0 for t in unique_terms}
+        matches: Dict[str, set] = {}
+        for bid, content in contents:
+            hit = set()
+            for term, pattern in patterns.items():
+                if pattern.search(content):
+                    doc_freq[term] += 1
+                    hit.add(term)
+            matches[bid] = hit
+
+        log_n = math.log(1 + n)
+        idf = {
+            t: (math.log(1 + n / doc_freq[t]) / log_n) if doc_freq[t] else 0.0
+            for t in unique_terms
+        }
+
+        scores: Dict[str, float] = {}
+        for bid, _ in contents:
+            hit = matches[bid]
+            total = 0.0
+            for group in keyword_search_groups:
+                best = 0.0
+                for term, direct in group:
+                    if term in hit:
+                        weight = idf[term] * (1.0 if direct else EXPANDED_MATCH_WEIGHT)
+                        if weight > best:
+                            best = weight
+                total += best
+            scores[bid] = total
+        return scores
+
     def _pull_relevant_beliefs(self, text: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Finds beliefs relevant to the text using Hybrid Union candidate selection
         (keyword + vector top 30) and Three-Way Rank Averaging (keyword rank,
@@ -683,15 +760,23 @@ class PreGenerativeInjector:
         query_keywords = extract_keywords_and_phrases(text, limit=4)
         query_tag_counts = get_tag_counts(text)
 
-        # 2. Split keywords into conceptually similar terms based on ever expanding vocabulary (concept expansion)
-        keyword_search_groups = []
+        # 2. Split keywords into conceptually similar terms based on ever expanding vocabulary (concept expansion).
+        # Each group keeps provenance: the query's own keyword is a "direct"
+        # term; vocabulary reached through the expansion map is not, and
+        # counts at EXPANDED_MATCH_WEIGHT in scoring. Triggers fire on
+        # word/phrase boundaries only, never bare substrings.
+        keyword_search_groups: List[List[Tuple[str, bool]]] = []
         for kw in query_keywords:
-            terms = {kw.lower()}
             kw_lower = kw.lower()
+            terms: List[Tuple[str, bool]] = [(kw_lower, True)]
+            seen_terms = {kw_lower}
             for trigger, expansions in self._concept_expansions.items():
-                if trigger in kw_lower:
+                if _term_pattern(trigger).search(kw_lower):
                     for exp in expansions:
-                        terms.add(exp.lower())
+                        e = exp.lower()
+                        if e not in seen_terms:
+                            terms.append((e, False))
+                            seen_terms.add(e)
             keyword_search_groups.append(terms)
 
         all_beliefs = [
@@ -704,37 +789,17 @@ class PreGenerativeInjector:
             
         dynamic_top_k = max(30, min(60, int(len(all_beliefs) * 0.10)))
 
-        # 3. Compute keyword and tag matches for all beliefs
-        keyword_scores = {}
+        # 3. Compute rarity-weighted keyword scores and tag matches for all beliefs
+        keyword_scores = self._score_keyword_matches(all_beliefs, keyword_search_groups)
         tag_scores = {}
         for b in all_beliefs:
             bid = b["id"]
-            content_lower = _strip_timestamp_prefix(b.get("content", "")).lower()
-            
-            # Count how many of the query's keyword groups this belief matches
-            keyword_matches = 0
-            for terms in keyword_search_groups:
-                matched = False
-                for term in terms:
-                    if " " in term:
-                        if term in content_lower:
-                            matched = True
-                            break
-                    else:
-                        if re.search(r'\b' + re.escape(term) + r'\b', content_lower):
-                            matched = True
-                            break
-                if matched:
-                    keyword_matches += 1
-
             # Count tag overlaps
             b_tags = b.get("conceptual_tags", [])
             tag_matches = 0
             for tag, q_count in query_tag_counts.items():
                 b_count = b_tags.count(tag) if isinstance(b_tags, list) else 0
                 tag_matches += min(q_count, b_count)
-
-            keyword_scores[bid] = keyword_matches
             tag_scores[bid] = tag_matches
 
         # 4. Hybrid Union Candidate Selection
