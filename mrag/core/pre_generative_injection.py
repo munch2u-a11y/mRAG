@@ -79,6 +79,16 @@ MAX_SEARCH_HEADS = 16
 MAX_CONCEPT_EXPANSION_HEADS = 8
 MAX_RELATION_EXPANSION_HEADS = 6
 
+# Lexicon pre-filter (Layer 2): a nightly-review belief whose `term` (or an
+# alias) appears in the trigger text injects ahead of the fused ranking —
+# it's an exact anchor match, not a similarity estimate. Capped so a query
+# naming several known terms can't fill the whole token budget with Layer 2
+# entries and crowd out the raw memory evidence they summarize.
+MAX_LEXICON_PRIORITY_BELIEFS = 5
+# How many salient content words one Layer 2 belief contributes to the
+# concept-expansion vocabulary under its term/alias triggers.
+MAX_LEXICON_EXPANSION_WORDS = 8
+
 # Lightweight concept -> concrete-vocabulary expansion map (Pattern A fix).
 # Abstract question wording ("achievement", "relationship status") sits far
 # from concrete memory phrasing ("finished her screenplay", "single parent")
@@ -170,6 +180,13 @@ class PreGenerativeInjector:
         # an explicit user override for a category replaces it outright.
         self._user_concept_expansions = concept_expansions or {}
         self._learned_concept_expansions: Dict[str, List[str]] = {}
+        # Layer 2 lexicon (built from nightly-review beliefs at sync time):
+        # term/alias -> belief ids for priority injection, and term/alias ->
+        # concrete content vocabulary for concept expansion. Together these
+        # take over the expander role from hand-curated defaults as the
+        # nightly review accumulates coverage.
+        self._lexicon_terms: Dict[str, List[str]] = {}
+        self._lexicon_concept_expansions: Dict[str, List[str]] = {}
         self._concept_expansions = self._compute_concept_expansions()
         # Named-entity relation expansions (e.g. John -> {"friends": ["Bob",
         # "Cindy"]}) are purely learned, never hand-curated defaults — unlike
@@ -246,14 +263,80 @@ class PreGenerativeInjector:
         learned instances are additive (unioned per category); an explicit
         user override for a category replaces it outright."""
         merged: Dict[str, List[str]] = {k: list(v) for k, v in DEFAULT_CONCEPT_EXPANSIONS.items()}
-        for category, instances in self._learned_concept_expansions.items():
-            bucket = merged.setdefault(category, [])
-            for instance in instances:
-                if instance not in bucket:
-                    bucket.append(instance)
+        for source in (self._learned_concept_expansions, self._lexicon_concept_expansions):
+            for category, instances in source.items():
+                bucket = merged.setdefault(category, [])
+                for instance in instances:
+                    if instance not in bucket:
+                        bucket.append(instance)
         for category, instances in self._user_concept_expansions.items():
             merged[category] = list(instances)
         return merged
+
+    def _rebuild_lexicon(self):
+        """Rebuilds the Layer 2 term lexicon from the store.
+
+        Every nightly-review belief carrying a `term` becomes a lexicon
+        entry: the term and each alias map to the belief's id (for the
+        priority pre-filter in _pull_relevant_beliefs) and to the belief's
+        salient content words (merged into the concept-expansion map, so a
+        query phrased with the alias vocabulary reaches the memory chunks
+        phrased with the concrete vocabulary).
+        """
+        terms: Dict[str, List[str]] = {}
+        expansions: Dict[str, List[str]] = {}
+        for belief in self._belief_store._beliefs_cache.values():
+            if belief.get("_category") == "concepts" or belief.get("layer") != 2:
+                continue
+            term = str(belief.get("term", "") or "").strip().lower()
+            if not term:
+                continue
+            aliases = [
+                str(a).strip().lower() for a in (belief.get("aliases") or [])
+                if a and str(a).strip()
+            ]
+            content = _strip_timestamp_prefix(belief.get("content", "")).lower()
+            salient = []
+            for word in re.findall(r"[a-z]{4,}", content):
+                if word in STOPWORDS or word in GENERIC_FILLER_WORDS:
+                    continue
+                if word not in salient:
+                    salient.append(word)
+            salient = salient[:MAX_LEXICON_EXPANSION_WORDS]
+
+            bid = belief.get("id")
+            for key in dict.fromkeys([term] + aliases):
+                if bid:
+                    terms.setdefault(key, []).append(bid)
+                bucket = expansions.setdefault(key, [])
+                for word in [term] + salient:
+                    if word != key and word not in bucket:
+                        bucket.append(word)
+
+        self._lexicon_terms = terms
+        if expansions != self._lexicon_concept_expansions:
+            self._lexicon_concept_expansions = expansions
+            self._concept_expansions = self._compute_concept_expansions()
+
+    def _match_lexicon_terms(self, text: str) -> List[str]:
+        """Returns belief ids whose term/alias appears in the trigger text —
+        multi-word keys as a substring, single-word keys by stemmed word
+        match. Order follows the lexicon's insertion order; ids are deduped."""
+        if not self._lexicon_terms:
+            return []
+        text_lower = text.lower()
+        word_stems = {
+            _stem_word(re.sub(r'[^\w]', '', w))
+            for w in text_lower.split() if re.sub(r'[^\w]', '', w)
+        }
+        matched: List[str] = []
+        for key, bids in self._lexicon_terms.items():
+            if " " in key:
+                if key in text_lower:
+                    matched.extend(bids)
+            elif _stem_word(key) in word_stems:
+                matched.extend(bids)
+        return list(dict.fromkeys(matched))
 
     def sync_index(self):
         """Sync uncached beliefs into the VectorStore once."""
@@ -278,6 +361,10 @@ class PreGenerativeInjector:
         learned_relations = self._belief_store.get_all_relation_expansions()
         if learned_relations != self._learned_relation_expansions:
             self._learned_relation_expansions = learned_relations
+
+        # Layer 2 lexicon rides the same version gate: nightly review bumps
+        # the store version when it forms term-carrying beliefs.
+        self._rebuild_lexicon()
 
         all_beliefs = [
             b for b in self._belief_store._beliefs_cache.values()
@@ -641,6 +728,32 @@ class PreGenerativeInjector:
         ))
 
         final_candidates = [b for b, fused_score in fused_candidates]
+
+        # Lexicon pre-filter (Layer 2): beliefs whose term/alias literally
+        # appears in the query jump ahead of the fused ranking — an exact
+        # anchor match outranks any similarity estimate (modeled on Helix's
+        # lexicon priority injection). Matched beliefs absent from the
+        # union pool are pulled in from the cache; the blacklist still
+        # applies so a repeated topic doesn't re-inject the same entry
+        # every turn.
+        lexicon_ids = self._match_lexicon_terms(text)
+        if lexicon_ids:
+            lexicon_id_set = set(lexicon_ids)
+            in_pool = {b["id"] for b in final_candidates}
+            priority: List[Dict[str, Any]] = []
+            for bid in lexicon_ids:
+                if bid in in_pool or bid in self._recent_injections:
+                    continue
+                fetched = self._belief_store._beliefs_cache.get(bid)
+                if fetched:
+                    priority.append(fetched)
+            rest: List[Dict[str, Any]] = []
+            for b in final_candidates:
+                if b["id"] in lexicon_id_set and b["id"] not in self._recent_injections and len(priority) < MAX_LEXICON_PRIORITY_BELIEFS:
+                    priority.append(b)
+                else:
+                    rest.append(b)
+            final_candidates = priority[:MAX_LEXICON_PRIORITY_BELIEFS] + rest
 
         # Suppress constituents covered by turn synthesis merges
         final_candidates_with_dummy_scores = [(1.0, b) for b in final_candidates]

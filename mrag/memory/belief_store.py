@@ -28,12 +28,20 @@ BELIEF_CATEGORIES = {
     "skills": "skills.json",                # Proven tool-backed workflows
     "desires": "desires.json",              # Long-term goals and aspirations
     "concepts": "concepts.json",            # Consolidated conceptual understanding
+    "memory": "memory.json",               # Raw conversation chunks, stored as-is (no LLM)
 }
+
+# Categories whose entries are a permanent ground-truth record rather than
+# interpreted beliefs: exempt from confidence decay and pruning. Memory
+# chunks are the raw source material that nightly review forms beliefs FROM —
+# pruning one silently deletes history no later pass can recover.
+DECAY_EXEMPT_CATEGORIES = {"memory"}
 
 _SINGULAR_MAP = {
     "premise": "premises", "proposition": "propositions",
     "preference": "preferences", "person": "people",
     "skill": "skills", "desire": "desires", "concept": "concepts",
+    "memories": "memory",
 }
 
 def _canonical_category(category: str) -> str:
@@ -830,6 +838,8 @@ class BeliefStore:
         stats = {"pruned": 0, "demoted": 0, "promoted": 0, "updated": 0}
 
         for category in BELIEF_CATEGORIES:
+            if category in DECAY_EXEMPT_CATEGORIES:
+                continue
             beliefs = self._read_category(category)
             if not beliefs:
                 continue

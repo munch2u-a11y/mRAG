@@ -169,16 +169,42 @@ def main():
         sessions = inst["haystack_sessions"]
         dates = inst["haystack_dates"]
 
-        for s_idx, (session, date_str) in enumerate(zip(sessions, dates)):
-            date_prefix = _lme_date_to_timestamp(date_str)
-            lines = []
-            for turn in session:
-                role = turn.get("role", "user").upper()
-                content = turn.get("content", "")
-                lines.append(f"{role}: {content}")
-            session_text = f"Date: {date_prefix}\n" + "\n".join(lines)
-            logger.info(f"Ingesting session {s_idx + 1}/{len(sessions)} ({len(lines)} turns)...")
-            consolidator.add_conversation_turn({"content": session_text})
+        # MRAG_LME_INGEST=memory switches to the LLM-free ingestion path:
+        # every turn is stored as raw ~100-token chunks (MemoryIngestor),
+        # then one nightly-review pass forms Layer 2 beliefs from the whole
+        # haystack in large batches — versus the default "extract" path's
+        # one extraction LLM call per session at ingest time.
+        ingest_mode = os.environ.get("MRAG_LME_INGEST", "extract").strip().lower()
+        if ingest_mode == "memory":
+            from mrag import MemoryIngestor
+            ingestor = MemoryIngestor(belief_store)
+            for s_idx, (session, date_str) in enumerate(zip(sessions, dates)):
+                date_prefix = _lme_date_to_timestamp(date_str)
+                logger.info(f"Ingesting session {s_idx + 1}/{len(sessions)} as raw memory ({len(session)} turns)...")
+                for t_idx, turn in enumerate(session):
+                    role = turn.get("role", "user")
+                    ingestor.add_event(
+                        turn.get("content", ""),
+                        source="user_input" if role == "user" else "assistant_output",
+                        timestamp=date_prefix,
+                        session_id=f"s{s_idx}",
+                        turn_id=f"t{t_idx}",
+                        speaker=role.upper(),
+                    )
+            if not os.environ.get("MRAG_LME_SKIP_NIGHTLY_REVIEW"):
+                review_stats = consolidator.run_nightly_review()
+                logger.info(f"Nightly memory review: {review_stats}")
+        else:
+            for s_idx, (session, date_str) in enumerate(zip(sessions, dates)):
+                date_prefix = _lme_date_to_timestamp(date_str)
+                lines = []
+                for turn in session:
+                    role = turn.get("role", "user").upper()
+                    content = turn.get("content", "")
+                    lines.append(f"{role}: {content}")
+                session_text = f"Date: {date_prefix}\n" + "\n".join(lines)
+                logger.info(f"Ingesting session {s_idx + 1}/{len(sessions)} ({len(lines)} turns)...")
+                consolidator.add_conversation_turn({"content": session_text})
 
         if consolidator._backlog:
             consolidator.run_consolidation_pass(consolidator._backlog)

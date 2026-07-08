@@ -2,10 +2,15 @@ import hashlib
 import json
 import logging
 import re
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional
 
 from mrag.memory.belief_store import BeliefStore
-from mrag.core.pre_generative_injection import estimate_tokens, _strip_timestamp_prefix
+from mrag.core.pre_generative_injection import (
+    estimate_tokens,
+    _strip_timestamp_prefix,
+    _parse_timestamp_prefix,
+)
 from mrag.core.token_counting import count_text_tokens
 
 logger = logging.getLogger("mrag.core.belief_consolidator")
@@ -16,6 +21,46 @@ logger = logging.getLogger("mrag.core.belief_consolidator")
 # whole session. Splitting the turns keeps each call's output bounded — scaling
 # with session size instead of silently discarding once a cap is hit.
 _EXTRACTION_TURN_TOKEN_BUDGET = 1500
+
+# Cap the memory-chunk text fed to a single nightly-review call. Larger
+# than the per-turn extraction budget because review is selective (durable
+# subjective beliefs, not an exhaustive fact transcription), so output tokens
+# grow much slower than input tokens.
+_NIGHTLY_REVIEW_TOKEN_BUDGET = 3000
+
+
+def parse_date_to_timestamp(date_str: str) -> str:
+    """Parses complex date strings into standard short YYYY-MM-DD HH:MM formats."""
+    months = {
+        "january": "01", "february": "02", "march": "03", "april": "04",
+        "may": "05", "june": "06", "july": "07", "august": "08",
+        "september": "09", "october": "10", "november": "11", "december": "12",
+        "jan": "01", "feb": "02", "mar": "03", "apr": "04",
+        "jun": "06", "jul": "07", "aug": "08", "sep": "09",
+        "oct": "10", "nov": "11", "dec": "12"
+    }
+    date_str_clean = date_str.lower().strip()
+
+    # Match format: "8:56 pm on 20 July, 2023"
+    m1 = re.search(r'(\d+):(\d+)\s*(am|pm)\s+on\s+(\d+)\s+([a-z]+),?\s+(\d{4})', date_str_clean)
+    if m1:
+        h, m, am_pm, d, mon, y = m1.groups()
+        h_int = int(h)
+        if am_pm == "pm" and h_int < 12:
+            h_int += 12
+        elif am_pm == "am" and h_int == 12:
+            h_int = 0
+        mon_num = months.get(mon, "01")
+        return f"{y}-{mon_num}-{int(d):02d} {h_int:02d}:{int(m):02d}"
+
+    # Match format: "may 8, 2023"
+    m2 = re.search(r'([a-z]+)\s+(\d+),?\s+(\d{4})', date_str_clean)
+    if m2:
+        mon, d, y = m2.groups()
+        mon_num = months.get(mon, "01")
+        return f"{y}-{mon_num}-{int(d):02d}"
+
+    return date_str
 
 
 def _salvage_truncated_json(raw: str) -> Any:
@@ -462,37 +507,7 @@ Return ONLY the rollup sentence. No preamble, no markdown, no quotes.
         return stats
 
     def _parse_date_to_timestamp(self, date_str: str) -> str:
-        """Parses complex date strings into standard short YYYY-MM-DD HH:MM formats."""
-        months = {
-            "january": "01", "february": "02", "march": "03", "april": "04",
-            "may": "05", "june": "06", "july": "07", "august": "08",
-            "september": "09", "october": "10", "november": "11", "december": "12",
-            "jan": "01", "feb": "02", "mar": "03", "apr": "04",
-            "jun": "06", "jul": "07", "aug": "08", "sep": "09",
-            "oct": "10", "nov": "11", "dec": "12"
-        }
-        date_str_clean = date_str.lower().strip()
-        
-        # Match format: "8:56 pm on 20 July, 2023"
-        m1 = re.search(r'(\d+):(\d+)\s*(am|pm)\s+on\s+(\d+)\s+([a-z]+),?\s+(\d{4})', date_str_clean)
-        if m1:
-            h, m, am_pm, d, mon, y = m1.groups()
-            h_int = int(h)
-            if am_pm == "pm" and h_int < 12:
-                h_int += 12
-            elif am_pm == "am" and h_int == 12:
-                h_int = 0
-            mon_num = months.get(mon, "01")
-            return f"{y}-{mon_num}-{int(d):02d} {h_int:02d}:{int(m):02d}"
-            
-        # Match format: "may 8, 2023"
-        m2 = re.search(r'([a-z]+)\s+(\d+),?\s+(\d{4})', date_str_clean)
-        if m2:
-            mon, d, y = m2.groups()
-            mon_num = months.get(mon, "01")
-            return f"{y}-{mon_num}-{int(d):02d}"
-            
-        return date_str
+        return parse_date_to_timestamp(date_str)
 
     def _extract_session_factual_summaries(self, turns_text: str, date_context: str) -> List[Dict[str, Any]]:
         """Extract facts from a session, splitting oversized sessions into
@@ -675,6 +690,226 @@ Output format: Return ONLY a JSON object, for example:
         except Exception as e:
             logger.error(f"Failed to extract session factual summaries: {e}")
             return []
+
+    # ── Nightly memory review (Layer 2 belief formation) ────────────────
+
+    def run_nightly_review(self, max_batch_tokens: Optional[int] = None) -> Dict[str, Any]:
+        """Reviews memory chunks (see MemoryIngestor) that no prior pass
+        has looked at, and forms durable subjective beliefs from them.
+
+        This is the counterpart of the removed front-end extraction pass:
+        ingestion stores raw text with zero LLM calls, and interpretation
+        happens here, offline, over LARGE token-bounded batches (one LLM call
+        per _NIGHTLY_REVIEW_TOKEN_BUDGET of chunk text) instead of one call
+        per turn. Because the raw memory record is permanent, formed beliefs
+        are selective by design — profile-level, recurring, or identity-
+        bearing conclusions — not an exhaustive transcription; anything the
+        review skips remains reachable through the memory chunks
+        themselves.
+
+        Formed beliefs are Layer 2 entries in the Helix sense: each carries a
+        `term` (+ optional `aliases`) so the injector can lexicon-match it
+        against trigger text for priority injection and use its concrete
+        vocabulary for concept expansion, plus `memory_refs` linking back to
+        the exact source chunks. Chunks are stamped `reviewed_at` afterward
+        so the next nightly run only sees new material.
+        """
+        if not self._store._cache_loaded:
+            self._store.load_into_cache()
+
+        budget = max_batch_tokens or _NIGHTLY_REVIEW_TOKEN_BUDGET
+        pending = [
+            b for b in self._store.get_all_beliefs_flat()
+            if b.get("_category") == "memory" and not b.get("reviewed_at")
+        ]
+        pending.sort(key=lambda b: (
+            _parse_timestamp_prefix(b.get("content", "")),
+            b.get("ingested_at") or "",
+            b.get("chunk_index") or 0,
+        ))
+
+        stats = {"chunks_pending": len(pending), "chunks_reviewed": 0,
+                 "batches": 0, "beliefs_formed": 0}
+        if not pending:
+            return stats
+
+        batch: List[Dict[str, Any]] = []
+        batch_tokens = 0
+        batches: List[List[Dict[str, Any]]] = []
+        for chunk in pending:
+            chunk_tokens = count_text_tokens(chunk.get("content", "")) or 0
+            if batch and batch_tokens + chunk_tokens > budget:
+                batches.append(batch)
+                batch, batch_tokens = [], 0
+            batch.append(chunk)
+            batch_tokens += chunk_tokens
+        if batch:
+            batches.append(batch)
+
+        for batch in batches:
+            formed = self._review_chunk_batch(batch)
+            if formed is None:
+                # LLM call itself failed — leave these chunks unreviewed so a
+                # later run retries them, and keep going with the next batch.
+                continue
+            stats["batches"] += 1
+            stats["beliefs_formed"] += formed
+            stats["chunks_reviewed"] += len(batch)
+            reviewed_stamp = datetime.now().isoformat(timespec="seconds")
+            for chunk in batch:
+                chunk["reviewed_at"] = reviewed_stamp
+                self._store.update_belief("memory", chunk)
+
+        logger.info(f"Nightly memory review complete: {stats}")
+        return stats
+
+    def _review_chunk_batch(self, chunks: List[Dict[str, Any]]) -> Optional[int]:
+        """One review call over one batch of memory chunks. Returns the
+        number of beliefs formed, or None if the LLM call failed outright
+        (parse salvage still counts as success)."""
+        numbered = "\n".join(
+            f"{i + 1}. {c.get('content', '')}" for i, c in enumerate(chunks)
+        )
+        prompt = f"""You are reviewing a chronological record of raw conversation excerpts. Each line is one
+verbatim excerpt, prefixed with its [timestamp] and, where known, the speaker's name.
+
+Record:
+{numbered}
+
+Form the DURABLE BELIEFS this record supports: identity-level facts, preferences, relationships,
+plans, skills, and recurring themes about the people involved — the conclusions worth remembering
+after the conversation itself is forgotten. Do NOT transcribe every line; the raw record is kept
+separately. Skip pure logistics, greetings, and one-off filler.
+
+Rules for each belief:
+1. Write in third person, naming the specific person ("Caroline is researching adoption agencies").
+2. Convert relative dates ("yesterday", "last weekend") to absolute dates using the excerpt timestamps.
+3. Preserve concrete nouns, named entities, and specific details exactly — never generalize them away.
+4. "term": the single most distinctive anchor word or short phrase for this belief — a person's name,
+   an activity, a place, a project (e.g. "taekwondo", "Caroline", "adoption"). Required.
+5. "aliases": other words a question about this belief would plausibly use (0-4 entries, optional).
+6. "source_indices": the excerpt numbers this belief is drawn from. Required.
+7. If a fact names a SPECIFIC INSTANCE of a general category (a sport, hobby, cuisine, pet, genre...),
+   also add "category", "instance", and "subject" fields
+   (e.g. category: "martial arts", instance: "taekwondo", subject: "John").
+8. If a fact names SPECIFIC PEOPLE (proper names only) in an explicit relationship to someone, also add
+   "subject", "relation", and "entities" fields
+   (e.g. subject: "John", relation: "friends", entities: ["Bob", "Cindy"]).
+
+Return ONLY a JSON object:
+{{
+  "beliefs": [
+    {{"content": "John practices taekwondo as of December 2022.", "term": "taekwondo",
+      "aliases": ["martial arts"], "source_indices": [3, 7],
+      "category": "martial arts", "instance": "taekwondo", "subject": "John"}}
+  ]
+}}
+
+If the record supports no durable beliefs, return {{"beliefs": []}}.
+"""
+        try:
+            self.token_usage["input"] += count_text_tokens(prompt)
+            response = self.llm(prompt).strip()
+            self.token_usage["output"] += count_text_tokens(response)
+        except Exception as e:
+            logger.error(f"Nightly review LLM call failed: {e}")
+            return None
+
+        if response.startswith("```json"):
+            response = response[7:]
+        if response.startswith("```"):
+            response = response[3:]
+        if response.endswith("```"):
+            response = response[:-3]
+
+        try:
+            data = json.loads(response.strip())
+        except (json.JSONDecodeError, ValueError) as parse_exc:
+            data = _salvage_truncated_json(response)
+            if data is None:
+                logger.error(
+                    "Nightly review JSON unparseable and unsalvageable (%s); "
+                    "skipping this batch's beliefs. Raw head: %.200r",
+                    parse_exc, response,
+                )
+                # The call itself succeeded — mark the chunks reviewed rather
+                # than replaying the same unparseable batch every night.
+                return 0
+            logger.warning(
+                "Nightly review JSON truncated (%s); salvaged partial output.",
+                parse_exc,
+            )
+
+        items = data.get("beliefs", []) if isinstance(data, dict) else data
+        if not isinstance(items, list):
+            return 0
+
+        formed = 0
+        touched_clusters = set()
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            content = str(item.get("content", "")).strip()
+            if not content:
+                continue
+
+            source_ids: List[str] = []
+            latest_ts = None
+            for idx in item.get("source_indices", []) or []:
+                try:
+                    i = int(idx) - 1
+                except (TypeError, ValueError):
+                    continue
+                if 0 <= i < len(chunks):
+                    source_ids.append(chunks[i]["id"])
+                    chunk_ts = _parse_timestamp_prefix(chunks[i].get("content", ""))
+                    if latest_ts is None or chunk_ts > latest_ts:
+                        latest_ts = chunk_ts
+
+            # Timestamp-prefix the belief with its most recent evidence so
+            # recency tie-breaking and temporal grounding keep working.
+            if latest_ts and latest_ts != datetime.min:
+                content = f"[{latest_ts.strftime('%Y-%m-%d %H:%M')}] {content}"
+
+            term = str(item.get("term", "") or "").strip()
+            aliases_raw = item.get("aliases", []) or []
+            aliases = [str(a).strip() for a in aliases_raw if str(a).strip()] if isinstance(aliases_raw, list) else []
+
+            digest = hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
+            belief_id = f"bel_nr_{digest}"
+            self._store.merge_or_add_belief(
+                category="premises",
+                belief_id=belief_id,
+                content=content,
+                confidence=1.0,
+                source="nightly_review",
+                memory_refs=source_ids,
+                vector_store=self._vector_store,
+                layer=2,
+                term=term,
+                aliases=aliases,
+            )
+            formed += 1
+            logger.info(f"Nightly review formed belief: {content}")
+
+            category = str(item.get("category", "") or "").strip()
+            instance = str(item.get("instance", "") or "").strip()
+            subject = str(item.get("subject", "") or "").strip()
+            relation = str(item.get("relation", "") or "").strip()
+            entities_raw = item.get("entities", []) or []
+            entities = [str(e).strip() for e in entities_raw if str(e).strip()] if isinstance(entities_raw, list) else []
+            if category and instance:
+                self._store.learn_concept_expansion(category, instance)
+            if category and subject:
+                self._store.tag_cluster_membership(subject, category, belief_id)
+                touched_clusters.add((subject.strip().lower(), category.strip().lower()))
+            if relation and entities and subject:
+                self._store.learn_relation_expansion(subject, relation, entities)
+
+        for subject, category in touched_clusters:
+            self._check_and_consolidate_cluster(subject, category)
+
+        return formed
 
     def clear_backlog(self):
         self._backlog = []
