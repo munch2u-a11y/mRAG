@@ -129,6 +129,11 @@ semantic matching). ConvoMem uses LLM-judge grading via the
 [memorybench](https://github.com/mem0ai/memorybench) harness. All miss audits
 are documented in the per-question markdown reports in `benchmarks/`.
 
+**No answering prompt:** The answering model receives no system prompt, no
+role instructions, and no coaching (e.g., "answer only from context" or
+"say I don't know if unsure"). It gets the retrieved context and the question
+— nothing else. Strict context → question → answer.
+
 **Where misses come from:** Across all runs, remaining misses fall into two
 categories: (1) *retrieval gaps* — the relevant belief was never surfaced
 (e.g., a fact was consolidated away during ingestion, or a knowledge-update
