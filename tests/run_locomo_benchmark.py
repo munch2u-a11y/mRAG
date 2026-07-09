@@ -261,26 +261,15 @@ Short answer:"""
             logger.info(f"Expected: {expected}")
             logger.info(f"Micro-RAG + Gemini: {response_text}")
 
-            grade_prompt = f"""You are an objective grader evaluating a QA system's answer against the expected ground truth answer.
+            grade_prompt = f"""Grade this memory exam.
 Question: {question}
-Expected Ground Truth: {expected}
-QA System's Answer: {response_text}
-Retrieved Context: {beliefs_context}
-
-Determine if the QA system's answer is semantically correct, accurate, or equivalent to the expected ground truth answer.
-Criteria:
-- Be highly lenient: if the QA system's answer captures the essential correct fact, mark it as YES.
-- Allow minor variations, synonyms, abbreviations, and numerical representations (e.g. "10 years" vs "ten years").
-- Allow partial matches if the core correct concept is present (e.g. "Counseling" is correct for "Psychology, counseling certification"; "transgender" is correct for "Transgender woman").
-- If the expected ground truth uses relative dates (like "last Friday", "next week", "the Friday before...") and the QA system resolves it to the correct calendar date (or vice versa), mark it as YES.
-- ADVERSARIAL QUESTIONS: If the QA system correctly identifies a false premise or mixed-up entity (e.g., "John didn't do that, Maria did") based on the Retrieved Context, mark it as YES, even if it contradicts the Expected Ground Truth.
-- TEMPORAL ERRORS: If the QA system corrects a temporal error in the Expected Ground Truth (e.g., July instead of June) based on the Retrieved Context, mark it as YES.
-- REFUSALS: If the QA system refuses to answer because the Expected Ground Truth requires external world knowledge not present in the Retrieved Context (e.g., naming specific Star Wars locations in Ireland when the context only mentions Ireland and Star Wars generally), and this refusal is factually correct given the context, mark it as YES.
-- Only output "YES" if it is semantically correct/accurate, otherwise output "NO". Do not write any preamble, explanation, or punctuation."""
+Expected Answer: {expected}
+Student's Answer: {response_text}
+Output only PASS or MISS."""
 
             try:
                 grade_resp = llm_callable(grade_prompt).strip().upper()
-                is_correct = "YES" in grade_resp
+                is_correct = "PASS" in grade_resp
             except Exception as e:
                 logger.warning(f"Grading API call failed: {e}")
                 is_correct = str(expected).lower() in response_text.lower()

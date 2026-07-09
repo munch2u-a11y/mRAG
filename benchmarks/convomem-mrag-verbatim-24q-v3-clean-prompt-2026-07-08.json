@@ -1,0 +1,2215 @@
+{
+  "provider": "mrag",
+  "benchmark": "convomem",
+  "runId": "convomem-mrag-verbatim-24q-v3",
+  "dataSourceRunId": "convomem-mrag-verbatim-24q-v3",
+  "judge": "gemini-2.5-flash",
+  "answeringModel": "gemini-2.5-flash",
+  "timestamp": "2026-07-09T02:05:56.722Z",
+  "summary": {
+    "totalQuestions": 24,
+    "correctCount": 22,
+    "accuracy": 0.9166666666666666
+  },
+  "latency": {
+    "ingest": {
+      "min": 40,
+      "max": 48,
+      "mean": 42,
+      "median": 42,
+      "p95": 45,
+      "p99": 48,
+      "stdDev": 2,
+      "count": 24
+    },
+    "indexing": {
+      "min": 1,
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "p95": 1,
+      "p99": 1,
+      "stdDev": 0,
+      "count": 1
+    },
+    "search": {
+      "min": 22239,
+      "max": 91855,
+      "mean": 56478,
+      "median": 57583,
+      "p95": 91135,
+      "p99": 91855,
+      "stdDev": 21313,
+      "count": 24
+    },
+    "answer": {
+      "min": 1370,
+      "max": 14113,
+      "mean": 3891,
+      "median": 2687,
+      "p95": 7758,
+      "p99": 14113,
+      "stdDev": 2774,
+      "count": 24
+    },
+    "evaluate": {
+      "min": 3387,
+      "max": 15018,
+      "mean": 6567,
+      "median": 6269,
+      "p95": 11314,
+      "p99": 15018,
+      "stdDev": 2600,
+      "count": 24
+    },
+    "total": {
+      "min": 30443,
+      "max": 102021,
+      "mean": 66979,
+      "median": 75946,
+      "p95": 100042,
+      "p99": 102021,
+      "stdDev": 22214,
+      "count": 24
+    }
+  },
+  "tokens": {
+    "totalTokens": 10188,
+    "basePromptTokens": 731,
+    "contextTokens": 9457,
+    "avgTokensPerQuestion": 425,
+    "avgBasePromptTokens": 30,
+    "avgContextTokens": 394
+  },
+  "memscore": "92% / 56478ms / 394tok",
+  "memscoreComponents": {
+    "quality": 92,
+    "latencyMs": 56478,
+    "contextTokens": 394
+  },
+  "retrieval": {
+    "hitAtK": 0.8333333333333334,
+    "precisionAtK": 0.3192460317460318,
+    "recallAtK": 0.8333333333333334,
+    "f1AtK": 0.43446056938703986,
+    "mrr": 0.7916666666666666,
+    "ndcg": 0.7459128599057955,
+    "k": 10
+  },
+  "byQuestionType": {
+    "user_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 50228,
+          "max": 91855,
+          "mean": 67174,
+          "median": 72909,
+          "p95": 91855,
+          "p99": 91855,
+          "stdDev": 16663,
+          "count": 4
+        },
+        "answer": {
+          "min": 1722,
+          "max": 2478,
+          "mean": 2042,
+          "median": 2157,
+          "p95": 2478,
+          "p99": 2478,
+          "stdDev": 299,
+          "count": 4
+        },
+        "total": {
+          "min": 55777,
+          "max": 100042,
+          "mean": 74132,
+          "median": 78817,
+          "p95": 100042,
+          "p99": 100042,
+          "stdDev": 17175,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.325,
+        "recallAtK": 1,
+        "f1AtK": 0.47036297036297037,
+        "mrr": 1,
+        "ndcg": 0.9456322285471629,
+        "k": 10
+      }
+    },
+    "assistant_facts_evidence": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 0.75,
+      "latency": {
+        "search": {
+          "min": 25820,
+          "max": 67326,
+          "mean": 44108,
+          "median": 46318,
+          "p95": 67326,
+          "p99": 67326,
+          "stdDev": 15243,
+          "count": 4
+        },
+        "answer": {
+          "min": 2263,
+          "max": 3577,
+          "mean": 2980,
+          "median": 3199,
+          "p95": 3577,
+          "p99": 3577,
+          "stdDev": 482,
+          "count": 4
+        },
+        "total": {
+          "min": 33682,
+          "max": 76350,
+          "mean": 54830,
+          "median": 54998,
+          "p95": 76350,
+          "p99": 76350,
+          "stdDev": 15089,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.30714285714285716,
+        "recallAtK": 1,
+        "f1AtK": 0.4284090909090909,
+        "mrr": 0.875,
+        "ndcg": 0.9026530782870886,
+        "k": 10
+      }
+    },
+    "changing_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 23243,
+          "max": 85072,
+          "mean": 55533,
+          "median": 78868,
+          "p95": 85072,
+          "p99": 85072,
+          "stdDev": 26849,
+          "count": 4
+        },
+        "answer": {
+          "min": 1370,
+          "max": 2687,
+          "mean": 2084,
+          "median": 2539,
+          "p95": 2687,
+          "p99": 2687,
+          "stdDev": 548,
+          "count": 4
+        },
+        "total": {
+          "min": 30443,
+          "max": 95430,
+          "mean": 65321,
+          "median": 92912,
+          "p95": 95430,
+          "p99": 95430,
+          "stdDev": 29177,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.375,
+        "recallAtK": 1,
+        "f1AtK": 0.5290750915750916,
+        "mrr": 0.875,
+        "ndcg": 0.8332662469523893,
+        "k": 10
+      }
+    },
+    "abstention_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 26643,
+          "max": 69263,
+          "mean": 51714,
+          "median": 69124,
+          "p95": 69263,
+          "p99": 69263,
+          "stdDev": 18285,
+          "count": 4
+        },
+        "answer": {
+          "min": 2066,
+          "max": 2537,
+          "mean": 2260,
+          "median": 2323,
+          "p95": 2537,
+          "p99": 2537,
+          "stdDev": 187,
+          "count": 4
+        },
+        "total": {
+          "min": 32478,
+          "max": 76079,
+          "mean": 58927,
+          "median": 76064,
+          "p95": 76079,
+          "p99": 76079,
+          "stdDev": 18364,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 0.25,
+        "precisionAtK": 0.025,
+        "recallAtK": 0.25,
+        "f1AtK": 0.045454545454545456,
+        "mrr": 0.25,
+        "ndcg": 0.25,
+        "k": 10
+      }
+    },
+    "preference_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 57583,
+          "max": 91135,
+          "mean": 74914,
+          "median": 80979,
+          "p95": 91135,
+          "p99": 91135,
+          "stdDev": 12498,
+          "count": 4
+        },
+        "answer": {
+          "min": 4436,
+          "max": 7758,
+          "mean": 6140,
+          "median": 6622,
+          "p95": 7758,
+          "p99": 7758,
+          "stdDev": 1216,
+          "count": 4
+        },
+        "total": {
+          "min": 70155,
+          "max": 102021,
+          "mean": 87756,
+          "median": 95960,
+          "p95": 102021,
+          "p99": 102021,
+          "stdDev": 12291,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6083333333333333,
+        "recallAtK": 1,
+        "f1AtK": 0.7406045751633986,
+        "mrr": 1,
+        "ndcg": 0.8918551721900215,
+        "k": 9
+      }
+    },
+    "implicit_connection_evidence": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 0.75,
+      "latency": {
+        "search": {
+          "min": 22239,
+          "max": 63284,
+          "mean": 45426,
+          "median": 56268,
+          "p95": 63284,
+          "p99": 63284,
+          "stdDev": 15847,
+          "count": 4
+        },
+        "answer": {
+          "min": 5274,
+          "max": 14113,
+          "mean": 7843,
+          "median": 6091,
+          "p95": 14113,
+          "p99": 14113,
+          "stdDev": 3633,
+          "count": 4
+        },
+        "total": {
+          "min": 33996,
+          "max": 81557,
+          "mean": 60905,
+          "median": 75946,
+          "p95": 81557,
+          "p99": 81557,
+          "stdDev": 19065,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 0.75,
+        "precisionAtK": 0.275,
+        "recallAtK": 0.75,
+        "f1AtK": 0.3928571428571429,
+        "mrr": 0.75,
+        "ndcg": 0.6520704334581108,
+        "k": 10
+      }
+    }
+  },
+  "questionTypeRegistry": {
+    "user_evidence": {
+      "id": "user_evidence",
+      "alias": "user",
+      "description": "User-stated facts"
+    },
+    "assistant_facts_evidence": {
+      "id": "assistant_facts_evidence",
+      "alias": "asst",
+      "description": "Assistant-stated facts"
+    },
+    "preference_evidence": {
+      "id": "preference_evidence",
+      "alias": "pref",
+      "description": "User preferences"
+    },
+    "changing_evidence": {
+      "id": "changing_evidence",
+      "alias": "change",
+      "description": "Information updates"
+    },
+    "implicit_connection_evidence": {
+      "id": "implicit_connection_evidence",
+      "alias": "implicit",
+      "description": "Implicit reasoning"
+    },
+    "abstention_evidence": {
+      "id": "abstention_evidence",
+      "alias": "abstain",
+      "description": "Abstention (unanswerable)"
+    }
+  },
+  "evaluations": [
+    {
+      "questionId": "convomem-user_evidence-67",
+      "questionType": "user_evidence",
+      "question": "When we were discussing my potential move back to the East Coast, which specific city did I mention I would concentrate my job search on?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The question asks for the 'specific city'. The model correctly identifies 'Boston', which is the core information requested by the question and present in the ground truth answer. The ground truth provides additional context ('to be closer to your family') which was not explicitly asked for, but the model's response fully answers the specific question posed.",
+      "hypothesis": "Boston",
+      "groundTruth": "You mentioned that if you were to move back to the East Coast, you would focus your job search on Boston to be closer to your family.",
+      "searchResults": [
+        {
+          "memory": "If Emma moves back to the East Coast, she will focus her job search exclusively on Boston.",
+          "score": 1,
+          "id": "bel_61d8520b90a6"
+        },
+        {
+          "memory": "Emma is seriously considering a move back to the East Coast to be near her family.",
+          "score": 0.99,
+          "id": "bel_40d3f183d115"
+        },
+        {
+          "memory": "Emma is considering committing to San Francisco and pursuing an MBA there or at a comparable West Coast school.",
+          "score": 0.98,
+          "id": "bel_b34dd0bb80f5"
+        },
+        {
+          "memory": "Emma's family is all on the East Coast.",
+          "score": 0.97,
+          "id": "bel_9e06b843912e"
+        },
+        {
+          "memory": "Emma successfully navigated big changes before, including her move to San Francisco.",
+          "score": 0.96,
+          "id": "bel_e4bf324c8bc1"
+        },
+        {
+          "memory": "Emma loves San Francisco for its innovation, culture, and proximity to nature.",
+          "score": 0.95,
+          "id": "bel_2c7ab7c0386c"
+        },
+        {
+          "memory": "Emma is thinking about a change from San Francisco.",
+          "score": 0.94,
+          "id": "bel_eb2967f41aeb"
+        },
+        {
+          "memory": "Emma previously worked in NYC.",
+          "score": 0.9299999999999999,
+          "id": "bel_7343c7cd1b87"
+        },
+        {
+          "memory": "Emma is considering making a bigger life change and moving back East.",
+          "score": 0.92,
+          "id": "bel_e3a5ae9b5945"
+        },
+        {
+          "memory": "Emma feels anxious about making a big change (moving to a new city and starting a new job).",
+          "score": 0.91,
+          "id": "bel_cad142a04bad"
+        }
+      ],
+      "searchDurationMs": 53704,
+      "answerDurationMs": 2157,
+      "totalDurationMs": 61893,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "f1AtK": 0.5714285714285715,
+        "mrr": 1,
+        "ndcg": 0.9223260797603763,
+        "k": 10,
+        "relevantRetrieved": 4,
+        "totalRelevant": 4
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-199",
+      "questionType": "user_evidence",
+      "question": "What was the name of the PR firm where you did your unpaid internship after graduation?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis 'City Voice Media' is identical to the ground truth answer 'City Voice Media'.",
+      "hypothesis": "City Voice Media",
+      "groundTruth": "City Voice Media",
+      "searchResults": [
+        {
+          "memory": "Alex had an unpaid internship at City Voice Media, a public relations firm, after graduation.",
+          "score": 1,
+          "id": "bel_f493a0dd79db"
+        },
+        {
+          "memory": "The City Voice Media internship was mostly for tech startups.",
+          "score": 0.99,
+          "id": "bel_746550ffdbad"
+        },
+        {
+          "memory": "Alex found a paying job a few months after the City Voice Media internship.",
+          "score": 0.98,
+          "id": "bel_a56859c32f8c"
+        },
+        {
+          "memory": "After graduating, Alex started a job hunt.",
+          "score": 0.97,
+          "id": "bel_1094d76a1121"
+        },
+        {
+          "memory": "At the City Voice Media internship, Alex wrote press release drafts, built media lists, and got coffee.",
+          "score": 0.96,
+          "id": "bel_6a43790f8bd2"
+        },
+        {
+          "memory": "Alex wrote a press release that was picked up by a decent tech blog during the City Voice Media internship.",
+          "score": 0.95,
+          "id": "bel_ec14c9cb05d1"
+        },
+        {
+          "memory": "The job market for creative fields after Alex graduated was brutal, with every entry-level posting having 500 applicants.",
+          "score": 0.94,
+          "id": "bel_12e78f8bdd5e"
+        },
+        {
+          "memory": "The local newspaper where Alex worked folded about six months after Alex started.",
+          "score": 0.9299999999999999,
+          "id": "bel_1c1391cf15fa"
+        },
+        {
+          "memory": "Alex worked a part-time barista job to make rent while looking for a career job.",
+          "score": 0.92,
+          "id": "bel_22e6b70cc94b"
+        },
+        {
+          "memory": "Alex customized cover letters during the job hunt.",
+          "score": 0.91,
+          "id": "bel_90bc4f5a74a1"
+        }
+      ],
+      "searchDurationMs": 91855,
+      "answerDurationMs": 1812,
+      "totalDurationMs": 100042,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.5,
+        "recallAtK": 1,
+        "f1AtK": 0.6666666666666666,
+        "mrr": 1,
+        "ndcg": 0.9747429528567879,
+        "k": 10,
+        "relevantRetrieved": 5,
+        "totalRelevant": 5
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-381",
+      "questionType": "user_evidence",
+      "question": "I'm putting together a grocery list. Can you remind me what the specific flavor of treats is that Max will eat?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis 'Max will only eat 'Chicken & Barley' flavored treats' is equivalent to the ground truth answer 'Max will only eat the 'Chicken & Barley' flavor of the treats'. Both convey the exact same critical information regarding the specific flavor and the exclusivity of Max's preference.",
+      "hypothesis": "Max will only eat 'Chicken & Barley' flavored treats.",
+      "groundTruth": "Max will only eat the 'Chicken & Barley' flavor of the treats.",
+      "searchResults": [
+        {
+          "memory": "Max will only eat 'Chicken & Barley' flavored treats.",
+          "score": 1,
+          "id": "bel_152eab639d20"
+        },
+        {
+          "memory": "Max is a picky eater regarding treats.",
+          "score": 0.99,
+          "id": "bel_69ebd22fe465"
+        },
+        {
+          "memory": "Emma plans to stock up on 'Chicken & Barley' treats for Max.",
+          "score": 0.98,
+          "id": "bel_7ce7e757e775"
+        },
+        {
+          "memory": "Emma bought a variety pack of organic treats for Max.",
+          "score": 0.97,
+          "id": "bel_6b7f8a5702ba"
+        },
+        {
+          "memory": "Emma will consider 'Chicken & Barley' treats as Max's signing bonus.",
+          "score": 0.96,
+          "id": "bel_0f11b2d94a5e"
+        },
+        {
+          "memory": "Emma saw the organic treats recommended online.",
+          "score": 0.95,
+          "id": "bel_667efa7d769b"
+        },
+        {
+          "memory": "Max is a rescue dog.",
+          "score": 0.94,
+          "id": "bel_3dac332beb90"
+        },
+        {
+          "memory": "Max eventually started playing with other dogs at the dog park this past Saturday.",
+          "score": 0.9299999999999999,
+          "id": "bel_c73ba14f290b"
+        },
+        {
+          "memory": "Emma has a dog named Max.",
+          "score": 0.92,
+          "id": "bel_4b96051211b0"
+        },
+        {
+          "memory": "Max is smart.",
+          "score": 0.91,
+          "id": "bel_baa7c5c40a3f"
+        }
+      ],
+      "searchDurationMs": 72909,
+      "answerDurationMs": 2478,
+      "totalDurationMs": 78817,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.3,
+        "recallAtK": 1,
+        "f1AtK": 0.4615384615384615,
+        "mrr": 1,
+        "ndcg": 0.8854598815714874,
+        "k": 10,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-391",
+      "questionType": "user_evidence",
+      "question": "What type of cuisine do I love trying when I travel?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis 'Vietnamese cuisine' directly contains the ground truth answer 'Vietnamese'.",
+      "hypothesis": "Vietnamese cuisine",
+      "groundTruth": "Vietnamese",
+      "searchResults": [
+        {
+          "memory": "Emma loves trying Vietnamese cuisine when she travels.",
+          "score": 1,
+          "id": "bel_18cea0002f13"
+        },
+        {
+          "memory": "Food is a major part of the travel experience for Emma.",
+          "score": 0.99,
+          "id": "bel_e71fe289f8f2"
+        },
+        {
+          "memory": "Emma tries to be adventurous with food wherever she travels.",
+          "score": 0.98,
+          "id": "bel_4a8903fb48ec"
+        },
+        {
+          "memory": "Emma believes food is one of the best ways to connect with a new place.",
+          "score": 0.97,
+          "id": "bel_7c9ed1066c10"
+        },
+        {
+          "memory": "Emma prefers a cultural and relaxing vibe for her trip.",
+          "score": 0.96,
+          "id": "bel_96b7054a8e69"
+        },
+        {
+          "memory": "Navigating the food scene on her own was the highlight of Emma's solo trip to Japan.",
+          "score": 0.95,
+          "id": "bel_c2491ad563c3"
+        },
+        {
+          "memory": "Emma wants ideas for a long weekend getaway, to escape her usual routine, to explore a new city, to see some art, and to eat great food.",
+          "score": 0.94,
+          "id": "bel_synth_34cd905aa958"
+        },
+        {
+          "memory": "Emma is thinking about taking a short trip.",
+          "score": 0.9299999999999999,
+          "id": "bel_0fc48fa00c86"
+        },
+        {
+          "memory": "Emma thanks the assistant for help with trip planning and work-related tasks.",
+          "score": 0.92,
+          "id": "bel_73e5e8948fb3"
+        },
+        {
+          "memory": "Emma will keep Santa Fe on her list of potential trip destinations.",
+          "score": 0.91,
+          "id": "bel_82f7c01d5a51"
+        }
+      ],
+      "searchDurationMs": 50228,
+      "answerDurationMs": 1722,
+      "totalDurationMs": 55777,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-459",
+      "questionType": "assistant_facts_evidence",
+      "question": "Can you remind me of the tip you gave for organizing my small components in the van?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis fully contains the ground truth answer. It reiterates the exact advice given: 'use clear, labeled bins for small components like resistors and capacitors'. The additional phrasing 'I recommended' and 'to keep your work van organized' provides context but does not alter or omit any part of the core correct answer.",
+      "hypothesis": "I recommended using clear, labeled bins for small components like resistors and capacitors to keep your work van organized.",
+      "groundTruth": "Use clear, labeled bins for all small components like resistors and capacitors.",
+      "searchResults": [
+        {
+          "memory": "Speaker 1 will start organizing Speaker 1's work van with bins for small components.",
+          "score": 1,
+          "id": "bel_3955117532e6"
+        },
+        {
+          "memory": "Speaker 1 will try using clear, labeled bins for small components.",
+          "score": 0.99,
+          "id": "bel_c8929b1ad0ea"
+        },
+        {
+          "memory": "Speaker 2 recommends using clear, labeled bins for small components like resistors and capacitors to keep Speaker 1's work van organized.",
+          "score": 0.98,
+          "id": "bel_2d44f4284ce7"
+        },
+        {
+          "memory": "Speaker 1 is thinking about reorganizing Speaker 1's work van.",
+          "score": 0.97,
+          "id": "bel_b93429357ad6"
+        },
+        {
+          "memory": "Speaker 1's work van is chaotic, Speaker 1 spends too much time looking for small parts like resistors and capacitors, and Speaker 1 dislikes digging through a pile of tools to find the right one.",
+          "score": 0.96,
+          "id": "bel_synth_bf52a3f9d5d7"
+        },
+        {
+          "memory": "Speaker 1 asked Speaker 2 for other tips for organizing tools.",
+          "score": 0.95,
+          "id": "bel_4f8f4e3f4f71"
+        },
+        {
+          "memory": "Speaker 2 recommends keeping tools in a tool roll or a toolbox with compartments.",
+          "score": 0.94,
+          "id": "bel_87c141c1dfa0"
+        }
+      ],
+      "searchDurationMs": 36968,
+      "answerDurationMs": 2263,
+      "totalDurationMs": 54291,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.42857142857142855,
+        "recallAtK": 1,
+        "f1AtK": 0.6,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 7,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-472",
+      "questionType": "assistant_facts_evidence",
+      "question": "What was the key advice I gave you on how to structure your keynote speech?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The ground truth states the key advice is to 'Structure the talk around a single, compelling story that illustrates the main point.' The system's response includes this advice by stating 'structure your keynote around the story of 'Sarah the Sales Rep' and her journey from frustration to empowerment.' This specific example perfectly illustrates the general advice of structuring around a single, compelling story that illustrates a point. While the system also adds advice about including data, it does not negate the presence of the core, correct advice regarding the speech structure.",
+      "hypothesis": "The key advice was to structure your keynote around the story of 'Sarah the Sales Rep' and her journey from frustration to empowerment. You should also include data and performance metrics for the technical audience members.",
+      "groundTruth": "Structure the talk around a single, compelling story that illustrates the main point.",
+      "searchResults": [
+        {
+          "memory": "Alex has to give an internal keynote.",
+          "score": 1,
+          "id": "bel_ef083a557291"
+        },
+        {
+          "memory": "Alex plans to structure the keynote around the story of 'Sarah the Sales Rep' and her journey from frustration to empowerment, include data and performance metrics in the keynote for technical audience members, and take Alex's helper up on the offer to brainstorm or do a practice run.",
+          "score": 0.99,
+          "id": "bel_synth_e2ccc83e5acc"
+        },
+        {
+          "memory": "Alex plans to start outlining the keynote after clearing Alex's head and walking Max.",
+          "score": 0.98,
+          "id": "bel_6f11740340c7"
+        },
+        {
+          "memory": "The audience for Alex's keynote includes the C-suite, sales, marketing, and engineering.",
+          "score": 0.97,
+          "id": "bel_b6f7b7b925ba"
+        },
+        {
+          "memory": "Alex's stress about the keynote is mostly caused by the audience.",
+          "score": 0.96,
+          "id": "bel_2f9490ae1f2b"
+        },
+        {
+          "memory": "Alex is stuck on how to make the presentation engaging.",
+          "score": 0.95,
+          "id": "bel_45db7191f94e"
+        },
+        {
+          "memory": "Alex could use an example from the sales team for the presentation.",
+          "score": 0.94,
+          "id": "bel_13a0b44cbc1e"
+        },
+        {
+          "memory": "Alex is concerned about making a presentation about enterprise systems engaging for a salesperson, not boring engineers with high-level business talk during the presentation, and the structure of the talk.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_f235cce0e129"
+        },
+        {
+          "memory": "Alex is starting to get stressed about the internal keynote Alex has to give.",
+          "score": 0.92,
+          "id": "bel_16cf69fc1532"
+        },
+        {
+          "memory": "Alex feels Alex has a clear plan of attack for the keynote.",
+          "score": 0.91,
+          "id": "bel_c5920a7d964b"
+        }
+      ],
+      "searchDurationMs": 46318,
+      "answerDurationMs": 2879,
+      "totalDurationMs": 54998,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-543",
+      "questionType": "assistant_facts_evidence",
+      "question": "My realtor just sent over the paperwork for the sale of my old house. I need to fill out the form where I list all the known issues with the property. You mentioned the specific name for that document before, what did you call it?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis 'seller's disclosure' form is equivalent to the ground truth answer 'seller's disclosure'. Both provide the correct name of the document.",
+      "hypothesis": "That would be the 'seller's disclosure' form.",
+      "groundTruth": "The form is called a seller's disclosure.",
+      "searchResults": [
+        {
+          "memory": "The 'seller's disclosure' form is where known material defects with the house must be officially listed to inform potential buyers.",
+          "score": 1,
+          "id": "bel_6106f2b4b619"
+        },
+        {
+          "memory": "A legal document known as a 'seller's disclosure' must be completed when selling a property.",
+          "score": 0.99,
+          "id": "bel_6a70b8ceee8b"
+        },
+        {
+          "memory": "Alex needs to get the disclosure form from Alex's realtor.",
+          "score": 0.98,
+          "id": "bel_184dca3637a9"
+        },
+        {
+          "memory": "The goal of the disclosure form is a complete and honest picture of the property.",
+          "score": 0.97,
+          "id": "bel_87556ae2aed9"
+        },
+        {
+          "memory": "Alex's real estate agent will provide Alex with the specific 'seller's disclosure' form required for Alex's state.",
+          "score": 0.96,
+          "id": "bel_bdb81f4af72e"
+        },
+        {
+          "memory": "'Material defects' refer to any significant issue with a property that could influence a buyer's decision or the home's value.",
+          "score": 0.95,
+          "id": "bel_d38df8a11ef2"
+        },
+        {
+          "memory": "The legal focus for house sales is on 'material defects'.",
+          "score": 0.94,
+          "id": "bel_60770a9ecd48"
+        },
+        {
+          "memory": "Alex is dealing with a house sale.",
+          "score": 0.9299999999999999,
+          "id": "bel_60b082af87ea"
+        },
+        {
+          "memory": "A complete and honest picture of the property protects both the seller and the buyer.",
+          "score": 0.92,
+          "id": "bel_53cdd2e90628"
+        },
+        {
+          "memory": "Examples of material defects to list on a seller's disclosure include past water damage or issues with the electrical system.",
+          "score": 0.91,
+          "id": "bel_3bb05c7d8360"
+        }
+      ],
+      "searchDurationMs": 67326,
+      "answerDurationMs": 3199,
+      "totalDurationMs": 76350,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
+        "f1AtK": 0.7499999999999999,
+        "mrr": 1,
+        "ndcg": 0.9796825595768971,
+        "k": 10,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-698",
+      "questionType": "assistant_facts_evidence",
+      "question": "Can you remind me of the neighborhood-specific social media app you recommended for connecting with my new community?",
+      "score": 0,
+      "label": "incorrect",
+      "explanation": "The system's hypothesis explicitly states that it has not recommended any neighborhood-specific social media apps, which directly contradicts the ground truth answer that specifies 'Nextdoor'.",
+      "hypothesis": "It seems there might be a slight misunderstanding! My memory indicates that you haven't actually come across any neighborhood-specific social media apps yet.\n\nWere you perhaps thinking of exploring some options, or did you have something else in mind? I'd be happy to help you find ways to connect with your new community!",
+      "groundTruth": "The app I recommended is Nextdoor.",
+      "searchResults": [
+        {
+          "memory": "The user hasn't come across any neighborhood-specific social media apps.",
+          "score": 1,
+          "id": "bel_a23a7ffabcf0"
+        },
+        {
+          "memory": "The user is thinking about ways to get more involved in their new neighborhood.",
+          "score": 0.99,
+          "id": "bel_a3d2e5d14eac"
+        },
+        {
+          "memory": "The user has a new neighborhood.",
+          "score": 0.98,
+          "id": "bel_c1a9eadbd22d"
+        },
+        {
+          "memory": "The user doesn't know anyone in their new neighborhood yet.",
+          "score": 0.97,
+          "id": "bel_07b0b1a766fd"
+        },
+        {
+          "memory": "The user is looking forward to exploring more of what the area has to offer.",
+          "score": 0.96,
+          "id": "bel_af90781364a2"
+        },
+        {
+          "memory": "The user is settling into their new home/area.",
+          "score": 0.95,
+          "id": "bel_ea20f58f8380"
+        },
+        {
+          "memory": "The user has considered joining local clubs or community groups.",
+          "score": 0.94,
+          "id": "bel_14ac6711b4a2"
+        },
+        {
+          "memory": "The user mostly uses usual social media platforms.",
+          "score": 0.9299999999999999,
+          "id": "bel_28f14185fc1c"
+        },
+        {
+          "memory": "The user loves supporting local artists.",
+          "score": 0.92,
+          "id": "bel_f6b023bc5e64"
+        },
+        {
+          "memory": "The user finds it inspiring to see local artists' work.",
+          "score": 0.91,
+          "id": "bel_562e52a5c80e"
+        }
+      ],
+      "searchDurationMs": 25820,
+      "answerDurationMs": 3577,
+      "totalDurationMs": 33682,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-982",
+      "questionType": "changing_evidence",
+      "question": "I'm filling out my PTO request form and it's asking for my travel destination. What country am I visiting for my summer vacation?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis correctly identifies 'Italy' as the travel destination, which matches the ground truth answer. The phrasing 'visiting' instead of 'going to' does not change the correctness of the core information.",
+      "hypothesis": "You are visiting Italy for your summer vacation.",
+      "groundTruth": "You are going to Italy for your summer vacation.",
+      "searchResults": [
+        {
+          "memory": "Alexandra Chen booked her flights and hotels for a two-week summer vacation in Thailand in July.",
+          "score": 1,
+          "id": "bel_b8e7a35ef362"
+        },
+        {
+          "memory": "Alexandra will look into Hotel Pitti Palace al Ponte Vecchio, Oltrarno Splendid, Castello del Nero Hotel & Spa, and Agriturismo Poggio al Lago.",
+          "score": 0.99,
+          "id": "bel_bdb81144c48e"
+        },
+        {
+          "memory": "Alexandra thinks her Italy trip might be better than her original Thailand trip.",
+          "score": 0.98,
+          "id": "bel_f036c645ce80"
+        },
+        {
+          "memory": "Alexandra Chen needs help drafting a friendly but firm Out of Office auto-reply for her vacation.",
+          "score": 0.97,
+          "id": "bel_a440c63c2a23"
+        },
+        {
+          "memory": "Alexandra is going to Italy instead of Thailand.",
+          "score": 0.96,
+          "id": "bel_b9a156a6cfe8"
+        },
+        {
+          "memory": "Alexandra wants options for top-rated cooking classes near Florence or in the Chianti region.",
+          "score": 0.95,
+          "id": "bel_6b33d09769f0"
+        },
+        {
+          "memory": "Alexandra wants to know what the assistant finds for hotels.",
+          "score": 0.94,
+          "id": "bel_84a899b32938"
+        },
+        {
+          "memory": "Alexandra Chen will add a light raincoat to her shopping list for her trip to Thailand.",
+          "score": 0.9299999999999999,
+          "id": "bel_730b65d29d4a"
+        },
+        {
+          "memory": "Alexandra wants recommendations for a well-reviewed agriturismo with a pool in the Chianti region.",
+          "score": 0.92,
+          "id": "bel_009e2e23dc7c"
+        },
+        {
+          "memory": "Alexandra wants recommendations for a boutique hotel in the Oltrarno neighborhood of Florence.",
+          "score": 0.91,
+          "id": "bel_955f37f6f0a4"
+        }
+      ],
+      "searchDurationMs": 78868,
+      "answerDurationMs": 2687,
+      "totalDurationMs": 92912,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
+        "f1AtK": 0.7499999999999999,
+        "mrr": 0.5,
+        "ndcg": 0.745637937915682,
+        "k": 10,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-993",
+      "questionType": "changing_evidence",
+      "question": "Which airline have I booked for my trip to San Antonio?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The ground truth answer is 'Southwest'. The model's response clearly states 'Southwest Airlines' as the final booking, even though it includes previous information about an initial booking with American Airlines. According to the instructions, if the response contains previous information along with an updated answer, it should be considered correct as long as the updated answer is the required answer.",
+      "hypothesis": "You initially booked a flight on American Airlines, but then rebooked to Southwest Airlines because it was more direct and cheaper. So, you have booked your trip on **Southwest Airlines**.",
+      "groundTruth": "Southwest",
+      "searchResults": [
+        {
+          "memory": "The first speaker initially booked a flight on American Airlines for the San Antonio trip.",
+          "score": 1,
+          "id": "bel_cf5d09d674fa"
+        },
+        {
+          "memory": "The first speaker wanted to update the second speaker on their travel plans for the San Antonio trip.",
+          "score": 0.99,
+          "id": "bel_24691cff3b46"
+        },
+        {
+          "memory": "The first speaker has an upcoming audit at the San Antonio branch.",
+          "score": 0.98,
+          "id": "bel_e69bafb9027a"
+        },
+        {
+          "memory": "The first speaker found a more direct and cheaper flight on Southwest.",
+          "score": 0.97,
+          "id": "bel_cc6056950eb8"
+        },
+        {
+          "memory": "The first speaker expects the trip to be busy.",
+          "score": 0.96,
+          "id": "bel_1cb18038f666"
+        },
+        {
+          "memory": "The first speaker was reviewing the travel policy.",
+          "score": 0.95,
+          "id": "bel_891ea6779cab"
+        },
+        {
+          "memory": "The first speaker plans to meet with the branch manager, go over the compliance reports, and try to squeeze in some sightseeing during the trip.",
+          "score": 0.94,
+          "id": "bel_synth_928ab2e333bf"
+        },
+        {
+          "memory": "The first speaker rebooked their travel.",
+          "score": 0.9299999999999999,
+          "id": "bel_ca797dc02842"
+        },
+        {
+          "memory": "The River Walk is on the first speaker's list of places to visit if time permits.",
+          "score": 0.92,
+          "id": "bel_4d864d533a54"
+        },
+        {
+          "memory": "The first speaker has heard great things about the River Walk.",
+          "score": 0.91,
+          "id": "bel_c0a27c95b3c2"
+        }
+      ],
+      "searchDurationMs": 23243,
+      "answerDurationMs": 1739,
+      "totalDurationMs": 30443,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.3,
+        "recallAtK": 1,
+        "f1AtK": 0.4615384615384615,
+        "mrr": 1,
+        "ndcg": 0.8194270280062366,
+        "k": 10,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-1061",
+      "questionType": "changing_evidence",
+      "question": "What is the support designation for Vector Industries?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The ground truth states that Vector Industries is designated as 'Low-Touch'. The model's response explicitly states that Vector Industries has a 'Low-Touch' status for standard, ongoing support tickets, which aligns with the correct answer. While the model also mentions a 'High-Touch' status for onboarding, it still provides the required 'Low-Touch' designation for general support.",
+      "hypothesis": "Vector Industries has a 'High-Touch' support status during their onboarding process and a 'Low-Touch' status for standard, ongoing support tickets.",
+      "groundTruth": "Vector Industries is designated as 'Low-Touch'.",
+      "searchResults": [
+        {
+          "memory": "The 'Low-Touch' status for Vector Industries is for standard, ongoing support tickets.",
+          "score": 1,
+          "id": "bel_8c0ddac280e5"
+        },
+        {
+          "memory": "Vector Industries has a lot of specific requirements.",
+          "score": 0.99,
+          "id": "bel_063a860264cf"
+        },
+        {
+          "memory": "Vector Industries is a large and strategic account.",
+          "score": 0.98,
+          "id": "bel_354afef28cc5"
+        },
+        {
+          "memory": "The first speaker is anticipating questions about integrating with Vector Industries' existing systems.",
+          "score": 0.97,
+          "id": "bel_a44731427e3c"
+        },
+        {
+          "memory": "The 'High-Touch' status for Vector Industries is for the duration of their onboarding process.",
+          "score": 0.96,
+          "id": "bel_5664614dcdda"
+        },
+        {
+          "memory": "The onboarding for the Vector Industries team was a complete success.",
+          "score": 0.95,
+          "id": "bel_082ee47a6207"
+        },
+        {
+          "memory": "The Vector Industries team is now fully self-sufficient.",
+          "score": 0.94,
+          "id": "bel_54528666ec56"
+        },
+        {
+          "memory": "The first speaker wants to ensure everything is set up perfectly for Vector Industries, that Vector Industries' onboarding is as smooth as possible, and that Vector Industries is comfortable with the system.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_ddc509f5a3f2"
+        },
+        {
+          "memory": "The first speaker's goal is to ensure these accounts have a similar experience to Vector Industries.",
+          "score": 0.92,
+          "id": "bel_7d748997e31e"
+        },
+        {
+          "memory": "The first speaker will be checking in with Vector Industries regularly.",
+          "score": 0.91,
+          "id": "bel_6f0d6c6744c1"
+        }
+      ],
+      "searchDurationMs": 34950,
+      "answerDurationMs": 1370,
+      "totalDurationMs": 42497,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 1,
+        "f1AtK": 0.33333333333333337,
+        "mrr": 1,
+        "ndcg": 0.8503449055347546,
+        "k": 10,
+        "relevantRetrieved": 2,
+        "totalRelevant": 2
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-1465",
+      "questionType": "changing_evidence",
+      "question": "How many vacation days am I allotted per year?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The question asks for the number of vacation days allotted per year. The ground truth states '20 vacation days per year'. The system's hypothesis states '20 days annually'. Both provide the correct number of vacation days (20) as the current allotment.",
+      "hypothesis": "Your PTO officially increased to 20 days annually after your one-year anniversary, which was last week.",
+      "groundTruth": "You are allotted 20 vacation days per year. The policy was updated from 15 to 20 days upon reaching your one-year anniversary with the company.",
+      "searchResults": [
+        {
+          "memory": "For Partner Success Managers, the starting vacation allotment is 15 days annually.",
+          "score": 1,
+          "id": "bel_a6772361d2db"
+        },
+        {
+          "memory": "Alex wants to confirm the standard vacation allotment of 15 days per year for Alex's role.",
+          "score": 0.99,
+          "id": "bel_d5d1f5bcbd0f"
+        },
+        {
+          "memory": "The vacation allotment is separate from sick leave and company holidays.",
+          "score": 0.98,
+          "id": "bel_5ced557d7841"
+        },
+        {
+          "memory": "Alex's PTO officially increases to 20 days annually after their one-year anniversary.",
+          "score": 0.97,
+          "id": "bel_f751ade5360a"
+        },
+        {
+          "memory": "The vacation policy at Alex's current company is different from Alex's last company.",
+          "score": 0.96,
+          "id": "bel_29229fdc0a47"
+        },
+        {
+          "memory": "Alex plans to plan a real vacation soon.",
+          "score": 0.95,
+          "id": "bel_9b0b7e7eb169"
+        },
+        {
+          "memory": "Alex wants a relaxing vacation.",
+          "score": 0.94,
+          "id": "bel_593b4b4177ea"
+        },
+        {
+          "memory": "Alex is considering a 'beach and a book' type of vacation for their next trip.",
+          "score": 0.9299999999999999,
+          "id": "bel_c738944e61d1"
+        },
+        {
+          "memory": "The expense policy guide is in the HR portal.",
+          "score": 0.92,
+          "id": "bel_7f35286efa6f"
+        },
+        {
+          "memory": "Alex's one-year anniversary with the company was the week prior to the conversation.",
+          "score": 0.91,
+          "id": "bel_629d5c62df0a"
+        }
+      ],
+      "searchDurationMs": 85072,
+      "answerDurationMs": 2539,
+      "totalDurationMs": 95430,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "f1AtK": 0.5714285714285715,
+        "mrr": 1,
+        "ndcg": 0.9176551163528843,
+        "k": 10,
+        "relevantRetrieved": 4,
+        "totalRelevant": 4
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1739",
+      "questionType": "abstention_evidence",
+      "question": "What is the annual cost for the premium subscription to the trail mapping app I use for my Mount Tamalpais runs?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly abstained by explicitly stating that it does not have the information requested, aligning with the criteria for a correct hypothesis in an abstention question.",
+      "hypothesis": "I don't have information about the annual cost for the premium subscription to the trail mapping app.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "The free version of the trail mapping app is too cluttered with ads and lacks detailed data for Adrian.",
+          "score": 1,
+          "id": "bel_b2313c2c0793"
+        },
+        {
+          "memory": "Adrian is sticking with the premium tier for Adrian's trail mapping app.",
+          "score": 0.99,
+          "id": "bel_4bfc6663e37d"
+        },
+        {
+          "memory": "The Dipsea Trail is a classic trail on Mount Tam.",
+          "score": 0.98,
+          "id": "bel_e4308ae2e2ea"
+        },
+        {
+          "memory": "Adrian relies heavily on a trail mapping app.",
+          "score": 0.97,
+          "id": "bel_0f4d09620dde"
+        },
+        {
+          "memory": "Adrian finds the trail mapping app a game-changer, especially when Adrian wants to explore new routes.",
+          "score": 0.96,
+          "id": "bel_f6790b1e538d"
+        },
+        {
+          "memory": "Adrian enjoys the Matt Davis Trail on Mount Tam for its views.",
+          "score": 0.95,
+          "id": "bel_9312d31e3abe"
+        },
+        {
+          "memory": "Offline topographic maps and real-time route syncing are indispensable for Adrian's morning runs on Tam.",
+          "score": 0.94,
+          "id": "bel_2e8c4ddabde2"
+        },
+        {
+          "memory": "The trails on Mount Tam were perfect on the session date.",
+          "score": 0.9299999999999999,
+          "id": "bel_6dcb44cd46f4"
+        },
+        {
+          "memory": "Adrian has not signed up for any trail races yet.",
+          "score": 0.92,
+          "id": "bel_b8c3e9372d41"
+        },
+        {
+          "memory": "The weather on Mount Tam was a bit foggy at first, but it cleared up nicely on the session date.",
+          "score": 0.91,
+          "id": "bel_7ab11454f9c9"
+        }
+      ],
+      "searchDurationMs": 26643,
+      "answerDurationMs": 2323,
+      "totalDurationMs": 32478,
+      "retrievalMetrics": {
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "f1AtK": 0,
+        "mrr": 0,
+        "ndcg": 0,
+        "k": 10,
+        "relevantRetrieved": 0,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1979",
+      "questionType": "abstention_evidence",
+      "question": "How many bedrooms does Alex's apartment in Denver have?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly identified that the information about the number of bedrooms in Alex's apartment in Denver is not available in the provided memories, which aligns with the ground truth that the information was NOT in the conversation. This is a proper abstention.",
+      "hypothesis": "The provided memories do not contain information about how many bedrooms Alex's apartment in Denver has.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Melanie lives in a small apartment in Denver.",
+          "score": 1,
+          "id": "bel_ef4bfe861fd0"
+        },
+        {
+          "memory": "Alex has an improved work-life balance in Denver.",
+          "score": 0.99,
+          "id": "bel_7c12fd4003d3"
+        },
+        {
+          "memory": "Melanie has lived in Denver for approximately six months.",
+          "score": 0.98,
+          "id": "bel_379369ab6117"
+        },
+        {
+          "memory": "Melanie moved to Denver.",
+          "score": 0.97,
+          "id": "bel_84d7b108faad"
+        },
+        {
+          "memory": "Alex's improved work-life balance in Denver is a great motivator.",
+          "score": 0.96,
+          "id": "bel_7505e363c008"
+        },
+        {
+          "memory": "Alex checks on Alex's tomatoes after a long day.",
+          "score": 0.95,
+          "id": "bel_f6843fa7b718"
+        },
+        {
+          "memory": "Melanie chose Denver for its mountains, outdoor access, and relaxed vibe.",
+          "score": 0.94,
+          "id": "bel_577aa43da558"
+        },
+        {
+          "memory": "Melanie's apartment has a balcony.",
+          "score": 0.9299999999999999,
+          "id": "bel_fa891885e012"
+        },
+        {
+          "memory": "Melanie's shift to fully remote work was a catalyst for her move to Denver.",
+          "score": 0.92,
+          "id": "bel_19255e9de7eb"
+        },
+        {
+          "memory": "Alex steps out onto the balcony with Pixel.",
+          "score": 0.91,
+          "id": "bel_82b8ed09fa1a"
+        }
+      ],
+      "searchDurationMs": 69124,
+      "answerDurationMs": 2066,
+      "totalDurationMs": 76079,
+      "retrievalMetrics": {
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "f1AtK": 0,
+        "mrr": 0,
+        "ndcg": 0,
+        "k": 10,
+        "relevantRetrieved": 0,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-2032",
+      "questionType": "abstention_evidence",
+      "question": "I'm ordering food and the app needs more delivery details. Can you remind me which floor my apartment is on?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly identified that the requested information (apartment floor) was not available in the provided context and explicitly stated this, which aligns with the criteria for a correct abstention.",
+      "hypothesis": "I'm sorry, but I don't have any information about which floor your apartment is on in the memories provided.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "The first speaker has been exploring the area around their new apartment.",
+          "score": 1,
+          "id": "bel_34eb2c79ad03"
+        },
+        {
+          "memory": "The first speaker is trying to make the new apartment feel like home.",
+          "score": 0.99,
+          "id": "bel_1628f200d5d4"
+        },
+        {
+          "memory": "The first speaker has been decorating the new apartment.",
+          "score": 0.98,
+          "id": "bel_470e2e116b4a"
+        },
+        {
+          "memory": "The first speaker loves a great little café around the corner from their apartment.",
+          "score": 0.97,
+          "id": "bel_2a9705de4e98"
+        },
+        {
+          "memory": "The first speaker's new place is a cozy apartment in a bustling Chicago neighborhood with great views.",
+          "score": 0.96,
+          "id": "bel_7fa4653919c8"
+        },
+        {
+          "memory": "The first speaker is trying to keep the apartment's style modern but cozy.",
+          "score": 0.95,
+          "id": "bel_9f81e0654cb9"
+        },
+        {
+          "memory": "The plants make the first speaker's apartment feel more alive.",
+          "score": 0.94,
+          "id": "bel_777bacba1906"
+        },
+        {
+          "memory": "The first speaker has been focusing on decorating the living room first.",
+          "score": 0.9299999999999999,
+          "id": "bel_97b46fde8733"
+        },
+        {
+          "memory": "The first speaker wants the living room to be a space where the first speaker can relax after work.",
+          "score": 0.92,
+          "id": "bel_b22bb889981a"
+        },
+        {
+          "memory": "The first speaker is decorating with lots of plants.",
+          "score": 0.91,
+          "id": "bel_cbdbc7cc4016"
+        }
+      ],
+      "searchDurationMs": 41825,
+      "answerDurationMs": 2113,
+      "totalDurationMs": 51086,
+      "retrievalMetrics": {
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "f1AtK": 0,
+        "mrr": 0,
+        "ndcg": 0,
+        "k": 10,
+        "relevantRetrieved": 0,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-2095",
+      "questionType": "abstention_evidence",
+      "question": "What is the name of the consulting firm that is our first beta testing customer?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly identifies that the name of the consulting firm is not mentioned in the provided information, explicitly stating 'they do not mention the name of the firm.' This is a proper abstention, as it indicates the information is not available rather than hallucinating an answer.",
+      "hypothesis": "The provided memories state that Sarah's first beta customer is a small consulting firm in the Bay Area, but they do not mention the name of the firm.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Sarah's first beta customer is a small consulting firm in the Bay Area.",
+          "score": 1,
+          "id": "bel_79a73f45b206"
+        },
+        {
+          "memory": "Sarah's first beta customer pointed out the clunky contact creation process.",
+          "score": 0.99,
+          "id": "bel_fe4cd6e26d32"
+        },
+        {
+          "memory": "Sarah is excited about the feedback she is getting from her first beta customer.",
+          "score": 0.98,
+          "id": "bel_eaedbc6a700f"
+        },
+        {
+          "memory": "Sarah's first beta customer's insights have been valuable for refining her CRM features.",
+          "score": 0.97,
+          "id": "bel_073fc8fe6fb9"
+        },
+        {
+          "memory": "Sarah manages the feedback loop with her first beta customer via a shared Slack channel.",
+          "score": 0.96,
+          "id": "bel_9bd0d48afed3"
+        },
+        {
+          "memory": "Sarah's first beta customer sends screenshots and notes whenever they spot something.",
+          "score": 0.95,
+          "id": "bel_28b245a79fde"
+        },
+        {
+          "memory": "Sarah's first beta customer pointed out the need for more contextual tasks.",
+          "score": 0.94,
+          "id": "bel_cb97f2b1887d"
+        },
+        {
+          "memory": "Sarah manages the feedback loop with her first beta customer via a weekly 30-minute sync.",
+          "score": 0.9299999999999999,
+          "id": "bel_ff2d663b87e5"
+        },
+        {
+          "memory": "Sarah receives positive feedback from her beta tester.",
+          "score": 0.92,
+          "id": "bel_12be51ab9748"
+        },
+        {
+          "memory": "Sarah's first beta customer's feedback directly shaped two of Sarah's three priorities.",
+          "score": 0.91,
+          "id": "bel_05f65f9bd267"
+        }
+      ],
+      "searchDurationMs": 69263,
+      "answerDurationMs": 2537,
+      "totalDurationMs": 76064,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2262",
+      "questionType": "preference_evidence",
+      "question": "I'm looking for some new music to get into. Can you suggest some good contemporary rock or indie bands?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model correctly recalls and utilizes the user's personal information. It addresses the user by name ('Melanie') and accurately references her previously established preference for '90s alternative and classic rock, like The Smashing Pumpkins,' which aligns with the rubric's criteria for desired sonic qualities in recommendations. Although it doesn't provide the recommendations directly, it correctly sets the stage by acknowledging the user's specific taste based on recalled information.",
+      "hypothesis": "Melanie, I know you're looking for newer bands with a sound similar to 90s alternative and classic rock, like The Smashing Pumpkins. Alex actually has a couple of new bands he's planning to check out tonight that might fit that description. Would you like me to share those recommendations with you?",
+      "groundTruth": "The rubric should verify that the recommendations are for contemporary (released after 2000) indie and alternative rock bands that share sonic qualities with 90s alternative rock, specifically acts like Pearl Jam and The Smashing Pumpkins. Appropriate recommendations would feature guitar-driven sounds, dynamic song structures, and a melodic yet powerful vocal style. Examples of suitable recommendations include bands like Wolf Alice, Fontaines D.C., The War on Drugs, or Nothing But Thieves. The response should NOT recommend bands from significantly different genres such as modern pop (e.g., Dua Lipa), synth-pop (e.g., CHVRCHES), or hip-hop (e.g., Drake), as these do not align with the user's established preference for 90s-style rock.",
+      "searchResults": [
+        {
+          "memory": "Melanie is looking to discover newer bands that have a similar sound to 90s alternative and classic rock.",
+          "score": 1,
+          "id": "bel_cedb71b7da87"
+        },
+        {
+          "memory": "Alex has a couple of new bands to check out tonight.",
+          "score": 0.99,
+          "id": "bel_bc60b832ed02"
+        },
+        {
+          "memory": "Alex will consider adding the new bands to the road trip playlist if they are good.",
+          "score": 0.98,
+          "id": "bel_e1ea48c245cf"
+        },
+        {
+          "memory": "Alex plans to check out the new bands tonight while winding down.",
+          "score": 0.97,
+          "id": "bel_fcef5b5a8b27"
+        },
+        {
+          "memory": "Melanie's vinyl collection consists mostly of 90s alternative and classic rock.",
+          "score": 0.96,
+          "id": "bel_df893958a1ab"
+        },
+        {
+          "memory": "Melanie finds her current music selection stale.",
+          "score": 0.95,
+          "id": "bel_04af19d2b9f4"
+        },
+        {
+          "memory": "Melanie's music taste is centered on her vinyl collection.",
+          "score": 0.94,
+          "id": "bel_947799c07585"
+        },
+        {
+          "memory": "Alex plans to use green for Alex's tasks for the trip, such as packing the car; orange for Bowie-related items for the trip, such as Bowie's water bowl and leash; and blue for new music recommendations for the trip.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_cc4e7004ebf1"
+        },
+        {
+          "memory": "Melanie has been listening to her usual music lately.",
+          "score": 0.92,
+          "id": "bel_0dd58ae204f5"
+        },
+        {
+          "memory": "Melanie frequently listens to records by The Smashing Pumpkins.",
+          "score": 0.91,
+          "id": "bel_018e58d2a6fb"
+        }
+      ],
+      "searchDurationMs": 91135,
+      "answerDurationMs": 4436,
+      "totalDurationMs": 102021,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
+        "f1AtK": 0.7499999999999999,
+        "mrr": 1,
+        "ndcg": 0.8068857496524253,
+        "k": 10,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2326",
+      "questionType": "preference_evidence",
+      "question": "I'm looking for some new grocery stores to try in San Francisco. Any recommendations?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model correctly recalls and utilizes all the user's personal information from the System's Hypothesis. It acknowledges the user's preference for zero-waste/bulk stores, mentions Rainbow Grocery and Other Avenues Cooperative as examples the user is familiar with, and correctly identifies that the user finds these stores too far and is looking for options closer to the city center. The model then asks for further clarification on neighborhood preference, which is a reasonable next step given the constraints.",
+      "hypothesis": "It sounds like you're looking for grocery stores in San Francisco with a strong focus on zero-waste and bulk products, similar to Rainbow Grocery where you can bring your own jars and containers. However, you're hoping for options closer to the city center, as Rainbow is a bit of a trek and Other Avenues Cooperative in Outer Sunset is also a little far for you.\n\nFinding other stores with as extensive a bulk selection and zero-waste focus as Rainbow, especially closer to the city center, can be challenging. Many smaller natural food stores might have some bulk options, but perhaps not to the same extent.\n\nDo you have a particular neighborhood in mind that would be more convenient for you?",
+      "groundTruth": "The response must recommend stores that align with the user's expressed preference for zero-waste shopping. The rubric for a correct answer is as follows: 1. Recommendations MUST prioritize stores known for extensive bulk-bin selections and policies that encourage customers to bring their own containers. 2. The response should mention specific examples like Other Avenues Cooperative, The Good Fill, or various local farmers' markets. 3. The response should NOT primarily recommend conventional supermarkets such as Safeway, Trader Joe's, or Gus's Community Market, as their business models do not center on zero-waste principles, even if they have small bulk sections.",
+      "searchResults": [
+        {
+          "memory": "The user is looking for other grocery stores or shops in San Francisco with a strong focus on zero-waste and bulk products.",
+          "score": 1,
+          "id": "bel_94b4b40423ad"
+        },
+        {
+          "memory": "San Francisco has a city-wide composting program.",
+          "score": 0.99,
+          "id": "bel_c34519a3af5b"
+        },
+        {
+          "memory": "Grocery stores are crowded on weekends.",
+          "score": 0.98,
+          "id": "bel_4cc353eab5ec"
+        },
+        {
+          "memory": "Rainbow Grocery has a great selection of bulk bins.",
+          "score": 0.97,
+          "id": "bel_c324870a0f2a"
+        },
+        {
+          "memory": "The user tries to shop at Rainbow Grocery.",
+          "score": 0.96,
+          "id": "bel_dcd52155bafb"
+        },
+        {
+          "memory": "Rainbow Grocery is a bit of a trek from the user's apartment.",
+          "score": 0.95,
+          "id": "bel_1deca127a470"
+        },
+        {
+          "memory": "The user dreads grocery store trips.",
+          "score": 0.94,
+          "id": "bel_c7302dc85084"
+        },
+        {
+          "memory": "At Rainbow Grocery, the user can bring their own jars and containers.",
+          "score": 0.9299999999999999,
+          "id": "bel_b24de2c53ab0"
+        },
+        {
+          "memory": "The user is looking for zero-waste/bulk options closer to the city center.",
+          "score": 0.92,
+          "id": "bel_801a900cb41a"
+        },
+        {
+          "memory": "Other Avenues Cooperative in Outer Sunset is a little far for the user.",
+          "score": 0.91,
+          "id": "bel_292edfce8888"
+        }
+      ],
+      "searchDurationMs": 80979,
+      "answerDurationMs": 7758,
+      "totalDurationMs": 95960,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.7,
+        "recallAtK": 1,
+        "f1AtK": 0.8235294117647058,
+        "mrr": 1,
+        "ndcg": 0.8464256614820587,
+        "k": 10,
+        "relevantRetrieved": 7,
+        "totalRelevant": 7
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2398",
+      "questionType": "preference_evidence",
+      "question": "A client just raised a significant pricing objection on a major proposal. What are some effective negotiation strategies for this situation?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model's response directly aligns with Chris Voss's 'Never Split the Difference' methodology. It explicitly mentions 'Tactical Empathy', 'Mirroring', 'Labeling', and 'Calibrated Questions' with appropriate examples (e.g., 'How would we be able to provide the level of custom integration you need at a lower price point?' which is a clear parallel to 'How am I supposed to do that?'). The recommendations focus on understanding the client's underlying concerns and constraints and explicitly advise against premature discounts or concessions, which aligns with Voss's approach of avoiding simple compromise or split-the-difference tactics.",
+      "hypothesis": "When facing a significant pricing objection on a major proposal, effective negotiation strategies include:\n\n1.  **Uncover the Real Issue:** The primary goal is to understand the underlying reason for the price objection rather than immediately defending the price (bel_27507b0f0b59, bel_3651840c9233).\n2.  **Employ Tactical Empathy:** Use techniques like mirroring and labeling to uncover the client's underlying drivers for the objection (bel_ab12d7175d8f, bel_569166592a65).\n3.  **Utilize Calibrated Questions:** Ask open-ended questions to gain clarity and understand their perspective:\n    *   \"When you say the cost is higher, could you help me understand what specific aspects you're comparing?\" (bel_dcf054872214)\n    *   \"How would we be able to provide the level of custom integration you need at a lower price point?\" (bel_6b49b49f99a1)\n4.  **Avoid Premature Discounts:** Do not offer a discount before establishing the full value, as this can send the wrong message and weaken your position (bel_4c7c9f9c5144).\n5.  **Hold Off on Concessions:** Initially, avoid preparing tiered pricing options or a list of potential concessions (bel_37d022c0571a). The focus should be on understanding first.",
+      "groundTruth": "The response must recommend negotiation strategies directly from or philosophically aligned with Chris Voss's 'Never Split the Difference'. It should specifically mention techniques such as 'Tactical Empathy', 'Mirroring', 'Labeling', and using 'Calibrated Questions' (e.g., 'How am I supposed to do that?'). The recommendations should focus on understanding the client's underlying concerns and constraints rather than simple compromise. The response should NOT suggest traditional hard-bargaining tactics, positional bargaining (as seen in 'Getting to Yes'), or split-the-difference compromises that contradict Voss's methodology.",
+      "searchResults": [
+        {
+          "memory": "Alex's goal is to uncover the real issue behind a price objection.",
+          "score": 1,
+          "id": "bel_27507b0f0b59"
+        },
+        {
+          "memory": "Alex plans to respond to a price objection by asking, \"When you say the cost is higher, could you help me understand what specific aspects you're comparing?\"",
+          "score": 0.99,
+          "id": "bel_dcf054872214"
+        },
+        {
+          "memory": "Alex's instinct when facing a price objection is to understand rather than defend.",
+          "score": 0.98,
+          "id": "bel_3651840c9233"
+        },
+        {
+          "memory": "Alex needs to be ready for the 'your price is too high' objection.",
+          "score": 0.97,
+          "id": "bel_d65743dd5d00"
+        },
+        {
+          "memory": "Alex plans to ask, \"How would we be able to provide the level of custom integration you need at a lower price point?\"",
+          "score": 0.96,
+          "id": "bel_6b49b49f99a1"
+        },
+        {
+          "memory": "Melanie will add 'Strategy: Employ Tactical Empathy (Voss). Use mirroring and labeling to uncover underlying drivers' to the 'Pricing Objection' subsection of the 'Potential Roadblocks' section in the prep document.",
+          "score": 0.95,
+          "id": "bel_ab12d7175d8f"
+        },
+        {
+          "memory": "Alex believes offering a discount before establishing value can send the wrong message and feels like a weak position.",
+          "score": 0.94,
+          "id": "bel_4c7c9f9c5144"
+        },
+        {
+          "memory": "Alex wants to avoid preparing a tiered pricing option or a list of potential concessions for now.",
+          "score": 0.9299999999999999,
+          "id": "bel_37d022c0571a"
+        },
+        {
+          "memory": "Alex finds concepts like tactical empathy and calibrated questions from the book powerful for handling price objections.",
+          "score": 0.92,
+          "id": "bel_569166592a65"
+        },
+        {
+          "memory": "Alex has a major presentation with a potential client, Innovate Solutions, on Wednesday.",
+          "score": 0.91,
+          "id": "bel_4796ae5f6302"
+        }
+      ],
+      "searchDurationMs": 69957,
+      "answerDurationMs": 6622,
+      "totalDurationMs": 82889,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.8,
+        "recallAtK": 1,
+        "f1AtK": 0.888888888888889,
+        "mrr": 1,
+        "ndcg": 0.9672068480996276,
+        "k": 10,
+        "relevantRetrieved": 8,
+        "totalRelevant": 8
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2410",
+      "questionType": "preference_evidence",
+      "question": "We're facing a minor compliance issue with one of our new components. What kind of legal counsel should we look for?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model correctly recommends legal counsel specializing in 'FAA manufacturing regulations' and 'parts manufacturing,' which is a specific, niche specialization in aerospace. It emphasizes the importance of this industry-specific expertise by detailing the complexities of new composite materials and FAA Advisory Circulars. Crucially, it utilizes the user's personal information (Alex's past experience with medical devices/FDA) not as a recommendation for the current issue, but as a justification for the need for specialized counsel in the aerospace field, aligning perfectly with the rubric's clarification on how that information should be used.",
+      "hypothesis": "You should look for legal counsel specializing in **FAA manufacturing regulations**, particularly those with expertise in **parts manufacturing**.\n\nThis specialization is crucial because:\n*   Your company is working with **new composite materials** that may not be explicitly covered by older FAA guidelines, leading to ambiguities in compliance standards.\n*   There are known **ambiguities in FAA Advisory Circulars** (like 20-107B) regarding validation processes for non-metallic composite materials, digital signature validation, and calibration standards.\n*   Misinterpreting these standards, even for a \"minor\" issue, can lead to significant problems like **production holds**.\n*   Alex believes that for complex compliance, a firm specializing in the specific industry is essential, drawing from past experience in medical devices where a specialized firm was retained for FDA rules.",
+      "groundTruth": "The answer must recommend finding a lawyer or law firm with a specific, niche specialization in aerospace manufacturing regulations, aviation law, or FAA compliance. The rubric is satisfied if the recommendation emphasizes the importance of this industry-specific expertise over general corporate or manufacturing law. The answer should NOT recommend generalist law firms or firms specializing in other unrelated fields (e.g., medical device/FDA law, which is only relevant as the source of the user's preference).",
+      "searchResults": [
+        {
+          "memory": "Alex plans to make a case to the leadership team to engage legal counsel specializing in FAA manufacturing regulations, take Rusty for a walk, clear Alex's head before looking at the brief, and walk along the river.",
+          "score": 1,
+          "id": "bel_synth_9cbdd0c89d60"
+        },
+        {
+          "memory": "Alex believes that for complex compliance, a firm specializing in the specific industry is essential.",
+          "score": 0.99,
+          "id": "bel_b676bf1db851"
+        },
+        {
+          "memory": "Alex has started looking for supplementary materials or official clarifications regarding the new FAA compliance standards.",
+          "score": 0.98,
+          "id": "bel_92d20f3ce6fe"
+        },
+        {
+          "memory": "Alex has been working on documentation for a new set of FAA compliance standards.",
+          "score": 0.97,
+          "id": "bel_ac3fc314ca53"
+        },
+        {
+          "memory": "Alex requested the AI to pull up FAA Advisory Circular 20-107B, cross-reference FAA Advisory Circular 20-107B with the section in Alex's company's current quality manual that deals with material sourcing and traceability, research and compile a list of law firms specializing in FAA regulatory compliance for parts manufacturers, pull case studies or articles on the costs of non-compliance in aerospace, and add a section on potential IT infrastructure costs associated with the 'lifetime of the part' data retention requirement to the brief.",
+          "score": 0.96,
+          "id": "bel_synth_83d2aa05f859"
+        },
+        {
+          "memory": "Alex's company is working with new composite materials that are not explicitly covered in old FAA guidelines.",
+          "score": 0.95,
+          "id": "bel_ca978cd41b5a"
+        },
+        {
+          "memory": "Ambiguities in the FAA Advisory Circular 20-107B include three relating to the validation process for suppliers of non-metallic composite materials, language open to interpretation regarding the frequency of on-site audits for suppliers of non-metallic composite materials, two concerning digital signature validation for material certificates, and two concerning specific calibration standards for testing equipment.",
+          "score": 0.94,
+          "id": "bel_synth_1672ead3bda7"
+        },
+        {
+          "memory": "Alex is under a lot of pressure due to the potential impact of misinterpreting FAA compliance standards, which could lead to production holds.",
+          "score": 0.9299999999999999,
+          "id": "bel_7e3e69159071"
+        },
+        {
+          "memory": "Alex previously worked in medical devices, where Alex's company navigated complex FDA rules and had a law firm on retainer that specialized in med-tech regulatory law.",
+          "score": 0.92,
+          "id": "bel_synth_1b4d9e507956"
+        }
+      ],
+      "searchDurationMs": 57583,
+      "answerDurationMs": 5742,
+      "totalDurationMs": 70155,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.3333333333333333,
+        "recallAtK": 1,
+        "f1AtK": 0.5,
+        "mrr": 1,
+        "ndcg": 0.9469024295259745,
+        "k": 9,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2535",
+      "questionType": "implicit_connection_evidence",
+      "question": "What kind of wood should I use for my new bookcase?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The ground truth specifies that a good response should suggest wood options aligning with sustainable and reclaimed materials, considering environmentally friendly choices. The model's response directly addresses this by suggesting 'reclaimed walnut,' 'other reclaimed hardwoods like oak or maple,' and 'FSC-certified woods,' all of which fit the criteria of sustainable and environmentally friendly materials. It also provides context for why these choices are good, matching the user's implied preferences.",
+      "hypothesis": "Given that you want the new bookcase to match your table in terms of sustainability, and you chose **walnut from a demolished building** for your table, using **reclaimed walnut** would be an excellent choice. It's sturdy enough to hold a lot of books and decorative items, and it aligns perfectly with your commitment to sustainable materials.\n\nIf reclaimed walnut isn't readily available, you could also consider other **reclaimed hardwoods** like oak or maple. For a modern look with clean lines, you might also explore **FSC-certified woods** or even incorporate materials like **metal or glass** with wood, as you like the idea of mixing materials.",
+      "groundTruth": "A good response should suggest wood options that align with sustainable and reclaimed materials, considering the user's preference for environmentally friendly choices.",
+      "searchResults": [
+        {
+          "memory": "Caroline wants the new bookcase to hold a lot of books and possibly some decorative items.",
+          "score": 1,
+          "id": "bel_8a63a3e293d8"
+        },
+        {
+          "memory": "Caroline is planning to build a new bookcase next.",
+          "score": 0.99,
+          "id": "bel_22539e75c919"
+        },
+        {
+          "memory": "Caroline wants the new bookcase to match her table in terms of sustainability.",
+          "score": 0.98,
+          "id": "bel_278375d431e6"
+        },
+        {
+          "memory": "Caroline is looking for suggestions on sustainable materials for furniture.",
+          "score": 0.97,
+          "id": "bel_ee3af8cefb8e"
+        },
+        {
+          "memory": "Caroline likes the idea of mixing materials for the bookcase.",
+          "score": 0.96,
+          "id": "bel_b67888860768"
+        },
+        {
+          "memory": "Caroline likes clean lines and a modern look for the bookcase.",
+          "score": 0.95,
+          "id": "bel_f963a09b384f"
+        },
+        {
+          "memory": "Caroline enjoys woodworking.",
+          "score": 0.94,
+          "id": "bel_cc5a994da749"
+        },
+        {
+          "memory": "Woodworking gives Caroline a chance to create something personal.",
+          "score": 0.9299999999999999,
+          "id": "bel_e576e055a40c"
+        },
+        {
+          "memory": "Woodworking is a nice break from Caroline's day-to-day work.",
+          "score": 0.92,
+          "id": "bel_eb3942f60641"
+        },
+        {
+          "memory": "Caroline chose walnut from a demolished building for her table.",
+          "score": 0.91,
+          "id": "bel_3e853d54a4a5"
+        }
+      ],
+      "searchDurationMs": 22239,
+      "answerDurationMs": 5894,
+      "totalDurationMs": 33996,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.5,
+        "recallAtK": 1,
+        "f1AtK": 0.6666666666666666,
+        "mrr": 1,
+        "ndcg": 0.8840530210968294,
+        "k": 10,
+        "relevantRetrieved": 5,
+        "totalRelevant": 5
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2541",
+      "questionType": "implicit_connection_evidence",
+      "question": "I need to prep for the big quarterly review meeting next Friday. I have a 15-minute slot to present our social media performance to the leadership team. What's the best way to structure my deck?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's response fully addresses all aspects of the ground truth answer. It provides a clear, logical, and detailed 10-slide structure for a 15-minute social media performance presentation, including elements like an executive summary, key metrics, a deep dive into a successful campaign, learnings, and next steps. Crucially, it also explicitly addresses the user's nervousness about public speaking by including a dedicated section with confidence-building advice. This advice covers practicing, focusing on the 'so what,' using visuals, telling a story (narrative-driven approach), anticipating questions, and managing anxiety, all of which align perfectly with the ground truth's requirements.",
+      "hypothesis": "Hi Maya, I understand that compiling these presentations can be stressful, especially with your goal to become more confident with public speaking. A well-structured deck will not only make the process easier for you but also help you deliver a clear, impactful message to leadership in your 15-minute slot.\n\nGiven that your management loves seeing direct-attribution reports and your primary goals are lead generation and building brand authority, here's a recommended structure for your social media performance deck:\n\n---\n\n### **Social Media Performance Review - Q[X]**\n*(Your Name, Date)*\n\n**Slide 1: Title Slide**\n*   **Title:** Social Media Performance Review - Q[X]\n*   **Subtitle:** Driving Leads & Building Brand Authority\n*   Your Name, Department, Date\n\n**Slide 2: Agenda (15-second overview)**\n*   Quick overview of what you'll cover to set expectations.\n*   *Example:* Q[X] Objectives, Key Wins, Performance Metrics, Deep Dive: [Successful Campaign Name], Learnings & Next Steps.\n\n**Slide 3: This Quarter's Social Media Objectives (1 minute)**\n*   **Connect back to your goals:** Remind leadership of what you set out to achieve.\n    *   Lead Generation (e.g., X% increase in MQLs from social)\n    *   Building Brand Voice & Authority in B2B Tech Space (e.g., thought leadership, industry recognition)\n*   *Memory Integration:* \"Maya's primary goals for the upcoming month's social media content are lead generation and building her brand's voice and authority in the B2B tech space.\" (Assume these were also the quarterly goals).\n\n**Slide 4: Executive Summary & Key Wins (2 minutes)**\n*   **Start strong with your biggest successes.** What's the headline?\n*   Highlight the most impressive numbers or achievements.\n*   *Memory Integration:* \"Maya had a campaign last quarter that did amazingly well.\" and \"Maya received incredible feedback from potential customers for her last quarter campaign.\" Briefly mention this campaign and its overall success here.\n\n**Slide 5: Performance Overview - The Numbers (3 minutes)**\n*   **Focus on key metrics, but don't overwhelm.** Use clear charts and graphs.\n    *   **Engagement:** Total engagement (likes, comments, shares) across platforms.\n    *   **Reach/Impressions:** How many people saw your content.\n    *   **Audience Growth:** New followers/connections.\n    *   **Website Traffic from Social:** How much traffic did social drive to your site?\n*   *Memory Integration:* \"Maya tracks engagement and new leads directly in Salesforce.\"\n\n**Slide 6: Deep Dive: Lead Generation & Direct Attribution (4 minutes - *This is critical!*)**\n*   **This is where you shine for leadership.**\n*   **Show the direct impact on the business.**\n    *   **Number of New Leads:** Clearly state how many new leads social media generated.\n    *   **Conversion Rates:** From social engagement to lead, and lead to MQL/SQL (if you have this data).\n    *   **Attribution Reports:** Present the data that shows social media's direct contribution to the sales pipeline.\n*   *Memory Integration:* \"Maya's management loves seeing direct-attribution reports.\" and \"Maya tracks engagement and new leads directly in Salesforce.\" Use Salesforce data here!\n\n**Slide 7: Success Story Spotlight: [Your Amazing Campaign Name] (2 minutes)**\n*   **Elaborate on your successful campaign.**\n    *   **Objective:** What was the goal of this specific campaign?\n    *   **Strategy:** Briefly explain what you did.\n    *   **Results:** Quantify the success (e.g., X leads, Y engagement, Z conversions).\n    *   **Customer Feedback:** Share a compelling quote or summary of the \"incredible feedback from potential customers.\"\n*   *Memory Integration:* \"Maya received incredible feedback from potential customers for her last quarter campaign.\" and \"Maya had a campaign last quarter that did amazingly well.\"\n\n**Slide 8: Learnings & Opportunities (1 minute)**\n*   **Show critical thinking.** What didn't work as well? What insights did you gain?\n*   This demonstrates you're not just reporting numbers but actively optimizing.\n\n**Slide 9: Next Quarter's Focus & Strategy (1 minute)**\n*   **Look forward.** How will you build on your successes and address learnings?\n*   Briefly outline your strategic pillars for the next quarter.\n*   *Memory Integration:* \"Maya has a bunch of concrete content pillars to build on now.\" and \"Maya is trying to plan out her social media content calendar for next month.\" Connect these to your future strategy. Reiterate how this will continue to drive lead generation and brand authority.\n\n**Slide 10: Q&A / Thank You**\n*   Open the floor for questions.\n*   Provide your contact information.\n\n---\n\n**Tips for Delivery & Confidence (Addressing your public speaking goal):**\n\n1.  **Practice, Practice, Practice:** Go through your deck multiple times. Time yourself. This will build your confidence and help you stay within the 15-minute limit.\n2.  **Focus on the \"So What?\":** For every metric, ask yourself: \"So what does this mean for the business?\" Leadership cares about impact, not just raw numbers.\n3.  **Visuals Over Text:** Use charts, graphs, and images. Keep text on slides minimal – your slides are a visual aid, not a script.\n4.  **Tell a Story:** Frame your presentation as a narrative: \"Here's what we aimed for, here's what we achieved (especially with [campaign]), here's the impact, and here's where we're going next.\"\n5.  **Anticipate Questions:** Think about what leadership might ask, especially regarding ROI and future plans. Prepare concise answers.\n6.  **Breathe and Be Yourself:** It's okay to be nervous, but remember your successes. You've done great work!\n\nThis structure prioritizes what leadership wants to see (direct impact, lead generation) while allowing you to highlight your successes and demonstrate your strategic thinking. Good luck, Maya! You've got this.",
+      "groundTruth": "A good response should provide a clear, logical structure for a 15-minute presentation on social media performance (e.g., summary, key metrics, campaign highlights, learnings, next steps). Critically, it must also implicitly address the user's previously mentioned nervousness about public speaking by incorporating confidence-building advice. This includes suggesting a narrative-driven approach instead of a simple data dump, recommending a focus on a few key takeaways to make the content more manageable, and offering practical tips for rehearsal and managing presentation anxiety, such as practicing the opening or preparing for likely questions.",
+      "searchResults": [
+        {
+          "memory": "Compiling presentations for the quarterly leadership review is the most stressful part of Maya's job.",
+          "score": 1,
+          "id": "bel_0028d059bcf5"
+        },
+        {
+          "memory": "Maya dreads compiling everything into a presentation for the quarterly leadership review.",
+          "score": 0.99,
+          "id": "bel_f38b089a0266"
+        },
+        {
+          "memory": "Maya has a bunch of concrete content pillars to build on now.",
+          "score": 0.98,
+          "id": "bel_e7259e6c7842"
+        },
+        {
+          "memory": "Maya's professional goal for this quarter is to get better and more confident with public speaking.",
+          "score": 0.97,
+          "id": "bel_52dbdb698fc5"
+        },
+        {
+          "memory": "Maya received incredible feedback from potential customers for her last quarter campaign.",
+          "score": 0.96,
+          "id": "bel_95e2a018e536"
+        },
+        {
+          "memory": "Maya is trying to plan out her social media content calendar for next month.",
+          "score": 0.95,
+          "id": "bel_6a085bd9d213"
+        },
+        {
+          "memory": "Maya tracks engagement and new leads directly in Salesforce.",
+          "score": 0.94,
+          "id": "bel_4890d2e0a927"
+        },
+        {
+          "memory": "Maya's primary goals for the upcoming month's social media content are lead generation and building her brand's voice and authority in the B2B tech space.",
+          "score": 0.9299999999999999,
+          "id": "bel_6becce5144c1"
+        },
+        {
+          "memory": "Maya had a campaign last quarter that did amazingly well.",
+          "score": 0.92,
+          "id": "bel_7f5815cd48ac"
+        },
+        {
+          "memory": "Maya's management loves seeing direct-attribution reports.",
+          "score": 0.91,
+          "id": "bel_c70e74ccaa88"
+        }
+      ],
+      "searchDurationMs": 56268,
+      "answerDurationMs": 14113,
+      "totalDurationMs": 81557,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "f1AtK": 0.5714285714285715,
+        "mrr": 1,
+        "ndcg": 0.9176551163528843,
+        "k": 10,
+        "relevantRetrieved": 4,
+        "totalRelevant": 4
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2607",
+      "questionType": "implicit_connection_evidence",
+      "question": "What would be the best way to follow up with the team at DataCorp after our meeting today?",
+      "score": 0,
+      "label": "incorrect",
+      "explanation": "The ground truth answer specifies that the follow-up should be a 'detailed written summary' and, crucially, that this recommendation should 'consider the hearing-impaired stakeholder's preference for written communication over phone calls'. The system's hypothesis recommends 'comprehensive communication' which can be interpreted as a detailed written summary, but it completely omits the critical reason related to the hearing-impaired stakeholder. It provides a different justification (high stakes, competitor). Since it misses a key piece of information and the specific reasoning required by the ground truth, it only contains a subset of the required information.",
+      "hypothesis": "A quick follow-up call or brief email won't be effective for DataCorp's whole team.\n\nInstead, the best way to follow up would be to send a comprehensive communication that leverages the existing outline. This should include:\n\n*   A recap of DataCorp's primary goal: Unifying customer data across departments.\n*   Addressing John's (IT) needs with details on the platform's RESTful API and documentation.\n*   Addressing Sarah's (CFO) needs with a commitment to providing a full TCO/ROI model.\n*   Addressing Mark's (VP Ops) needs with the phased implementation and user training strategy, specifically covering implementation timelines, user adoption strategies, and how the platform would impact his team's day-to-day workflows.\n\nThis detailed approach is crucial given the high stakes of the deal and DataCorp being in the early stages of looking at a main competitor.",
+      "groundTruth": "A good response should recommend sending a detailed written summary of the meeting, considering the hearing-impaired stakeholder's preference for written communication over phone calls.",
+      "searchResults": [
+        {
+          "memory": "A quick follow-up call or brief email won't be effective for DataCorp's whole team.",
+          "score": 1,
+          "id": "bel_2d82e615c145"
+        },
+        {
+          "memory": "Alex wrapped up a massive discovery call with the team at DataCorp.",
+          "score": 0.99,
+          "id": "bel_0dadcfb83f01"
+        },
+        {
+          "memory": "The discovery call with DataCorp went well.",
+          "score": 0.98,
+          "id": "bel_56b3594fd17d"
+        },
+        {
+          "memory": "Mark (DataCorp's VP of Operations) wanted to know about implementation timelines, user adoption strategies, and how the platform would impact his team's day-to-day workflows.",
+          "score": 0.97,
+          "id": "bel_synth_35ee2234fb93"
+        },
+        {
+          "memory": "DataCorp is in the early stages of looking at the main competitor.",
+          "score": 0.96,
+          "id": "bel_5e07962f0639"
+        },
+        {
+          "memory": "John (IT), Sarah (CFO), and Mark (VP Ops) are the key stakeholders from DataCorp.",
+          "score": 0.95,
+          "id": "bel_e1082f60b1b1"
+        },
+        {
+          "memory": "DataCorp is looking for a complete overhaul of their customer data platform.",
+          "score": 0.94,
+          "id": "bel_dbb7cfabc87e"
+        },
+        {
+          "memory": "The outline includes a recap of DataCorp's primary goal: Unifying customer data across departments; addressing John's (IT) needs with the platform's RESTful API and documentation; addressing Sarah's (CFO) needs with a commitment to providing a full TCO/ROI model; and addressing Mark's (Ops) needs with the phased implementation and user training strategy.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_2e878495b508"
+        },
+        {
+          "memory": "The stakes are high on the DataCorp deal.",
+          "score": 0.92,
+          "id": "bel_f8d62cdf7574"
+        },
+        {
+          "memory": "Mark (DataCorp's VP of Operations) seems to be the main decision maker.",
+          "score": 0.91,
+          "id": "bel_b6963ba44db1"
+        }
+      ],
+      "searchDurationMs": 63284,
+      "answerDurationMs": 6091,
+      "totalDurationMs": 75946,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 1,
+        "f1AtK": 0.33333333333333337,
+        "mrr": 1,
+        "ndcg": 0.8065735963827293,
+        "k": 10,
+        "relevantRetrieved": 2,
+        "totalRelevant": 2
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2638",
+      "questionType": "implicit_connection_evidence",
+      "question": "Can you recommend some books I might enjoy?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model's response directly addresses all aspects of the ground truth. It recommends books related to international relations and diplomacy, explicitly acknowledging the user's interest in these topics and their appreciation for depth and thoughtful analysis. The descriptions of the recommended books highlight their relevance to international relations and their capacity for providing deep, thoughtful analysis, aligning perfectly with the user's background and preferences.",
+      "hypothesis": "Given your enjoyment of reading, especially about international relations, and your appreciation for physical books as a great escape, I have a few recommendations that might pique your interest:\n\n1.  **\"Prisoners of Geography: Ten Maps That Tell You Everything You Need to Know About Global Politics\" by Tim Marshall:** This book offers a clear and insightful look at how geography has shaped and continues to shape international relations. It's a fantastic way to gain a richer understanding of global dynamics.\n2.  **\"Diplomacy\" by Henry Kissinger:** A comprehensive and classic work that provides a historical overview of diplomacy and international relations, offering significant depth and context.\n3.  **\"The Grand Chessboard: American Primacy and Its Geostrategic Imperatives\" by Zbigniew Brzezinski:** If you're looking for a deeper dive into geopolitical strategy and the role of major powers, this is a highly regarded read.\n4.  **\"Factfulness: Ten Reasons We're Wrong About the World – and Why Things Are Better Than You Think\" by Hans Rosling:** While not strictly international relations, this book provides a data-driven perspective on global trends and challenges, helping to clarify complex issues and offering a more nuanced understanding of the world.\n\nThese books should offer both the intellectual depth you value and the \"great escape\" that a good physical book provides!",
+      "groundTruth": "A good response should suggest books related to international relations or diplomacy, considering Isabelle's interest in these topics, as well as her background in International Relations and her appreciation for depth and thoughtful analysis.",
+      "searchResults": [
+        {
+          "memory": "Isabelle considers a physical book a great escape.",
+          "score": 1,
+          "id": "bel_21899d38c140"
+        },
+        {
+          "memory": "Isabelle enjoys reading about international relations.",
+          "score": 0.99,
+          "id": "bel_453a1cb429b0"
+        },
+        {
+          "memory": "Isabelle enjoys reading.",
+          "score": 0.98,
+          "id": "bel_db54641a28e6"
+        },
+        {
+          "memory": "Isabelle's year abroad in France taught her how to listen and adapt in a different cultural context.",
+          "score": 0.97,
+          "id": "bel_5e58407a40be"
+        },
+        {
+          "memory": "Isabelle listens to sparse, atmospheric jazz lately.",
+          "score": 0.96,
+          "id": "bel_93012a196583"
+        },
+        {
+          "memory": "Isabelle is a big fan of the ECM Records catalog.",
+          "score": 0.95,
+          "id": "bel_634404f6d0ab"
+        },
+        {
+          "memory": "Isabelle believes seeing subtle changes and gaining richer understanding over time is important.",
+          "score": 0.94,
+          "id": "bel_0ec36e622f7a"
+        },
+        {
+          "memory": "Isabelle values clarity and depth in her music and work.",
+          "score": 0.9299999999999999,
+          "id": "bel_509cd7039c7c"
+        },
+        {
+          "memory": "Isabelle prefers building deep relationships with a few key accounts over managing a wider portfolio.",
+          "score": 0.92,
+          "id": "bel_f46446f12faf"
+        },
+        {
+          "memory": "Isabelle listens for what isn't being said to understand real objectives, spends the first half of most high-stakes meetings listening and taking notes, maps out relationships and unspoken tensions in the room during meetings, and her go-to method is to not speak until she has synthesized all different threads.",
+          "score": 0.91,
+          "id": "bel_synth_4eb0762bf43c"
+        }
+      ],
+      "searchDurationMs": 39911,
+      "answerDurationMs": 5274,
+      "totalDurationMs": 52122,
+      "retrievalMetrics": {
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "f1AtK": 0,
+        "mrr": 0,
+        "ndcg": 0,
+        "k": 10,
+        "relevantRetrieved": 0,
+        "totalRelevant": 1
+      }
+    }
+  ]
+}

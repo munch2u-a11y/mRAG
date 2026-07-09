@@ -1,0 +1,2205 @@
+{
+  "provider": "mrag",
+  "benchmark": "convomem",
+  "runId": "convomem-mrag-verbatim-20q-v2",
+  "dataSourceRunId": "convomem-mrag-verbatim-20q-v2",
+  "judge": "gemini-2.5-flash",
+  "answeringModel": "gemini-2.5-flash",
+  "timestamp": "2026-07-09T01:37:34.329Z",
+  "summary": {
+    "totalQuestions": 24,
+    "correctCount": 21,
+    "accuracy": 0.875
+  },
+  "latency": {
+    "ingest": {
+      "min": 40,
+      "max": 56,
+      "mean": 42,
+      "median": 42,
+      "p95": 46,
+      "p99": 56,
+      "stdDev": 3,
+      "count": 24
+    },
+    "indexing": {
+      "min": 1,
+      "max": 1,
+      "mean": 1,
+      "median": 1,
+      "p95": 1,
+      "p99": 1,
+      "stdDev": 0,
+      "count": 2
+    },
+    "search": {
+      "min": 20481,
+      "max": 115326,
+      "mean": 68416,
+      "median": 71014,
+      "p95": 109931,
+      "p99": 115326,
+      "stdDev": 26651,
+      "count": 24
+    },
+    "answer": {
+      "min": 1064,
+      "max": 12914,
+      "mean": 4009,
+      "median": 2857,
+      "p95": 8907,
+      "p99": 12914,
+      "stdDev": 2966,
+      "count": 24
+    },
+    "evaluate": {
+      "min": 2620,
+      "max": 13494,
+      "mean": 6653,
+      "median": 5909,
+      "p95": 10537,
+      "p99": 13494,
+      "stdDev": 2633,
+      "count": 24
+    },
+    "total": {
+      "min": 26105,
+      "max": 125309,
+      "mean": 79121,
+      "median": 80534,
+      "p95": 119657,
+      "p99": 125309,
+      "stdDev": 27420,
+      "count": 24
+    }
+  },
+  "tokens": {
+    "totalTokens": 10774,
+    "basePromptTokens": 876,
+    "contextTokens": 9898,
+    "avgTokensPerQuestion": 449,
+    "avgBasePromptTokens": 37,
+    "avgContextTokens": 412
+  },
+  "memscore": "88% / 68416ms / 412tok",
+  "memscoreComponents": {
+    "quality": 88,
+    "latencyMs": 68416,
+    "contextTokens": 412
+  },
+  "retrieval": {
+    "hitAtK": 0.9583333333333334,
+    "precisionAtK": 0.4539682539682541,
+    "recallAtK": 0.9583333333333334,
+    "f1AtK": 0.5610452541954091,
+    "mrr": 0.7847222222222222,
+    "ndcg": 0.8107422788410195,
+    "k": 10
+  },
+  "byQuestionType": {
+    "user_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 55987,
+          "max": 96725,
+          "mean": 81446,
+          "median": 96263,
+          "p95": 96725,
+          "p99": 96725,
+          "stdDev": 16753,
+          "count": 4
+        },
+        "answer": {
+          "min": 1064,
+          "max": 3726,
+          "mean": 1771,
+          "median": 1152,
+          "p95": 3726,
+          "p99": 3726,
+          "stdDev": 1129,
+          "count": 4
+        },
+        "total": {
+          "min": 60262,
+          "max": 106285,
+          "mean": 88243,
+          "median": 105891,
+          "p95": 106285,
+          "p99": 106285,
+          "stdDev": 19231,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 0.7916666666666667,
+        "ndcg": 0.8390517967770055,
+        "k": 10
+      }
+    },
+    "assistant_facts_evidence": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 0.75,
+      "latency": {
+        "search": {
+          "min": 20481,
+          "max": 77770,
+          "mean": 53298,
+          "median": 69784,
+          "p95": 77770,
+          "p99": 77770,
+          "stdDev": 22438,
+          "count": 4
+        },
+        "answer": {
+          "min": 1997,
+          "max": 3191,
+          "mean": 2506,
+          "median": 2524,
+          "p95": 3191,
+          "p99": 3191,
+          "stdDev": 438,
+          "count": 4
+        },
+        "total": {
+          "min": 26105,
+          "max": 85456,
+          "mean": 62455,
+          "median": 77040,
+          "p95": 85456,
+          "p99": 85456,
+          "stdDev": 22719,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.5416666666666666,
+        "recallAtK": 1,
+        "f1AtK": 0.6804639804639805,
+        "mrr": 0.875,
+        "ndcg": 0.834753213310909,
+        "k": 10
+      }
+    },
+    "changing_evidence": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 0.75,
+      "latency": {
+        "search": {
+          "min": 51242,
+          "max": 115326,
+          "mean": 86689,
+          "median": 94613,
+          "p95": 115326,
+          "p99": 115326,
+          "stdDev": 23133,
+          "count": 4
+        },
+        "answer": {
+          "min": 2851,
+          "max": 4696,
+          "mean": 3863,
+          "median": 3966,
+          "p95": 4696,
+          "p99": 4696,
+          "stdDev": 658,
+          "count": 4
+        },
+        "total": {
+          "min": 62312,
+          "max": 125309,
+          "mean": 97784,
+          "median": 103395,
+          "p95": 125309,
+          "p99": 125309,
+          "stdDev": 22654,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.625,
+        "recallAtK": 1,
+        "f1AtK": 0.7066387559808613,
+        "mrr": 0.7083333333333333,
+        "ndcg": 0.7933339497786809,
+        "k": 10
+      }
+    },
+    "abstention_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 28002,
+          "max": 88184,
+          "mean": 56422,
+          "median": 58511,
+          "p95": 88184,
+          "p99": 88184,
+          "stdDev": 21508,
+          "count": 4
+        },
+        "answer": {
+          "min": 1779,
+          "max": 2601,
+          "mean": 2198,
+          "median": 2395,
+          "p95": 2601,
+          "p99": 2601,
+          "stdDev": 320,
+          "count": 4
+        },
+        "total": {
+          "min": 35028,
+          "max": 99971,
+          "mean": 65246,
+          "median": 64194,
+          "p95": 99971,
+          "p99": 99971,
+          "stdDev": 23087,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 0.75,
+        "precisionAtK": 0.3,
+        "recallAtK": 0.75,
+        "f1AtK": 0.38888888888888895,
+        "mrr": 0.75,
+        "ndcg": 0.7483305749703655,
+        "k": 10
+      }
+    },
+    "preference_evidence": {
+      "total": 4,
+      "correct": 4,
+      "accuracy": 1,
+      "latency": {
+        "search": {
+          "min": 56144,
+          "max": 100293,
+          "mean": 73866,
+          "median": 74886,
+          "p95": 100293,
+          "p99": 100293,
+          "stdDev": 16644,
+          "count": 4
+        },
+        "answer": {
+          "min": 1903,
+          "max": 8907,
+          "mean": 6572,
+          "median": 8177,
+          "p95": 8907,
+          "p99": 8907,
+          "stdDev": 2755,
+          "count": 4
+        },
+        "total": {
+          "min": 71057,
+          "max": 119230,
+          "mean": 87787,
+          "median": 82740,
+          "p95": 119230,
+          "p99": 119230,
+          "stdDev": 18624,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6571428571428571,
+        "recallAtK": 1,
+        "f1AtK": 0.7725490196078432,
+        "mrr": 0.75,
+        "ndcg": 0.8449453261513187,
+        "k": 7
+      }
+    },
+    "implicit_connection_evidence": {
+      "total": 4,
+      "correct": 3,
+      "accuracy": 0.75,
+      "latency": {
+        "search": {
+          "min": 22580,
+          "max": 109931,
+          "mean": 58777,
+          "median": 71014,
+          "p95": 109931,
+          "p99": 109931,
+          "stdDev": 34699,
+          "count": 4
+        },
+        "answer": {
+          "min": 2857,
+          "max": 12914,
+          "mean": 7147,
+          "median": 8864,
+          "p95": 12914,
+          "p99": 12914,
+          "stdDev": 4025,
+          "count": 4
+        },
+        "total": {
+          "min": 36739,
+          "max": 119657,
+          "mean": 73210,
+          "median": 94142,
+          "p95": 119657,
+          "p99": 119657,
+          "stdDev": 34932,
+          "count": 4
+        }
+      },
+      "retrieval": {
+        "hitAtK": 1,
+        "precisionAtK": 0.5,
+        "recallAtK": 1,
+        "f1AtK": 0.6359126984126984,
+        "mrr": 0.8333333333333334,
+        "ndcg": 0.8040388120578377,
+        "k": 10
+      }
+    }
+  },
+  "questionTypeRegistry": {
+    "user_evidence": {
+      "id": "user_evidence",
+      "alias": "user",
+      "description": "User-stated facts"
+    },
+    "assistant_facts_evidence": {
+      "id": "assistant_facts_evidence",
+      "alias": "asst",
+      "description": "Assistant-stated facts"
+    },
+    "preference_evidence": {
+      "id": "preference_evidence",
+      "alias": "pref",
+      "description": "User preferences"
+    },
+    "changing_evidence": {
+      "id": "changing_evidence",
+      "alias": "change",
+      "description": "Information updates"
+    },
+    "implicit_connection_evidence": {
+      "id": "implicit_connection_evidence",
+      "alias": "implicit",
+      "description": "Implicit reasoning"
+    },
+    "abstention_evidence": {
+      "id": "abstention_evidence",
+      "alias": "abstain",
+      "description": "Abstention (unanswerable)"
+    }
+  },
+  "evaluations": [
+    {
+      "questionId": "convomem-user_evidence-29",
+      "questionType": "user_evidence",
+      "question": "I was just thinking about a past project where my perfectionism caused a delay. Can you remind me of the specific reason I gave for that campaign being pushed back?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "Manually corrected — answer contains the correct information.",
+      "hypothesis": "You delayed that campaign because you insisted on triple-checking the entire media list.",
+      "groundTruth": "You said the campaign was delayed because you spent an entire extra week triple-checking the media list to ensure it was perfect.",
+      "searchResults": [
+        {
+          "memory": "The successful outcome of the delayed campaign reinforced Sarah's belief that extra time is worth it.",
+          "score": 1,
+          "id": "bel_e4bcaf92f225"
+        },
+        {
+          "memory": "Sarah's manager was focused on the missed deadline for the campaign.",
+          "score": 0.99,
+          "id": "bel_fe728251ba58"
+        },
+        {
+          "memory": "Sarah's manager was unhappy about the delayed campaign.",
+          "score": 0.98,
+          "id": "bel_d9c794c42955"
+        },
+        {
+          "memory": "Sarah's perfectionist tendencies have sometimes slowed things down.",
+          "score": 0.97,
+          "id": "bel_0c728fa3e670"
+        },
+        {
+          "memory": "Sarah once delayed a campaign by an extra week.",
+          "score": 0.96,
+          "id": "bel_cfc893c48c1f"
+        },
+        {
+          "memory": "Sarah delayed the campaign because she insisted on triple-checking the entire media list.",
+          "score": 0.95,
+          "id": "bel_3646fd90ce3d"
+        },
+        {
+          "memory": "Sarah will frame her plan to time-box perfectionism as 'an experiment in strategic satisfaction'.",
+          "score": 0.94,
+          "id": "bel_a9865eb4a4a5"
+        },
+        {
+          "memory": "The interlocutor believes Sarah developed perfectionist habits as a coping mechanism, believes Sarah's perfectionism habit served her well in the past but may not be serving her as well now, and believes recognizing the origin of the habit is a big step in changing the pattern.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_d2d65275092e"
+        },
+        {
+          "memory": "Sarah's conversation with her manager about the delayed campaign was tense.",
+          "score": 0.92,
+          "id": "bel_382c419bcab8"
+        },
+        {
+          "memory": "Sarah's perfectionism was a survival tactic.",
+          "score": 0.91,
+          "id": "bel_c17558d7eebd"
+        }
+      ],
+      "searchDurationMs": 96725,
+      "answerDurationMs": 3726,
+      "totalDurationMs": 105891,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 0.16666666666666666,
+        "ndcg": 0.3562071871080222,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-31",
+      "questionType": "user_evidence",
+      "question": "I'm setting my alarm for the week. What time do I usually set it for on weekdays?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis states the alarm time as '6:30 AM' and specifies the days as 'Monday through Friday', which is equivalent to 'weekdays' in the ground truth answer. All essential information is present and correct.",
+      "hypothesis": "You usually set your alarm for 6:30 AM for Monday through Friday.",
+      "groundTruth": "You usually set your weekday alarm for 6:30 AM.",
+      "searchResults": [
+        {
+          "memory": "Sarah needs to set her alarm for 6:30 AM for Monday through Friday.",
+          "score": 1,
+          "id": "bel_6d2f33035c36"
+        },
+        {
+          "memory": "The current time is Sunday night.",
+          "score": 0.99,
+          "id": "bel_2ec881f9ceed"
+        },
+        {
+          "memory": "Sarah plans to set her alarm on her phone immediately.",
+          "score": 0.98,
+          "id": "bel_d4815f592a45"
+        },
+        {
+          "memory": "Sarah plans to draft email templates for each segment on Sunday evening.",
+          "score": 0.97,
+          "id": "bel_f235fd5855f9"
+        },
+        {
+          "memory": "Sarah plans to get the data pulled and lists segmented first thing on Monday.",
+          "score": 0.96,
+          "id": "bel_cf05ef92f753"
+        },
+        {
+          "memory": "Sarah has morning meetings she cannot be late for.",
+          "score": 0.95,
+          "id": "bel_c49fabbe66b2"
+        },
+        {
+          "memory": "Sarah needs to be ready to hit the ground running on Monday.",
+          "score": 0.94,
+          "id": "bel_f42674cddf8f"
+        },
+        {
+          "memory": "Sarah feels the weekend flew by.",
+          "score": 0.9299999999999999,
+          "id": "bel_635c8df505fd"
+        },
+        {
+          "memory": "Sarah believes the Assistant has been a huge help on Sunday night.",
+          "score": 0.92,
+          "id": "bel_45b14d179c00"
+        },
+        {
+          "memory": "Sarah thinks the plan is fantastic.",
+          "score": 0.91,
+          "id": "bel_a781b219e9aa"
+        }
+      ],
+      "searchDurationMs": 55987,
+      "answerDurationMs": 1141,
+      "totalDurationMs": 60262,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-65",
+      "questionType": "user_evidence",
+      "question": "I'm telling a friend where to meet me for lunch, but I'm drawing a blank. Which floor did I mention my new office in San Francisco is on?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis directly states the correct answer, 'Your new office is on the 27th floor,' which is identical to the core information in the ground truth answer.",
+      "hypothesis": "Your new office is on the 27th floor.",
+      "groundTruth": "You mentioned that your new office is on the 27th floor.",
+      "searchResults": [
+        {
+          "memory": "Emma's new office is on the 27th floor.",
+          "score": 1,
+          "id": "bel_3f8c619e65e2"
+        },
+        {
+          "memory": "Emma set up her desk at her new office.",
+          "score": 0.99,
+          "id": "bel_55b75e2c4000"
+        },
+        {
+          "memory": "Emma's new office environment has whole floors dedicated to different departments.",
+          "score": 0.98,
+          "id": "bel_28f60d09318b"
+        },
+        {
+          "memory": "Emma's new office has an incredible view of the bay.",
+          "score": 0.97,
+          "id": "bel_733e6cc97cc4"
+        },
+        {
+          "memory": "The San Francisco SPCA Veterinary Hospital is a popular choice for adopted pets in San Francisco, Mission Pet Hospital in San Francisco receives excellent reviews, and VCA San Francisco Veterinary Specialists in San Francisco receives excellent reviews.",
+          "score": 0.96,
+          "id": "bel_synth_c86d5bff6179"
+        },
+        {
+          "memory": "Emma considers San Francisco a new challenge for her photography.",
+          "score": 0.95,
+          "id": "bel_3f63153b4746"
+        },
+        {
+          "memory": "Emma's photography in San Francisco will focus on intricate architecture, fog, and vibrant street life.",
+          "score": 0.94,
+          "id": "bel_8365d79c1aab"
+        },
+        {
+          "memory": "Emma has a commute to her new office.",
+          "score": 0.9299999999999999,
+          "id": "bel_d26ddef59c3a"
+        },
+        {
+          "memory": "Emma finds her new office environment a little overwhelming.",
+          "score": 0.92,
+          "id": "bel_bd31d850c29b"
+        },
+        {
+          "memory": "Emma is adjusting to her new role in San Francisco.",
+          "score": 0.91,
+          "id": "bel_f9becf2942e5"
+        }
+      ],
+      "searchDurationMs": 76807,
+      "answerDurationMs": 1064,
+      "totalDurationMs": 80534,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-user_evidence-96",
+      "questionType": "user_evidence",
+      "question": "I'm preparing the agenda for the Q3 review meeting. Who did I previously identify as the primary stakeholder for user adoption?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's response correctly identifies 'Maria Garcia, the VP of Sales Operations' as the primary stakeholder for user adoption, which is the core information requested by the question and provided in the ground truth. The additional phrase 'for the CRM rollout' provides further context but does not contradict or invalidate the core correct answer.",
+      "hypothesis": "Maria Garcia, the VP of Sales Operations, is the primary stakeholder for user adoption for the CRM rollout.",
+      "groundTruth": "The primary stakeholder you identified for user adoption is Maria Garcia, the VP of Sales Operations.",
+      "searchResults": [
+        {
+          "memory": "Maria Garcia, the VP of Sales Operations, is the primary stakeholder for user adoption for the CRM rollout.",
+          "score": 1,
+          "id": "bel_a5aa0f3eb9b6"
+        },
+        {
+          "memory": "The proposed body of the email to Maria Garcia states that her guidance on the user adoption strategy is essential, states that a preliminary communication plan has been developed, and requests a 30-minute meeting next week to walk her through the plan and gather feedback.",
+          "score": 0.99,
+          "id": "bel_synth_9da85506ce65"
+        },
+        {
+          "memory": "The webinar agenda should highlight the Q&A portion.",
+          "score": 0.98,
+          "id": "bel_541d75db9523"
+        },
+        {
+          "memory": "Someone from the marketing operations team should be involved in the User Acceptance Testing (UAT).",
+          "score": 0.97,
+          "id": "bel_1d0f82cf50c5"
+        },
+        {
+          "memory": "Webinar invites in Week 3 need to be clear about the agenda.",
+          "score": 0.96,
+          "id": "bel_85cd1017d536"
+        },
+        {
+          "memory": "A separate dashboard view highlighting adoption metrics and key performance indicators will be prepared for the leadership and executive team.",
+          "score": 0.95,
+          "id": "bel_f9adbcf8d8b9"
+        },
+        {
+          "memory": "The webinar agenda should mention a live demo of the most-requested features.",
+          "score": 0.94,
+          "id": "bel_444adca8312d"
+        },
+        {
+          "memory": "The team plans for 'hypercare' for the first two weeks post-launch.",
+          "score": 0.9299999999999999,
+          "id": "bel_f16004534c07"
+        },
+        {
+          "memory": "The team plans to schedule follow-up interviews with 'power users' from each department to get qualitative insights.",
+          "score": 0.92,
+          "id": "bel_c202dbaab896"
+        },
+        {
+          "memory": "Sarah and the Collaborator should schedule a kickoff meeting with Maria Garcia to present the initial communication plan and get her buy-in.",
+          "score": 0.91,
+          "id": "bel_92d8f32a7dd9"
+        }
+      ],
+      "searchDurationMs": 96263,
+      "answerDurationMs": 1152,
+      "totalDurationMs": 106285,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-479",
+      "questionType": "assistant_facts_evidence",
+      "question": "I'm putting together the rollout plan for that new lead qualification process we discussed. You had a specific term for the team members I should recruit to be champions for the new process. What was that term again?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis is identical to the ground truth answer, providing the correct term 'super users'.",
+      "hypothesis": "The term I used was 'super users'.",
+      "groundTruth": "The term I used was 'super users'.",
+      "searchResults": [
+        {
+          "memory": "The advisor suggests appointing 'super users' from the sales team as a strategy to drive adoption for new CRM processes, choosing team members who are familiar with the CRM and enthusiastic about the new process for 'super user' roles, providing 'super users' with resources and support, and regular check-ins to address issues faced by 'super users' or their colleagues.",
+          "score": 1,
+          "id": "bel_synth_f9780e3b5990"
+        },
+        {
+          "memory": "The user wants to ensure the sales team is on board with the new CRM process from the start.",
+          "score": 0.99,
+          "id": "bel_e6ef8568e3c1"
+        },
+        {
+          "memory": "The user is rolling out a new CRM process.",
+          "score": 0.98,
+          "id": "bel_223a5e439295"
+        },
+        {
+          "memory": "The user considers the plan to appoint 'super users' a solid plan.",
+          "score": 0.97,
+          "id": "bel_232adab05d7e"
+        },
+        {
+          "memory": "The 'super users' will receive extra training.",
+          "score": 0.96,
+          "id": "bel_84b60fcbccef"
+        },
+        {
+          "memory": "The user will start thinking about who fits the 'super user' description, schedule regular check-ins, and keep the advisor updated on the progress of the CRM rollout.",
+          "score": 0.95,
+          "id": "bel_synth_9291786ebf11"
+        },
+        {
+          "memory": "The user is concerned about user adoption for a new CRM process.",
+          "score": 0.94,
+          "id": "bel_67eb4bd25221"
+        },
+        {
+          "memory": "The 'super users' will act as the first line of support for their colleagues.",
+          "score": 0.9299999999999999,
+          "id": "bel_09ae555a1042"
+        },
+        {
+          "memory": "The user needs to know how to select 'super users'.",
+          "score": 0.92,
+          "id": "bel_6272223bb3a0"
+        }
+      ],
+      "searchDurationMs": 20481,
+      "answerDurationMs": 1997,
+      "totalDurationMs": 26105,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6666666666666666,
+        "recallAtK": 1,
+        "f1AtK": 0.8,
+        "mrr": 1,
+        "ndcg": 0.844330763384584,
+        "k": 9,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-533",
+      "questionType": "assistant_facts_evidence",
+      "question": "I'm explaining our forecasting model to the new CRO. What was the name of the sales forecasting methodology you previously identified that I put in place back when I was the COO?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis directly and accurately states the correct answer, 'Hierarchical Cohort-Based Forecasting'.",
+      "hypothesis": "The sales forecasting methodology you put in place as COO was called **Hierarchical Cohort-Based Forecasting**.",
+      "groundTruth": "Hierarchical Cohort-Based Forecasting",
+      "searchResults": [
+        {
+          "memory": "The implementation of the Hierarchical Cohort-Based Forecasting model aligns with the timeline of the speaker establishing new operational frameworks as COO.",
+          "score": 1,
+          "id": "bel_781bd3d3bf5e"
+        },
+        {
+          "memory": "The speaker rolled out a new, more granular method for sales forecasting as COO around the Q3 inflection point four years ago.",
+          "score": 0.99,
+          "id": "bel_06b6ae0a2424"
+        },
+        {
+          "memory": "The speaker wanted a more dynamic forecasting model.",
+          "score": 0.98,
+          "id": "bel_aa3afb77d948"
+        },
+        {
+          "memory": "The speaker plans to walk the new CRO through the company's strategic methodology.",
+          "score": 0.97,
+          "id": "bel_417840a7c2da"
+        },
+        {
+          "memory": "The speaker is meeting with the new CRO later this week.",
+          "score": 0.96,
+          "id": "bel_3e7dc0c8c863"
+        },
+        {
+          "memory": "The speaker requested quarterly performance dashboards for enterprise accounts, performance data going back 20 quarters (five years), new ARR, expansion ARR, and net retention to be overlaid on the same timeline, to filter out single deals accounting for more than 10% of new ARR in a given quarter, cross-referencing the performance uplift timing with major product releases or marketing campaigns from the same period, a concise summary, three key charts for the summary (ARR growth with the whale filter, sales cycle reduction, and conversion rate improvement), and a short narrative connecting the charts to the forecasting model implementation.",
+          "score": 0.95,
+          "id": "bel_synth_950499a804ea"
+        },
+        {
+          "memory": "The speaker revamped the company's entire forecasting model around the time of the Q3 inflection point four years ago.",
+          "score": 0.94,
+          "id": "bel_041c641d4684"
+        },
+        {
+          "memory": "The speaker's forecasting model was called Hierarchical Cohort-Based Forecasting.",
+          "score": 0.9299999999999999,
+          "id": "bel_6d078d48b846"
+        },
+        {
+          "memory": "The Hierarchical Cohort-Based Forecasting model had a significant impact on performance uplift in enterprise accounts.",
+          "score": 0.92,
+          "id": "bel_e62a5df8766c"
+        },
+        {
+          "memory": "The summary will be helpful for the speaker's CRO meeting.",
+          "score": 0.91,
+          "id": "bel_cfe457cdc7b5"
+        }
+      ],
+      "searchDurationMs": 77770,
+      "answerDurationMs": 2312,
+      "totalDurationMs": 85456,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.3,
+        "recallAtK": 1,
+        "f1AtK": 0.4615384615384615,
+        "mrr": 1,
+        "ndcg": 0.7585866543655181,
+        "k": 10,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-544",
+      "questionType": "assistant_facts_evidence",
+      "question": "You previously recommended a novel for someone in an IT leadership role that was about DevOps. What was the title of that book?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis is an exact match to the ground truth answer.",
+      "hypothesis": "The Phoenix Project: A Novel About IT, DevOps, and Helping Your Business Win",
+      "groundTruth": "The Phoenix Project: A Novel About IT, DevOps, and Helping Your Business Win.",
+      "searchResults": [
+        {
+          "memory": "Alex thinks 'The Phoenix Project: A Novel About IT, DevOps, and Helping Your Business Win' sounds exactly like what Alex is looking for.",
+          "score": 1,
+          "id": "bel_a76caf55d306"
+        },
+        {
+          "memory": "Alex wants a leadership book that is not generic business guru stuff, grounded in the realities of a modern IT department, and weaves together technical strategy, team culture, and project management methodologies.",
+          "score": 0.99,
+          "id": "bel_synth_f6873414df67"
+        },
+        {
+          "memory": "Alex is looking for a good leadership book.",
+          "score": 0.98,
+          "id": "bel_2611bf77ab2c"
+        },
+        {
+          "memory": "Alex's role is an IT Director managing complex projects.",
+          "score": 0.97,
+          "id": "bel_813005ea6cb9"
+        },
+        {
+          "memory": "Alex's team is trying to implement a more agile, DevOps-centric workflow.",
+          "score": 0.96,
+          "id": "bel_1c903ca8013e"
+        },
+        {
+          "memory": "Alex thinks a novel format makes concepts more accessible.",
+          "score": 0.95,
+          "id": "bel_287f5b8d4de5"
+        },
+        {
+          "memory": "Alex prefers a story that illustrates principles over dry, theoretical books.",
+          "score": 0.94,
+          "id": "bel_ae8cd489ec00"
+        },
+        {
+          "memory": "Alex is working on a CRM integration project.",
+          "score": 0.9299999999999999,
+          "id": "bel_54516d5d7c8a"
+        },
+        {
+          "memory": "Alex is adding 'The Phoenix Project' to Alex's reading list.",
+          "score": 0.92,
+          "id": "bel_1df080e8209a"
+        },
+        {
+          "memory": "The new processes feel like a threat to Alex's systems analysts.",
+          "score": 0.91,
+          "id": "bel_0409caaf54d6"
+        }
+      ],
+      "searchDurationMs": 45157,
+      "answerDurationMs": 2524,
+      "totalDurationMs": 61217,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.8,
+        "recallAtK": 1,
+        "f1AtK": 0.888888888888889,
+        "mrr": 1,
+        "ndcg": 0.9963488021549354,
+        "k": 10,
+        "relevantRetrieved": 8,
+        "totalRelevant": 8
+      }
+    },
+    {
+      "questionId": "convomem-assistant_facts_evidence-592",
+      "questionType": "assistant_facts_evidence",
+      "question": "I've been thinking about my career path, moving from Oracle to PayBridge, and that Japanese concept you mentioned, 'Ikigai', came to mind. Can you remind me of the specific definition you gave me for it?",
+      "score": 0,
+      "label": "incorrect",
+      "explanation": "The model explicitly states it does not have the definition of 'Ikigai' and therefore does not provide it. The ground truth answer provides the full definition.",
+      "hypothesis": "I apologize, but I don't have a specific definition of 'Ikigai' recorded in our previous discussions. The memories indicate that you view it as a map for your career and have discussed how your roles at Oracle and PayBridge aligned (or didn't align) with its elements, but the definition itself isn't present.",
+      "groundTruth": "Ikigai is a Japanese concept for finding one's 'reason for being.' It's defined as the intersection of four key elements: what you love, what you are good at, what the world needs, and what you can be paid for.",
+      "searchResults": [
+        {
+          "memory": "Sarah found the discussion helpful, gained a new perspective on her job and career, views the concept of 'Ikigai' as a map for her career, and plans to remember the concept of Ikigai.",
+          "score": 1,
+          "id": "bel_synth_083f1b4f2d1a"
+        },
+        {
+          "memory": "The executive's work at Oracle aligned with 'what the executive is good at' and 'what the executive can be paid for' in the Ikigai framework.",
+          "score": 0.99,
+          "id": "bel_817fa204ddfd"
+        },
+        {
+          "memory": "When the executive joined PayBridge, their role aligned with all four elements of the Ikigai framework.",
+          "score": 0.98,
+          "id": "bel_2a38a53e0071"
+        },
+        {
+          "memory": "The executive's work at Oracle was missing 'what the executive loves' in the Ikigai framework.",
+          "score": 0.97,
+          "id": "bel_ccb4a95bd15e"
+        },
+        {
+          "memory": "The executive's work at Oracle became more about navigating bureaucracy than building things.",
+          "score": 0.96,
+          "id": "bel_e742ce2bfc2a"
+        },
+        {
+          "memory": "The executive previously worked at Oracle.",
+          "score": 0.95,
+          "id": "bel_e48c5a8c8e57"
+        },
+        {
+          "memory": "The executive's 'what I love' element in the Ikigai framework has shrunk as CTO.",
+          "score": 0.94,
+          "id": "bel_68c60a9d5160"
+        },
+        {
+          "memory": "The executive was getting promoted at Oracle.",
+          "score": 0.9299999999999999,
+          "id": "bel_5b2d491a7ce7"
+        },
+        {
+          "memory": "The executive left Oracle.",
+          "score": 0.92,
+          "id": "bel_5d444d1ae2a9"
+        },
+        {
+          "memory": "The executive perceives bureaucracy creeping back into their work as CTO at PayBridge.",
+          "score": 0.91,
+          "id": "bel_57383e90886b"
+        }
+      ],
+      "searchDurationMs": 69784,
+      "answerDurationMs": 3191,
+      "totalDurationMs": 77040,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "f1AtK": 0.5714285714285715,
+        "mrr": 0.5,
+        "ndcg": 0.7397466333385988,
+        "k": 10,
+        "relevantRetrieved": 4,
+        "totalRelevant": 4
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-999",
+      "questionType": "changing_evidence",
+      "question": "A friend of mine is asking for a link to an article, but I can't find it in my email. Which newspaper do I have a subscription to?",
+      "score": 0,
+      "label": "incorrect",
+      "explanation": "The ground truth states the subscription is to 'The Wall Street Journal', while the model's response states it is to 'The New York Times'. These are different newspapers, so the model's answer is incorrect.",
+      "hypothesis": "You have a subscription to **The New York Times**. Your brother got you a digital subscription for your birthday this year, and you just downloaded the app.",
+      "groundTruth": "You have a subscription to The Wall Street Journal.",
+      "searchResults": [
+        {
+          "memory": "Sarah plans to subscribe to 'The Morning' newsletter by David Leonhardt within the New York Times app.",
+          "score": 1,
+          "id": "bel_1c7fd0ba6a7c"
+        },
+        {
+          "memory": "Sarah's New York Times subscription was great for a while.",
+          "score": 0.99,
+          "id": "bel_894d5dbaa0b9"
+        },
+        {
+          "memory": "Sarah is looking for the best places to follow business and market news.",
+          "score": 0.98,
+          "id": "bel_5e957589d912"
+        },
+        {
+          "memory": "Sarah's brother got Sarah a digital subscription to the New York Times for her birthday this year.",
+          "score": 0.97,
+          "id": "bel_d2b7bcab76bc"
+        },
+        {
+          "memory": "Sarah does not have a specific writer or famous article in mind to find in the New York Times.",
+          "score": 0.96,
+          "id": "bel_c3ea014e6298"
+        },
+        {
+          "memory": "Sarah canceled her New York Times subscription.",
+          "score": 0.95,
+          "id": "bel_ac9c58969abc"
+        },
+        {
+          "memory": "Sarah just downloaded the New York Times app.",
+          "score": 0.94,
+          "id": "bel_2c906a31e193"
+        },
+        {
+          "memory": "Sarah is a little overwhelmed with where to start with her New York Times subscription.",
+          "score": 0.9299999999999999,
+          "id": "bel_8bbaa36bdd28"
+        },
+        {
+          "memory": "Sarah could look up articles from when ASU was founded using the New York Times archives.",
+          "score": 0.92,
+          "id": "bel_649bc4fb9746"
+        },
+        {
+          "memory": "Sarah previously used the NYT for broader news.",
+          "score": 0.91,
+          "id": "bel_bbce4f755dcf"
+        }
+      ],
+      "searchDurationMs": 85574,
+      "answerDurationMs": 3966,
+      "totalDurationMs": 100119,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.9,
+        "recallAtK": 1,
+        "f1AtK": 0.9473684210526316,
+        "mrr": 1,
+        "ndcg": 0.9504206262110481,
+        "k": 10,
+        "relevantRetrieved": 9,
+        "totalRelevant": 9
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-1014",
+      "questionType": "changing_evidence",
+      "question": "When is my rent due?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "Manually corrected — answer contains the correct information.",
+      "hypothesis": "Your rent payment due date is being moved to the 5th of the month.",
+      "groundTruth": "Your rent payment is due on the 5th of the month.",
+      "searchResults": [
+        {
+          "memory": "The new rent payment due date helps Alex.",
+          "score": 1,
+          "id": "bel_8434c301bdb6"
+        },
+        {
+          "memory": "The Client's rent payment is due on the 1st of the month, their car insurance is due on the 10th of the month, their streaming service bundle payment is on the 18th of the month, and their gym membership payment is on the 20th of the month.",
+          "score": 0.99,
+          "id": "bel_synth_de59be6a543b"
+        },
+        {
+          "memory": "Alex's landlord is moving the rent payment due date to the 5th of the month.",
+          "score": 0.98,
+          "id": "bel_2de7a56dc588"
+        },
+        {
+          "memory": "The assistant will update Alex's budget profile regarding the new rent due date.",
+          "score": 0.97,
+          "id": "bel_960b4b3a937d"
+        },
+        {
+          "memory": "The Client's budget is tight at the start of the month due to rent payment.",
+          "score": 0.96,
+          "id": "bel_cdc2f78d7348"
+        },
+        {
+          "memory": "Alex will look into setting up automatic payments for rent.",
+          "score": 0.95,
+          "id": "bel_67a20461a537"
+        },
+        {
+          "memory": "Alex feels a mental weight has been lifted due to the new rent due date.",
+          "score": 0.94,
+          "id": "bel_39836dda73d0"
+        },
+        {
+          "memory": "The Client wants to add a 'Due Date' column to the Fixed Expenses section.",
+          "score": 0.9299999999999999,
+          "id": "bel_64a17066d818"
+        },
+        {
+          "memory": "The Client's rent payment is their biggest expense.",
+          "score": 0.92,
+          "id": "bel_6b34c8351e60"
+        },
+        {
+          "memory": "The Client believes a 'Due Date' column would help visualize cash flow.",
+          "score": 0.91,
+          "id": "bel_88d42d7f0481"
+        }
+      ],
+      "searchDurationMs": 115326,
+      "answerDurationMs": 3937,
+      "totalDurationMs": 125309,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.1,
+        "recallAtK": 1,
+        "f1AtK": 0.18181818181818182,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5,
+        "k": 10,
+        "relevantRetrieved": 1,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-1017",
+      "questionType": "changing_evidence",
+      "question": "I'm creating a new case ticket and need to log the product name in the required field. What is the official product name I should use?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis provides the exact product name 'DFI Platform' as stated in the ground truth answer. The bolding does not change the correctness of the information.",
+      "hypothesis": "The official product name you should use is **DFI Platform**.",
+      "groundTruth": "The official product name you should use is the DFI Platform.",
+      "searchResults": [
+        {
+          "memory": "The response for case #8675309 has been sent.",
+          "score": 1,
+          "id": "bel_ba0317ac2187"
+        },
+        {
+          "memory": "Jordan's standard 'case resolution' template mentions 'DataFlow Inventory'.",
+          "score": 0.99,
+          "id": "bel_a899fd29a26d"
+        },
+        {
+          "memory": "The status of case #8675309 has been updated.",
+          "score": 0.98,
+          "id": "bel_e16f53e184fd"
+        },
+        {
+          "memory": "The DataFlow Inventory system is the main product.",
+          "score": 0.97,
+          "id": "bel_32db1009c77f"
+        },
+        {
+          "memory": "The product formerly known as 'DataFlow Inventory' will now be officially called the 'DFI Platform'.",
+          "score": 0.96,
+          "id": "bel_ce217e9053fe"
+        },
+        {
+          "memory": "A similar issue to case #8675309 was logged three months ago.",
+          "score": 0.95,
+          "id": "bel_f51f2df3f98e"
+        },
+        {
+          "memory": "The marketing department announced a major rebranding initiative today.",
+          "score": 0.94,
+          "id": "bel_91d7ccf3ba32"
+        },
+        {
+          "memory": "Jordan found the name 'DataFlow Inventory' descriptive.",
+          "score": 0.9299999999999999,
+          "id": "bel_8784ef7f14cb"
+        },
+        {
+          "memory": "The name change to 'DFI Platform' applies to all documentation and customer-facing materials.",
+          "score": 0.92,
+          "id": "bel_f63b72195562"
+        },
+        {
+          "memory": "The next ticket is #8675310.",
+          "score": 0.91,
+          "id": "bel_b6e17e316a91"
+        }
+      ],
+      "searchDurationMs": 94613,
+      "answerDurationMs": 2851,
+      "totalDurationMs": 103395,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
+        "f1AtK": 0.7499999999999999,
+        "mrr": 0.5,
+        "ndcg": 0.7257275327064653,
+        "k": 10,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-changing_evidence-1062",
+      "questionType": "changing_evidence",
+      "question": "Hey Elena, I'm at the wine shop and wanted to grab you a bottle. What type of wine are you really enjoying?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The ground truth answer states 'light-bodied Gamay' as the favorite wine. The model's response explicitly mentions 'light-bodied Gamay' as the new favorite, directly matching the core information of the correct answer.",
+      "hypothesis": "Oh, that's so thoughtful! I actually just discovered a **light-bodied Gamay** at a French wine tasting last night, and it's my new favorite! It was so smooth and had this vibrant fruitiness that was just a revelation. I'm planning to stock up on it.",
+      "groundTruth": "I recently discovered light-bodied Gamay after a French wine tasting, and it has become my new favorite wine.",
+      "searchResults": [
+        {
+          "memory": "Speaker A is deeply interested in natural orange wines.",
+          "score": 1,
+          "id": "bel_2cb69db52a8c"
+        },
+        {
+          "memory": "Speaker A likes the layers of flavor in natural orange wines.",
+          "score": 0.99,
+          "id": "bel_c989e629f556"
+        },
+        {
+          "memory": "Speaker A does not yet have a favorite brand or region of natural orange wines.",
+          "score": 0.98,
+          "id": "bel_b51ed60fb9ad"
+        },
+        {
+          "memory": "Speaker A finds the complexity of natural orange wines fascinating.",
+          "score": 0.97,
+          "id": "bel_623ba36c9326"
+        },
+        {
+          "memory": "Speaker A considers light-bodied Gamay to be Speaker A's new favorite wine.",
+          "score": 0.96,
+          "id": "bel_958825c6bdbe"
+        },
+        {
+          "memory": "Speaker A tried a light-bodied Gamay at the French wine tasting event.",
+          "score": 0.95,
+          "id": "bel_cb47195c35c7"
+        },
+        {
+          "memory": "Natural orange wines are Speaker A's current go-to obsession.",
+          "score": 0.94,
+          "id": "bel_7c7a4194a4e9"
+        },
+        {
+          "memory": "Speaker A attended a French wine tasting event last night.",
+          "score": 0.9299999999999999,
+          "id": "bel_9f9c7c1979a1"
+        },
+        {
+          "memory": "Speaker B has heard that natural orange wines are quite unique.",
+          "score": 0.92,
+          "id": "bel_bf288afb2fe5"
+        },
+        {
+          "memory": "Speaker A is currently deeply obsessed with natural orange wines, appreciating their complexity and layers of flavor while still exploring them, but recently found a light-bodied Gamay to be a revelation and new favorite due to its smoothness and vibrant fruitiness, prompting plans to stock up.",
+          "score": 0.91,
+          "id": "bel_rollup_6e6215b17b95"
+        }
+      ],
+      "searchDurationMs": 51242,
+      "answerDurationMs": 4696,
+      "totalDurationMs": 62312,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.9,
+        "recallAtK": 1,
+        "f1AtK": 0.9473684210526316,
+        "mrr": 1,
+        "ndcg": 0.9971876401972101,
+        "k": 10,
+        "relevantRetrieved": 9,
+        "totalRelevant": 9
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1799",
+      "questionType": "abstention_evidence",
+      "question": "I'm making a grocery list for dinner tonight and I want to use some fresh herbs. Can you remind me which ones I planted in my window box last weekend?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly abstains from providing the specific list of herbs. It explicitly states that the information is not available ('the memories don't specify which particular herbs'). It acknowledges partial information ('only that you planted \"some herbs\"') without hallucinating the requested details, which aligns with the criteria for a correct abstention.",
+      "hypothesis": "I'm sorry, the memories don't specify which particular herbs you planted in your window box last weekend, only that you planted \"some herbs.\"",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Emma set up a small window box and planted some herbs this past weekend.",
+          "score": 1,
+          "id": "bel_d8444b273cf7"
+        },
+        {
+          "memory": "Emma hopes the PNW sun is enough to keep her herbs happy, to get Max more used to the balcony, and that plants will make the balcony more inviting for Max.",
+          "score": 0.99,
+          "id": "bel_synth_a3ccfabec99f"
+        },
+        {
+          "memory": "Emma had a small garden at her old place.",
+          "score": 0.98,
+          "id": "bel_88fbf7b0b286"
+        },
+        {
+          "memory": "Emma finds watching something grow nice, applying her photography skills to the landscapes of the Pacific Northwest rewarding, and patience and observation useful skills for her data analysis work.",
+          "score": 0.97,
+          "id": "bel_synth_1c052d971938"
+        },
+        {
+          "memory": "Emma's brain feels like scrambled eggs from staring at spreadsheets and error logs all morning.",
+          "score": 0.96,
+          "id": "bel_4b0f8e68dda6"
+        },
+        {
+          "memory": "Emma thinks a cup of tea sounds like a great idea.",
+          "score": 0.95,
+          "id": "bel_aa1e2f9fd1c6"
+        },
+        {
+          "memory": "Emma and Max are going to try a new hiking trail this coming weekend.",
+          "score": 0.94,
+          "id": "bel_f828aec7c9ff"
+        },
+        {
+          "memory": "The numbers for Emma's Q2 lead-gen campaign do not add up.",
+          "score": 0.9299999999999999,
+          "id": "bel_d3236941876e"
+        },
+        {
+          "memory": "The other speaker wished Emma a productive afternoon.",
+          "score": 0.92,
+          "id": "bel_1c8f23041222"
+        },
+        {
+          "memory": "Emma finds thinking about hiking and photography a good reset.",
+          "score": 0.91,
+          "id": "bel_2a365766c76d"
+        }
+      ],
+      "searchDurationMs": 58511,
+      "answerDurationMs": 1779,
+      "totalDurationMs": 64194,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 1,
+        "f1AtK": 0.33333333333333337,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 2,
+        "totalRelevant": 2
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1859",
+      "questionType": "abstention_evidence",
+      "question": "What is my car's license plate number?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly identified that the information about the car's license plate number was not available in the provided memories and explicitly stated this, which aligns with the criteria for a correct abstention.",
+      "hypothesis": "I'm sorry, but the provided memories do not contain information about your car's license plate number.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Sarah forgot her car's oil change was scheduled for today.",
+          "score": 1,
+          "id": "bel_d1234a220119"
+        },
+        {
+          "memory": "Sarah dropped her car off for an oil change today, had a first meeting scheduled for today, and has a few meetings lined up for today.",
+          "score": 0.99,
+          "id": "bel_synth_09339a240646"
+        },
+        {
+          "memory": "Sarah's team is rolling out a new CRM feature.",
+          "score": 0.98,
+          "id": "bel_6ed548232ff6"
+        },
+        {
+          "memory": "Sarah is thinking of reading new organizational psychology books.",
+          "score": 0.97,
+          "id": "bel_67c41b681f87"
+        },
+        {
+          "memory": "Sarah has a background in organizational psychology.",
+          "score": 0.96,
+          "id": "bel_ddd5114c9908"
+        },
+        {
+          "memory": "Sarah is scrambling today.",
+          "score": 0.95,
+          "id": "bel_7311d82a3d6e"
+        },
+        {
+          "memory": "Sarah needs to ensure everyone is on board with the new CRM feature rollout.",
+          "score": 0.94,
+          "id": "bel_76ad7dd0c6f3"
+        },
+        {
+          "memory": "Sarah's team has mixed reactions to the new CRM feature transition.",
+          "score": 0.9299999999999999,
+          "id": "bel_c8a731f9f368"
+        },
+        {
+          "memory": "Sarah's team is focusing on clear communication to ease the CRM feature transition.",
+          "score": 0.92,
+          "id": "bel_b54f8dfa5632"
+        },
+        {
+          "memory": "Sarah plans to catch up on some reading this upcoming weekend.",
+          "score": 0.91,
+          "id": "bel_60b08e1a7cf7"
+        }
+      ],
+      "searchDurationMs": 28002,
+      "answerDurationMs": 2017,
+      "totalDurationMs": 35028,
+      "retrievalMetrics": {
+        "hitAtK": 0,
+        "precisionAtK": 0,
+        "recallAtK": 0,
+        "f1AtK": 0,
+        "mrr": 0,
+        "ndcg": 0,
+        "k": 10,
+        "relevantRetrieved": 0,
+        "totalRelevant": 1
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1867",
+      "questionType": "abstention_evidence",
+      "question": "Regarding the new sales enablement platform we discussed, what was the final, specific dollar amount approved for the Q3 budget allocation?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly abstains from providing the specific dollar amount requested. It explicitly states, 'I don't have information on the specific dollar amount approved for the Q3 budget allocation for the new sales enablement platform.' This directly fulfills the requirement to state that the information is not available. While the additional sentence about Sarah Martinez might provide context or potentially be a minor hallucination if not present in the conversation, it does not provide the specific dollar amount requested and therefore does not constitute hallucinating the answer to the core question.",
+      "hypothesis": "I don't have information on the specific dollar amount approved for the Q3 budget allocation for the new sales enablement platform. I only know that Sarah Martinez has updated the Q3 forecast to reflect the new expenditure and has officially approved the budget.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Sarah Martinez has updated the Q3 forecast to reflect the new expenditure for the sales enablement platform.",
+          "score": 1,
+          "id": "bel_2143de2cdee8"
+        },
+        {
+          "memory": "Sarah Martinez has officially approved the budget for the new sales enablement platform.",
+          "score": 0.99,
+          "id": "bel_3cc63d0c76ed"
+        },
+        {
+          "memory": "The meeting title is 'Q3 Sales Enablement Initiative Kick-off'.",
+          "score": 0.98,
+          "id": "bel_067feba24834"
+        },
+        {
+          "memory": "Sarah Martinez wants a 30-minute meeting scheduled for tomorrow morning with all regional sales directors, wants the meeting scheduled for tomorrow morning at 10 AM Eastern, wants the meeting titled 'Q3 Sales Enablement Initiative Kick-off', and wants a note added to the meeting invite: 'Important update on new tooling to support Q3/Q4 goals'.",
+          "score": 0.97,
+          "id": "bel_synth_ef808ff5106a"
+        },
+        {
+          "memory": "Sarah Martinez believes the team needs the new platform now to hit Q3 and Q4 targets.",
+          "score": 0.96,
+          "id": "bel_eda9d531feb8"
+        },
+        {
+          "memory": "The Sales department has officially selected Highspot as their new sales enablement platform, has full budget approval for Highspot, and is ready to initiate the contract negotiation and purchasing process for Highspot immediately.",
+          "score": 0.95,
+          "id": "bel_synth_1ded074ca12b"
+        },
+        {
+          "memory": "Sarah Martinez wants to proceed with the procurement process for the new sales enablement platform.",
+          "score": 0.94,
+          "id": "bel_7b8c31dabb42"
+        },
+        {
+          "memory": "Sarah Martinez requested the Q2 regional sales performance dashboard.",
+          "score": 0.9299999999999999,
+          "id": "bel_9150f8a3b81c"
+        },
+        {
+          "memory": "Sarah Martinez wants to know the Midwest enterprise accounts team's average deal size for Q2 compared to Q1.",
+          "score": 0.92,
+          "id": "bel_8792f0714855"
+        },
+        {
+          "memory": "Sarah Martinez has selected Highspot as the new sales enablement platform.",
+          "score": 0.91,
+          "id": "bel_f157aecd1fcd"
+        }
+      ],
+      "searchDurationMs": 88184,
+      "answerDurationMs": 2395,
+      "totalDurationMs": 99971,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.8,
+        "recallAtK": 1,
+        "f1AtK": 0.888888888888889,
+        "mrr": 1,
+        "ndcg": 0.9933222998814617,
+        "k": 10,
+        "relevantRetrieved": 8,
+        "totalRelevant": 8
+      }
+    },
+    {
+      "questionId": "convomem-abstention_evidence-1968",
+      "questionType": "abstention_evidence",
+      "question": "How many pieces do I have ready for the pottery exhibition?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system correctly identifies that the conversation mentions 'several pottery pieces' for an exhibition but explicitly states that the *number* of pieces ready is not specified. This is a proper abstention, indicating the information is not available.",
+      "hypothesis": "The provided memories state that Alex has been working on \"several pottery pieces\" for an upcoming exhibition, but they do not specify how many pieces are currently ready.",
+      "groundTruth": "There is no information in prior conversations to answer this question",
+      "searchResults": [
+        {
+          "memory": "Alex has been working on several pottery pieces for an upcoming exhibition.",
+          "score": 1,
+          "id": "bel_cec5f9cd954c"
+        },
+        {
+          "memory": "Alex is excited to showcase Alex's pottery pieces.",
+          "score": 0.99,
+          "id": "bel_dbdfee0d001e"
+        },
+        {
+          "memory": "Alex considers pottery a big project Alex is currently juggling.",
+          "score": 0.98,
+          "id": "bel_0d485ae2c8ad"
+        },
+        {
+          "memory": "Alex allocated two hours each evening, from 7 PM to 9 PM, for pottery studio time on Monday and Wednesday.",
+          "score": 0.97,
+          "id": "bel_874864beb81f"
+        },
+        {
+          "memory": "Alex scheduled pottery studio time for Monday and Wednesday evenings.",
+          "score": 0.96,
+          "id": "bel_ea2342c9845d"
+        },
+        {
+          "memory": "Alex needs to complete a 75-mile ride this weekend, plans to do two shorter, high-intensity cycling sessions this week, and needs at least two solid evenings at the pottery wheel this week.",
+          "score": 0.95,
+          "id": "bel_synth_3d1e9933c8fd"
+        },
+        {
+          "memory": "Alex's other major hobby is pottery.",
+          "score": 0.94,
+          "id": "bel_4163db734e4f"
+        },
+        {
+          "memory": "Alex needs to prepare for the Innovate Solutions renewal meeting this week.",
+          "score": 0.9299999999999999,
+          "id": "bel_a1c95aaa861b"
+        },
+        {
+          "memory": "Alex scheduled one-hour cycling sessions for Tuesday evening and Thursday evening.",
+          "score": 0.92,
+          "id": "bel_8d5a8109ba3b"
+        },
+        {
+          "memory": "Alex needs to pick up more Genmaicha tea.",
+          "score": 0.91,
+          "id": "bel_04aa98aa8ead"
+        }
+      ],
+      "searchDurationMs": 50991,
+      "answerDurationMs": 2601,
+      "totalDurationMs": 61789,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 1,
+        "f1AtK": 0.33333333333333337,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 10,
+        "relevantRetrieved": 2,
+        "totalRelevant": 2
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2275",
+      "questionType": "preference_evidence",
+      "question": "I'm preparing for a key quarterly business review with a low-adoption client. How should I structure my presentation to convince them to try our new features?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The response correctly advises starting with a tangible result/key success metric and immediately following with a clear, actionable next step. It explicitly states to 'Skip any long methodology preambles,' which aligns with the rubric's condition to avoid lengthy introductions or detailed methodology discussions at the beginning. The examples provided for both the metric and the call-to-action are concrete and fit the rubric's criteria.",
+      "hypothesis": "For your key quarterly business review with a low-adoption client, especially one that is analytical and resistant to changing workflows like AccuData Inc., Emma's new presentation strategy is highly effective.\n\nHere's how you should structure your presentation to convince them to try new features:\n\n1.  **Lead with a Tangible Result and Key Success Metric:** Immediately grab their attention by starting with a concrete, industry-relevant outcome. Skip any long methodology preambles. For example, state something like, \"Our clients in your industry who enabled this feature saw a 20% increase in qualified leads within the first month.\" This directly addresses their analytical mindset and the need to see value quickly, preventing early disengagement.\n2.  **Follow with an Immediate \"How to Get It\":** Don't just present the result; immediately offer a clear, actionable next step to achieve it. This could be something like offering to provision a 30-day trial for their top 3 reps on the call in five minutes. This reduces friction and makes it easy for them to try new features, directly addressing their resistance to change.\n\nThis approach directly counters the pattern of losing engagement early with tough, time-starved clients and provides a clear, data-driven path for them to try new features, which is essential for turning around low adoption.",
+      "groundTruth": "The response must recommend a presentation structure that begins directly with a key success metric or a compelling data point relevant to the client (e.g., 'Start with a metric like 'Clients using Feature X see a Y% increase in...''). It must then advise immediately following up with a single, clear, actionable recommendation or call-to-action (e.g., 'Then, propose a concrete next step like enabling a pilot program.'). The rubric is violated if the suggested structure prioritizes or includes a lengthy introduction, an agenda overview, or a detailed methodology discussion at the beginning of the presentation. The core of the correct response is the 'metric-first, action-oriented' approach.",
+      "searchResults": [
+        {
+          "memory": "Emma's new presentation strategy involves leading with a tangible result, such as \"Our clients in your industry who enabled this feature saw a 20% increase in qualified leads within the first month.\"",
+          "score": 1,
+          "id": "bel_06643f5ef022"
+        },
+        {
+          "memory": "Emma finds her presentations are most effective when they lead with a key success metric and one actionable recommendation.",
+          "score": 0.99,
+          "id": "bel_0467a774e564"
+        },
+        {
+          "memory": "Emma's new presentation strategy involves following up a result with an immediate 'how to get it', such as offering to provision a 30-day trial for top 3 reps on the call in five minutes.",
+          "score": 0.98,
+          "id": "bel_0b25758a0231"
+        },
+        {
+          "memory": "Emma plans to use her new presentation approach for her QBR with AccuData Inc.",
+          "score": 0.97,
+          "id": "bel_f9168b7d6da1"
+        },
+        {
+          "memory": "Emma had an insight about her presentation approach.",
+          "score": 0.96,
+          "id": "bel_5297499587bb"
+        },
+        {
+          "memory": "Emma finds her presentations are most effective when they completely skip a long methodology preamble.",
+          "score": 0.95,
+          "id": "bel_09625b1e9652"
+        },
+        {
+          "memory": "Emma stated she can be efficient when it's not a high-pressure client presentation.",
+          "score": 0.94,
+          "id": "bel_7d81ddf1a3b1"
+        },
+        {
+          "memory": "Emma realized that losing engagement early in presentations is a pattern with her toughest, most time-starved clients.",
+          "score": 0.9299999999999999,
+          "id": "bel_f84d96d267d1"
+        },
+        {
+          "memory": "AccuData Inc. is one of Emma's key accounts, is in the low-adoption bucket that Emma is trying to turn around, its usage has been flat for two quarters, is a tough audience, is very analytical, and is very resistant to changing their current workflows.",
+          "score": 0.92,
+          "id": "bel_synth_6565a6cb5418"
+        },
+        {
+          "memory": "Emma normally appreciates analytical clients.",
+          "score": 0.91,
+          "id": "bel_9abb8ea90b36"
+        }
+      ],
+      "searchDurationMs": 100293,
+      "answerDurationMs": 8907,
+      "totalDurationMs": 119230,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.7,
+        "recallAtK": 1,
+        "f1AtK": 0.8235294117647058,
+        "mrr": 1,
+        "ndcg": 0.9714977244644463,
+        "k": 10,
+        "relevantRetrieved": 7,
+        "totalRelevant": 7
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2329",
+      "questionType": "preference_evidence",
+      "question": "Can you recommend some houseplants that are really hard to kill?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model successfully recalls and utilizes the user's personal information, such as being a 'serial plant killer,' having a 'brown thumb,' a basil plant dying in 48 hours, and worrying about forgetting to water for a month. It also references the user's specific aesthetic preference for Snake Plants ('finding them 'rigid''). The recommendations (ZZ Plant, Pothos, Snake Plant) align perfectly with the rubric's suggestions for hardy, low-maintenance plants and avoid those requiring specific care.",
+      "hypothesis": "Given your history as a \"serial plant killer\" with a \"brown thumb\" – where even a basil plant died in 48 hours and you worry about forgetting to water for a month – you need plants that are truly indestructible.\n\nBased on your considerations and needs, I'd strongly recommend:\n\n1.  **ZZ Plant (Zamioculcas zamiifolia):** This is your front-runner for a reason! ZZ Plants are incredibly drought-tolerant and can handle very low light conditions, making them perfect for someone who forgets to water for a month. They store water in their rhizomes, so they thrive on neglect. They're also generally easy to find in local stores, avoiding the need for online ordering or an extensive plant hunt.\n2.  **Pothos (Epipremnum aureum):** Another excellent choice for beginners. Pothos are very forgiving and can tolerate a wide range of light conditions, from low to bright indirect. They'll often \"tell\" you when they need water by drooping slightly, giving you a clear signal before it's too late. They're also very common and affordable.\n3.  **Snake Plant (Sansevieria trifasciata):** While you mentioned finding them \"rigid,\" they are truly one of the hardest plants to kill. Like the ZZ Plant, they are extremely drought-tolerant and can survive in very low light. If you can find a variety whose aesthetic you don't mind as much, it's a solid choice for its resilience.\n\nThese three plants are known for being incredibly low-maintenance and can withstand significant neglect, making them ideal for someone who is \"terrible with plants\" and wants to avoid another 48-hour plant demise.",
+      "groundTruth": "The user would prefer recommendations for hardy, low-maintenance houseplants that are known to be resilient to neglect. The response should specifically mention plants like Snake Plants (Sansevieria), ZZ Plants (Zamioculcas zamiifolia), Pothos (Epipremnum aureum), or Cast Iron Plants (Aspidistra elatior). The explanation should highlight their tolerance for low light, infrequent watering, and general neglect, aligning with the user's lack of success with plants. The response should AVOID recommending plants that require specific, consistent care, high humidity, or are sensitive to watering schedules, such as Calatheas, Fiddle Leaf Figs, Alocasias, or most orchids.",
+      "searchResults": [
+        {
+          "memory": "Jordan's last attempt at keeping a plant alive was a basil plant from the grocery store.",
+          "score": 1,
+          "id": "bel_49271c4b4165"
+        },
+        {
+          "memory": "Jordan needs a plant that can handle someone who is terrible with plants.",
+          "score": 0.99,
+          "id": "bel_c8e575cc82e7"
+        },
+        {
+          "memory": "Jordan is considering a Snake Plant, a ZZ Plant, and a Pothos.",
+          "score": 0.98,
+          "id": "bel_synth_f55200e7df83"
+        },
+        {
+          "memory": "Jordan considers the ZZ Plant to be the front-runner among the suggested plants.",
+          "score": 0.97,
+          "id": "bel_299cb6f403bd"
+        },
+        {
+          "memory": "Jordan's basil plant died in 48 hours.",
+          "score": 0.96,
+          "id": "bel_1d07150846ba"
+        },
+        {
+          "memory": "Jordan is not an art person, finds the idea of changing decor to be too much effort, does not want to spend a lot of money on decor for Jordan's rental apartment, finds Snake Plants to look rigid, finds ordering a plant online to seem weird, and does not have the energy to go on a plant hunt after work.",
+          "score": 0.95,
+          "id": "bel_synth_446cf773b2fc"
+        },
+        {
+          "memory": "Jordan is a serial plant killer, believes Jordan has a 'brown thumb' (is bad at keeping plants alive), has killed every single plant Jordan has ever brought home, is skeptical Jordan can keep a plant alive, and worries Jordan will forget to water a plant for a month.",
+          "score": 0.94,
+          "id": "bel_synth_5a3285e3d16e"
+        },
+        {
+          "memory": "Jordan finds the ZZ Plant to sound better than the Snake Plant.",
+          "score": 0.9299999999999999,
+          "id": "bel_77b9495feb94"
+        }
+      ],
+      "searchDurationMs": 64142,
+      "answerDurationMs": 8177,
+      "totalDurationMs": 78120,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 1,
+        "recallAtK": 1,
+        "f1AtK": 1,
+        "mrr": 1,
+        "ndcg": 1,
+        "k": 8,
+        "relevantRetrieved": 8,
+        "totalRelevant": 8
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2351",
+      "questionType": "preference_evidence",
+      "question": "I need to write a post-mortem for a recent service incident. What's a good structure to follow?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model's response (System's Hypothesis) fully satisfies the rubric. It explicitly recommends following a 'blameless post-mortem' philosophy, emphasizing learning and process improvement over individual blame. It clearly outlines key sections such as 'What happened', 'Impact', 'Timeline', 'Root Causes' (specifically focusing on systemic issues and *not* individual errors), 'Resolution Steps', 'Lessons Learned', and 'Action Items' (for prevention and improvement). The language used consistently avoids blame and promotes an objective, collaborative, and future-focused tone, aligning with all specified requirements.",
+      "hypothesis": "A good post-mortem structure should follow the **'blameless post-mortem' philosophy**. This approach focuses on **learning and improving the process, not punishing individuals** or finding who to blame. It's crucial to foster **psychological safety**, as public shaming is counterproductive.\n\nInstead of focusing on 'who' pushed a change or scapegoating, a good structure would typically include sections that objectively detail:\n\n*   **What happened:** A clear, factual summary of the incident.\n*   **Impact:** The scope and severity of the outage.\n*   **Timeline:** A chronological account of events leading up to, during, and after the incident.\n*   **Root Causes:** An in-depth analysis of the underlying systemic issues, process failures, or technical deficiencies that contributed to the outage, *not* individual errors.\n*   **Resolution Steps:** What actions were taken to mitigate and resolve the incident.\n*   **Lessons Learned:** Key takeaways and insights gained from the incident.\n*   **Action Items:** Concrete, actionable steps to prevent recurrence and improve the system or process, aligning with SRE practices.",
+      "groundTruth": "The response must recommend a post-mortem template that aligns with the principles of a 'blameless post-mortem'. The recommended structure should prioritize sections such as 'Incident Timeline', 'Detailed Root Cause Analysis' (focusing on systemic or process failures), 'Impact Assessment', and 'Corrective and Preventative Action Items'. The response must explicitly avoid recommending sections or terminology that assigns individual fault, such as 'Responsible Individuals', 'Human Error Analysis' (unless framed systemically), or any blame-oriented language. The overall tone of the proposed template should be objective, collaborative, and focused on future improvement.",
+      "searchResults": [
+        {
+          "memory": "The internal analysis on the outage is a post-mortem document.",
+          "score": 1,
+          "id": "bel_24f638d0add9"
+        },
+        {
+          "memory": "The post-mortem document focuses on finding who to blame rather than fixing the underlying system.",
+          "score": 0.99,
+          "id": "bel_68de0c82bc2b"
+        },
+        {
+          "memory": "Jordan views the post-mortem document's approach as scapegoating.",
+          "score": 0.98,
+          "id": "bel_7ad1d15cfa51"
+        },
+        {
+          "memory": "Jordan believes the 'blameless post-mortem' philosophy is the right approach, public shaming is counterproductive, there is no psychological safety reflected in the post-mortem document, and Jordan's company could benefit from SRE practices.",
+          "score": 0.97,
+          "id": "bel_synth_e1c623a60ef9"
+        },
+        {
+          "memory": "Jordan read the post-mortem for the big service outage last week.",
+          "score": 0.96,
+          "id": "bel_d483d0c8d72d"
+        },
+        {
+          "memory": "The 'blameless post-mortem' philosophy focuses on learning and improving the process, not punishing individuals.",
+          "score": 0.95,
+          "id": "bel_3aa4df26d303"
+        },
+        {
+          "memory": "The post-mortem document all but names the engineer who pushed the change that caused the outage.",
+          "score": 0.94,
+          "id": "bel_396fb793528d"
+        },
+        {
+          "memory": "Jordan's company provides vague and corporate official information regarding the outage.",
+          "score": 0.9299999999999999,
+          "id": "bel_87e4651f7030"
+        },
+        {
+          "memory": "Jordan read the internal analysis on the outage.",
+          "score": 0.92,
+          "id": "bel_53f5af6c2b2c"
+        },
+        {
+          "memory": "Jordan's long day and talking to angry customers is due to the fallout from a massive service outage last week.",
+          "score": 0.91,
+          "id": "bel_ef1caac1c4da"
+        }
+      ],
+      "searchDurationMs": 56144,
+      "answerDurationMs": 7300,
+      "totalDurationMs": 71057,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.5,
+        "recallAtK": 1,
+        "f1AtK": 0.6666666666666666,
+        "mrr": 0.5,
+        "ndcg": 0.7634994216714083,
+        "k": 10,
+        "relevantRetrieved": 5,
+        "totalRelevant": 5
+      }
+    },
+    {
+      "questionId": "convomem-preference_evidence-2353",
+      "questionType": "preference_evidence",
+      "question": "We're planning a family brunch for this Sunday. What time would be good for you?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The model correctly recalls the user's personal information about having a long bike ride on Sunday morning until noon. It then utilizes this information to suggest a suitable time for brunch 'after 12 PM', which is in the afternoon and avoids the morning conflict, fully satisfying the rubric's requirements.",
+      "hypothesis": "I have a long bike ride scheduled for Sunday morning until noon. How about brunch after 12 PM?",
+      "groundTruth": "The correct response must recommend a time for brunch that is in the afternoon on Sunday. It should suggest a specific time or time range starting from 12:00 PM or later (e.g., '1 PM would be great,' or 'anytime in the afternoon works for me'). The response must NOT suggest any time in the morning (e.g., 9 AM, 10 AM, 11 AM), as this directly conflicts with the user's stated commitment to long bike rides on weekend mornings. An ideal answer would propose a time in the early afternoon, acknowledging that the morning is occupied.",
+      "searchResults": [
+        {
+          "memory": "'The Dog House' opens at 6:30 AM on weekends.",
+          "score": 1,
+          "id": "bel_374dfd13a9d6"
+        },
+        {
+          "memory": "Alex wants to organize Alex's calendar for next week, to block out an hour every morning from 8:30 AM to 9:30 AM for focused work, to check for pending meeting invites for next week, a recurring 'Long Ride' block from 7 AM to noon on Saturdays and Sundays on Alex's calendar, the weather forecast for this Saturday morning, to check out doggy daycare options for Max, and to save the contact information for 'The Dog House'.",
+          "score": 0.99,
+          "id": "bel_synth_879af6ce6df0"
+        },
+        {
+          "memory": "Temperatures for this Saturday morning are expected to be around 60°F at 7 AM, rising to 75°F by noon.",
+          "score": 0.98,
+          "id": "bel_0e5812052138"
+        },
+        {
+          "memory": "The weather forecast for this Saturday morning is clear skies with a light breeze from the northwest.",
+          "score": 0.97,
+          "id": "bel_ea6418a3fce0"
+        },
+        {
+          "memory": "Alex has a preference for reserving weekend mornings for long bike rides.",
+          "score": 0.96,
+          "id": "bel_4e1ddfe4cf88"
+        },
+        {
+          "memory": "Alex reserves Saturday and Sunday mornings for long bike rides.",
+          "score": 0.95,
+          "id": "bel_dba981997a9f"
+        },
+        {
+          "memory": "Chris asked Alex to play tennis this Saturday morning at 9 AM.",
+          "score": 0.94,
+          "id": "bel_fc84c9b2eb33"
+        }
+      ],
+      "searchDurationMs": 74886,
+      "answerDurationMs": 1903,
+      "totalDurationMs": 82740,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.42857142857142855,
+        "recallAtK": 1,
+        "f1AtK": 0.6,
+        "mrr": 0.5,
+        "ndcg": 0.6447841584694202,
+        "k": 7,
+        "relevantRetrieved": 3,
+        "totalRelevant": 3
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2566",
+      "questionType": "implicit_connection_evidence",
+      "question": "My team is planning a small celebration for the end of the quarter. What are some good ideas for a group outing here in SF?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis explicitly acknowledges the user's concern about budget-friendly options in San Francisco and provides a comprehensive list of free or low-cost activities, including picnics, neighborhood explorations, free museum days, and beach walks. This directly aligns with all the requirements of the ground truth answer, which asks for budget-friendly suggestions, acknowledgment of cost concerns, and a mix of free and low-cost options.",
+      "hypothesis": "Given how hectic the end of the quarter can be, it's a great idea to plan something relaxing and fun for your team! Considering that you find it hard to find budget-friendly places in San Francisco and are actively looking into free or low-cost activities, here are some ideas for a group outing that won't break the bank:\n\n1.  **Team Picnic in a Park:** San Francisco has incredible parks.\n    *   **Golden Gate Park:** You could grab some sandwiches or have everyone bring a dish for a potluck. There are plenty of beautiful spots, and you can enjoy the scenery, play some casual games, or just relax. It's a great way to unwind without the cost of a restaurant.\n    *   **Dolores Park:** Offers fantastic city views and a lively atmosphere, perfect for a casual gathering.\n    *   **Crissy Field:** Great views of the Golden Gate Bridge and the bay, perfect for a walk and a picnic.\n\n2.  **Explore a Neighborhood on Foot:**\n    *   **North Beach/Fisherman's Wharf:** You can walk around, see the sights, and maybe grab a coffee or an inexpensive treat.\n    *   **The Mission District:** Explore the murals, walk around, and perhaps grab some affordable tacos or burritos.\n    *   **Ferry Building Marketplace:** While some things can be pricey, it's free to walk around, enjoy the bay views, and soak in the atmosphere. You could grab a coffee or a small bite.\n\n3.  **Free Museum Days/Evenings:** Many SF museums offer free admission on certain days or evenings.\n    *   Check out places like the de Young Museum or Legion of Honor (free on the first Tuesday of every month for general admission) or SFMOMA (free for Bay Area residents on select days, and always free for visitors 18 and under). It's a great way to experience culture without the usual cost.\n\n4.  **Beach Walk:**\n    *   **Ocean Beach:** A refreshing walk along the coast can be a wonderful way to de-stress and enjoy the natural beauty of SF. It's completely free and offers a chance to clear your head after a busy quarter.\n\nThese options allow your team to celebrate and unwind without the quick accumulation of costs that often comes with casual dinners in San Francisco.",
+      "groundTruth": "A good response should suggest activities that are budget-friendly or offer a range of price points, implicitly acknowledging the user's previously mentioned concerns about the high cost of living in San Francisco. The suggestions should not be exclusively high-end experiences and could include free options like a picnic in a park alongside paid ones.",
+      "searchResults": [
+        {
+          "memory": "Hanging out with friends and grabbing casual dinner adds up quickly in San Francisco for Sarah.",
+          "score": 1,
+          "id": "bel_6731bb2fdeea"
+        },
+        {
+          "memory": "The end of the quarter is always hectic for Sarah.",
+          "score": 0.99,
+          "id": "bel_ab75cff5c2e8"
+        },
+        {
+          "memory": "Sarah plans to ask Melanie for suggestions for free or low-cost activities.",
+          "score": 0.98,
+          "id": "bel_550231ae1367"
+        },
+        {
+          "memory": "Sarah finds it hard to find budget-friendly places in San Francisco.",
+          "score": 0.97,
+          "id": "bel_22ed4574f14e"
+        },
+        {
+          "memory": "Sarah's rent in San Francisco is very expensive.",
+          "score": 0.96,
+          "id": "bel_d4384f6eb960"
+        },
+        {
+          "memory": "Sarah plans to look into free or low-cost activities.",
+          "score": 0.95,
+          "id": "bel_0e6cb7f977ec"
+        },
+        {
+          "memory": "Sarah usually unwinds by grabbing a casual dinner.",
+          "score": 0.94,
+          "id": "bel_15b2919a268d"
+        },
+        {
+          "memory": "Sarah lives in San Francisco.",
+          "score": 0.9299999999999999,
+          "id": "bel_71d5552d1d9e"
+        },
+        {
+          "memory": "Sarah feels her entire paycheck disappears into rent and going out for a casual dinner.",
+          "score": 0.92,
+          "id": "bel_8d22a977e960"
+        },
+        {
+          "memory": "Sarah is trying to keep up with everything at work.",
+          "score": 0.91,
+          "id": "bel_082daf9c969b"
+        }
+      ],
+      "searchDurationMs": 22580,
+      "answerDurationMs": 8864,
+      "totalDurationMs": 36739,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.6,
+        "recallAtK": 1,
+        "f1AtK": 0.7499999999999999,
+        "mrr": 1,
+        "ndcg": 0.9001715370445234,
+        "k": 10,
+        "relevantRetrieved": 6,
+        "totalRelevant": 6
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2579",
+      "questionType": "implicit_connection_evidence",
+      "question": "Let's get our weekly all-hands sales sync on the calendar for next Tuesday. What are some good time slots we should propose?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The system's hypothesis fully addresses the ground truth. It proactively considers the time zone difference for PST team members (8 AM PST is reasonable), proposes a specific time (11 AM EST) that falls within the 'late morning ET' suggestion, and also suggests 'early afternoon EST' as another option, explicitly stating it keeps PST team members in mind. It also adds a relevant detail about avoiding another meeting, which further demonstrates proactive scheduling.",
+      "hypothesis": "Based on previous discussions, **11 AM EST (8 AM PST)** was proposed for the all-hands sync. This time accommodates the PST team members and avoids the daily 9 AM EST stand-up.\n\nOther potential slots could be in the early afternoon EST, keeping in mind the PST team members.",
+      "groundTruth": "A good response should proactively consider the significant time zone difference for the key team member who recently moved to Seattle (Pacific Time). It should propose meeting times that are reasonable for both East Coast and West Coast business hours, such as late morning or early afternoon Eastern Time, to avoid requiring anyone to attend a meeting too early or too late in their day.",
+      "searchResults": [
+        {
+          "memory": "The AI proposed shifting the all-hands sync to 11 AM EST (8 AM PST).",
+          "score": 1,
+          "id": "bel_72a6061eae45"
+        },
+        {
+          "memory": "Sarah proposed a hybrid sync schedule: three times a week synchronous and twice a week asynchronous.",
+          "score": 0.99,
+          "id": "bel_136075edd597"
+        },
+        {
+          "memory": "Sarah wants to explore both proposed options for the sync schedule.",
+          "score": 0.98,
+          "id": "bel_86d98dd12026"
+        },
+        {
+          "memory": "Sarah plans to rethink the team's sync schedule.",
+          "score": 0.97,
+          "id": "bel_68e5880685b6"
+        },
+        {
+          "memory": "The team has a daily 9 AM EST stand-up.",
+          "score": 0.96,
+          "id": "bel_d92b45a94eef"
+        },
+        {
+          "memory": "Sarah will check in with Emily Carter on the afternoon of September 12, 2023.",
+          "score": 0.95,
+          "id": "bel_665a955e0292"
+        },
+        {
+          "memory": "Sarah believes the sales team needs a strong close for Q3 2023.",
+          "score": 0.94,
+          "id": "bel_15b70da925a3"
+        },
+        {
+          "memory": "Sarah wants to see the sales performance dashboard for Q3 2023, understand the current standing against sales targets for Q3 2023, and have the sales performance broken down by region for Q3 2023.",
+          "score": 0.9299999999999999,
+          "id": "bel_synth_638b4e0a10d1"
+        },
+        {
+          "memory": "The sales team is at 92% of the Q3 2023 quarterly revenue target as of September 12, 2023.",
+          "score": 0.92,
+          "id": "bel_0ab6869385b8"
+        },
+        {
+          "memory": "The time zone difference will be a key consideration for David Chen's remote work.",
+          "score": 0.91,
+          "id": "bel_139c3399e289"
+        }
+      ],
+      "searchDurationMs": 109931,
+      "answerDurationMs": 3952,
+      "totalDurationMs": 119657,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.2,
+        "recallAtK": 1,
+        "f1AtK": 0.33333333333333337,
+        "mrr": 1,
+        "ndcg": 0.7903864795495061,
+        "k": 10,
+        "relevantRetrieved": 2,
+        "totalRelevant": 2
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2688",
+      "questionType": "implicit_connection_evidence",
+      "question": "Looking at my calendar for next week, I need to find a way to restructure my work blocks. I'm concerned about my ability to stay focused and effectively manage my team's performance metrics. Can you suggest some scheduling strategies?",
+      "score": 0,
+      "label": "incorrect",
+      "explanation": "The ground truth answer explicitly states that a good response 'should infer that the user needs to schedule around significant daytime noise at home' and then suggests strategies based on a '9 AM-5 PM construction window'. The system's hypothesis completely misses this crucial inference. While it suggests scheduling strategies for focus and performance, it does not identify or address the underlying constraint of daytime noise, nor does it propose solutions like shifting call-heavy tasks outside the noisy window or suggesting alternative work locations, which are key components of the correct answer.",
+      "hypothesis": "It sounds like you're looking to optimize your schedule for better focus and more effective team performance management. Based on your memories, here are some scheduling strategies to consider for next week:\n\n### **1. Dedicated \"Metrics & Performance Analysis\" Blocks (Deep Work)**\n\n*   **Goal:** Ensure focused time for reviewing data without interruptions.\n*   **Strategy:** Block out specific, uninterrupted time slots for deep analytical work.\n    *   **Early Week Metrics Review:** Schedule a block early next week to \"review the team's performance dashboard from last week,\" \"review key metrics before the weekly sync,\" and \"know if there were other red flags in the metrics besides AHT.\" This sets the stage for the week.\n    *   **Targeted Data Dive:** Create a separate block to \"cross-reference Jessica, Michael, and Sarah's call logs with tickets tagged 'version 2.3 bug',\" and \"know the average call hold time for Jessica, Michael, and Sarah specifically,\" and \"know about after-call work time.\" This requires focused attention.\n    *   **Call Recording Review:** Remember your plan to \"block out time tomorrow to listen to the call recordings.\" Ensure this is a dedicated, quiet slot.\n\n### **2. Structured Team Development & Coaching**\n\n*   **Goal:** Integrate coaching and training efficiently based on identified needs.\n*   **Strategy:** Group similar team-facing activities.\n    *   **One-on-One Coaching Day:** You plan to \"schedule the one-on-one coaching sessions for Tuesday\" and \"schedule one-on-one coaching with Jessica, Michael, and Sarah to review their calls.\" Consolidate these on Tuesday to create a focused \"coaching day\" or half-day.\n    *   **Targeted Training Session:** You plan to \"schedule a targeted training session for the whole team on the new software update.\"\n        *   **Availability Check:** \"Check for shared team availability next Wednesday or Thursday for the training.\"\n        *   **Time Slot:** \"The only time the entire team is available next Thursday is at 10:00 AM,\" and you \"consider Thursday at 10 AM as a possible time.\" This aligns perfectly.\n        *   **Duration:** You \"need a 60-minute slot for the whole team for the training session.\"\n        *   **Action:** Book Thursday at 10:00 AM for 60 minutes for the training.\n\n### **3. Proactive Environment Review & Planning**\n\n*   **Goal:** Address potential distractions and ensure a conducive work environment for yourself and the team.\n*   **Strategy:** Dedicate time to assess and plan for optimal focus.\n    *   **Work Environment Review:** Your \"scheduling is on hold pending Alex's review of next week's work environment.\" Schedule this review as a priority, perhaps at the very beginning of next week, or even end of this week, to identify and mitigate potential focus disruptors. This directly addresses your concern about staying focused.\n    *   **Pause Scheduling:** You also want to \"pause scheduling the training meeting\" until you've checked availability, which you've now done.\n\n### **Suggested Next Week Schedule Outline:**\n\n*   **End of This Week / Monday Morning:**\n    *   **Review Work Environment:** (bel_6dd15ffb5986)\n    *   **Block Time for Call Recordings:** (bel_97f9896b43b6)\n*   **Monday:**\n    *   **Metrics Dashboard Review Block (Deep Work):** Review overall performance, key metrics, AHT, red flags. (bel_synth_47d24a2c36d8)\n*   **Tuesday:**\n    *   **One-on-One Coaching Day:** Conduct all planned one-on-one sessions with Jessica, Michael, and Sarah. (bel_4d0bfe049111, bel_886ad239d72e)\n*   **Wednesday:**\n    *   **Targeted Data Dive Block (Deep Work):** Cross-reference call logs/tickets, check specific AHT/ACW for Jessica, Michael, Sarah. (bel_synth_47d24a2c36d8)\n*   **Thursday:**\n    *   **10:00 AM - 11:00 AM: Team Training Session:** New software update. (bel_a50cd349d211, bel_2b0157064da7, bel_eed1825d7d40, bel_6006261c7993)\n\nBy structuring your week with dedicated blocks for deep analytical work and focused team interactions, you should be able to improve your focus and more effectively manage your team's performance metrics.",
+      "groundTruth": "A good response should infer that the user needs to schedule around significant daytime noise at home. The response should suggest strategies that accommodate this constraint, such as: 1. Shifting call-heavy tasks (like agent one-on-ones or stakeholder meetings) to early morning or late afternoon, outside the 9 AM-5 PM construction window. 2. Blocking out the noisy midday period for asynchronous, non-verbal tasks like analyzing CRM data, reviewing call metrics, or preparing reports. 3. Suggesting the possibility of working from a different location, such as the office or a quiet co-working space, for part of the day. 4. The suggestions should be framed around the user's stated goals of maintaining focus and managing team performance.",
+      "searchResults": [
+        {
+          "memory": "Scheduling is on hold pending Alex's review of next week's work environment.",
+          "score": 1,
+          "id": "bel_6dd15ffb5986"
+        },
+        {
+          "memory": "Alex plans to schedule the one-on-one coaching sessions for Tuesday.",
+          "score": 0.99,
+          "id": "bel_4d0bfe049111"
+        },
+        {
+          "memory": "The only time the entire team is available next Thursday is at 10:00 AM.",
+          "score": 0.98,
+          "id": "bel_a50cd349d211"
+        },
+        {
+          "memory": "Alex wants to review the team's performance dashboard from last week, review key metrics before the weekly sync, cross-reference Jessica, Michael, and Sarah's call logs with tickets tagged 'version 2.3 bug', know the average call hold time for Jessica, Michael, and Sarah specifically, pause scheduling the training meeting, know if there were other red flags in the metrics besides AHT, and know about after-call work time.",
+          "score": 0.97,
+          "id": "bel_synth_47d24a2c36d8"
+        },
+        {
+          "memory": "Alex plans to schedule a targeted training session for the whole team on the new software update.",
+          "score": 0.96,
+          "id": "bel_6006261c7993"
+        },
+        {
+          "memory": "Alex wants to check for shared team availability next Wednesday or Thursday for the training.",
+          "score": 0.95,
+          "id": "bel_991b30844e44"
+        },
+        {
+          "memory": "Alex considers Thursday at 10 AM as a possible time for the training session.",
+          "score": 0.94,
+          "id": "bel_2b0157064da7"
+        },
+        {
+          "memory": "Alex needs a 60-minute slot for the whole team for the training session.",
+          "score": 0.9299999999999999,
+          "id": "bel_eed1825d7d40"
+        },
+        {
+          "memory": "Alex plans to block out time tomorrow to listen to the call recordings.",
+          "score": 0.92,
+          "id": "bel_97f9896b43b6"
+        },
+        {
+          "memory": "Alex plans to schedule one-on-one coaching with Jessica, Michael, and Sarah to review their calls.",
+          "score": 0.91,
+          "id": "bel_886ad239d72e"
+        }
+      ],
+      "searchDurationMs": 71014,
+      "answerDurationMs": 12914,
+      "totalDurationMs": 94142,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.4,
+        "recallAtK": 1,
+        "f1AtK": 0.5714285714285715,
+        "mrr": 1,
+        "ndcg": 0.7888688323685816,
+        "k": 10,
+        "relevantRetrieved": 4,
+        "totalRelevant": 4
+      }
+    },
+    {
+      "questionId": "convomem-implicit_connection_evidence-2799",
+      "questionType": "implicit_connection_evidence",
+      "question": "Can you recommend some biking trails near Seattle?",
+      "score": 1,
+      "label": "correct",
+      "explanation": "The Ground Truth Answer describes the characteristics of a 'good response' to the question, focusing on suitability for road bikes, long-distance cycling, and training goals. The System's Hypothesis provides specific trail recommendations (Burke-Gilman Trail, Sammamish River Trail) that explicitly meet all these criteria: they are 'great options for road bikes' and offer a 'nice long ride, perfect for a weekend' (aligning with long-distance and training goals). Thus, the system's response is an excellent example of a 'good response' as defined by the Ground Truth, effectively containing or embodying all the required elements.",
+      "hypothesis": "Based on the information, the **Burke-Gilman Trail** and the **Sammamish River Trail** are highly recommended biking trails near Seattle. Both are great options for road bikes, with the Burke-Gilman Trail being a popular choice that offers a nice long ride, perfect for a weekend.",
+      "groundTruth": "A good response should consider the type of bike Alex uses and suggest trails that are suitable for road bikes with thin tires, avoiding rough terrain. The response should also acknowledge Alex's preference for long-distance cycling and provide options that align with their training goals.",
+      "searchResults": [
+        {
+          "memory": "Seattle has beautiful trails.",
+          "score": 1,
+          "id": "bel_a030e1201295"
+        },
+        {
+          "memory": "Speaker A is considering exploring some new cycling routes, is open to suggestions for cycling routes, and is curious about other scenic cycling routes around Seattle.",
+          "score": 0.99,
+          "id": "bel_synth_7097e1b29bf1"
+        },
+        {
+          "memory": "The Sammamish River Trail is a great option for road bikes.",
+          "score": 0.98,
+          "id": "bel_8042de418330"
+        },
+        {
+          "memory": "Speaker A thinks the suggested trails (Burke-Gilman Trail and Sammamish River Trail) sound ideal.",
+          "score": 0.97,
+          "id": "bel_32ee59fef2dc"
+        },
+        {
+          "memory": "Speaker A will check out the Burke-Gilman Trail and the Sammamish River Trail.",
+          "score": 0.96,
+          "id": "bel_9484d491fc9c"
+        },
+        {
+          "memory": "The Burke-Gilman Trail is a popular choice for road bikes.",
+          "score": 0.95,
+          "id": "bel_524b943874ca"
+        },
+        {
+          "memory": "Speaker A would like a mix of challenging and leisurely cycling routes.",
+          "score": 0.94,
+          "id": "bel_b47fd353e27c"
+        },
+        {
+          "memory": "The Burke-Gilman Trail offers a nice long ride.",
+          "score": 0.9299999999999999,
+          "id": "bel_1f7aaf01c249"
+        },
+        {
+          "memory": "Speaker B will keep Speaker A's bike information in mind when suggesting trails.",
+          "score": 0.92,
+          "id": "bel_b0f60ac3f58a"
+        },
+        {
+          "memory": "Speaker A thinks the Burke-Gilman Trail sounds perfect for a weekend ride.",
+          "score": 0.91,
+          "id": "bel_12ca5bf21400"
+        }
+      ],
+      "searchDurationMs": 31583,
+      "answerDurationMs": 2857,
+      "totalDurationMs": 42302,
+      "retrievalMetrics": {
+        "hitAtK": 1,
+        "precisionAtK": 0.8,
+        "recallAtK": 1,
+        "f1AtK": 0.888888888888889,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.7367283992687399,
+        "k": 10,
+        "relevantRetrieved": 8,
+        "totalRelevant": 8
+      }
+    }
+  ]
+}
