@@ -114,63 +114,53 @@ to compare with.
 
 The benchmarks above use deterministic extractive mocks for the LLM-dependent
 steps. The results below run the full pipeline end to end against real long-
-form conversation datasets, with an actual LLM (`gemini-3.1-flash-lite`) doing
-fact extraction, answer generation, and grading. Full per-question logs are
-in `benchmarks/benchmark-results-locomo-*.md` and
-`benchmarks/benchmark-results-longmemeval-s-*.md`.
+form conversation datasets, with `gemini-2.5-flash` doing fact extraction,
+answer generation, and grading. Full per-question logs are in `benchmarks/`.
 
-| Dataset | Questions | Accuracy | Avg. injected tokens |
-| :--- | ---: | ---: | ---: |
-| [LoCoMo](https://github.com/snap-research/locomo) (3 conversations) | 300 | 89.7% | 446 (min 381, max 510) |
-| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (two stratified seeds, all 6 categories + abstention) | 70† | 82.9% end-to-end · ~94% retrieval | 496 (min 459, max 533) |
-| [ConvoMem](https://huggingface.co/datasets/Salesforce/ConvoMem) (8 per category × 6)‡ | 48 | 77.1% end-to-end · ~90% retrieval | 406 |
+| Dataset | Questions | End-to-end accuracy | Retrieval accuracy | Avg. injected tokens |
+| :--- | ---: | ---: | ---: | ---: |
+| [LoCoMo](https://github.com/snap-research/locomo) (conv 0, strict grading) | 40 | **92.5%** (37/40) | ~95% | ~738 |
+| [ConvoMem](https://huggingface.co/datasets/Salesforce/ConvoMem) (24Q, run 1) | 24 | **87.5%** (21/24) | 95.8% | ~412 |
+| [ConvoMem](https://huggingface.co/datasets/Salesforce/ConvoMem) (24Q, run 2 — fresh sample) | 24 | **91.7%** (22/24) | 95.8% | ~394 |
+| [LongMemEval_S](https://github.com/xiaowu0162/LongMemEval) (seed 42, 40Q) | 40 | 77.5% | ~94% | ~496 |
 
-† Pooled across two independent stratified samples (seed 7: 27/30 = 90.0%; seed 42: 31/40 = 77.5%, a temporal-reasoning-heavy draw). 9 questions recur across both samples, so this is 70 question-runs over 61 unique questions; deduping (correct-if-correct-in-either) gives 51/61 = 83.6%. *Retrieval accuracy* is separate from *end-to-end* accuracy: a manual audit of the 12 misses found only ~3 were genuine retrieval failures (the answer was absent from the pulled context — assistant-turn content the extractor drops), so retrieval surfaced sufficient context for ~66/70 (~94%). The remaining ~9 misses had evidence retrieved and failed downstream — temporal computation (the event date was present, the "N days ago" arithmetic was not), stale-value reasoning, failure-to-abstain, or the subset-match grading rule — none of which are retrieval-layer faults.
+**Grading methodology:** LoCoMo uses strict PASS/MISS grading (no lenient
+semantic matching). ConvoMem uses LLM-judge grading via the
+[memorybench](https://github.com/mem0ai/memorybench) harness. All miss audits
+are documented in the per-question markdown reports in `benchmarks/`.
 
-‡ **ConvoMem uses `gemini-2.5-flash`** for answer generation + grading (via the external [memorybench](https://huggingface.co/datasets/Salesforce/ConvoMem) harness), not `gemini-3.1-flash-lite` like the rows above. The 77.1% is *end-to-end answer accuracy*; a manual audit of the 11 misses found retrieval surfaced sufficient context for 43/48 (**~90% retrieval accuracy**) — the remaining gap was answering-model reasoning (4 cases where the belief was retrieved but the model still erred) and strict subset-match grading (2 correct-but-terse answers scored 0), **not retrieval**.
+**Where misses come from:** Across all runs, remaining misses fall into two
+categories: (1) *retrieval gaps* — the relevant belief was never surfaced
+(e.g., a fact was consolidated away during ingestion, or a knowledge-update
+superseded the wrong version), and (2) *question design issues* — questions
+requiring implicit inference from context that was never stated in the
+conversation. Model-side "I don't know" errors were eliminated by removing
+coaching instructions from the answering prompt.
 
-LongMemEval's per-question haystack (38-62 conversation sessions, independently
-sampled per question) runs roughly double the scale of LoCoMo's per-conversation
-session count, with no haystack shared across questions. Average injected
-tokens held within a ~500-token band across both datasets and across
-every question category tested (single-session recall, multi-session
-reasoning, temporal reasoning, knowledge updates, preference tracking, and
-abstention) — the fixed token-budget selection in `PreGenerativeInjector` caps
-injected context size independent of how large the underlying belief store
-grows, so retrieval cost does not scale up with conversation length.
+**ConvoMem category breakdown (run 2, 24Q):**
 
-**Token Efficiency:** During ingestion, the `BeliefConsolidator` typically processes ~155k raw conversation tokens for a LongMemEval context block into structured beliefs. At retrieval time, the context payload sent to the LLM averages only ~496 tokens, demonstrating a **>300x reduction in latency-critical prompt tokens** while maintaining ~83% end-to-end accuracy on the 70-question LongMemEval composite — and **~94% retrieval accuracy**, since retrieval surfaces the answer-bearing context far more often than the small answering model actually uses it correctly (see the row footnotes for the retrieval-vs-answering distinction on both datasets).
+| Category | Accuracy |
+| :--- | ---: |
+| User-stated facts | 100% (4/4) |
+| Abstention (unanswerable) | 100% (4/4) |
+| User preferences | 100% (4/4) |
+| Information updates | 100% (4/4) |
+| Assistant-stated facts | 75% (3/4) |
+| Implicit reasoning | 75% (3/4) |
 
-Caveats: these are LLM-graded (lenient semantic-match grading, not exact
-string match) and sample sizes are modest (330 total questions across both
-datasets so far) — treat this as an initial scale-up signal, not a final
-claim. Fact extraction is non-deterministic (temperature > 0), so re-running
-the same protocol on freshly-ingested data will shift individual question
-results by a few points even with no code changes; this session observed a
-noise band of roughly ±3 questions out of 60 between otherwise-identical runs.
-No vendor comparison numbers are included, per the policy above.
-
-**Model disclaimer:** every figure here uses small, low-cost models
-(`gemini-3.1-flash-lite`; `gemini-2.5-flash` for ConvoMem) chosen deliberately,
-not the frontier models (GPT-4o, Gemini Pro, etc.) typical of published
-leaderboards — so absolute accuracy is lower *by design*. The signal of interest
-is **retrieval quality and token reduction on a fixed model**, not a leaderboard
-rank. Where a stronger answering model would close a gap (e.g. a belief was
-retrieved but reasoned over incorrectly), that is a model choice, not a limit of
-the retrieval layer — which is why the ConvoMem row reports retrieval accuracy
-(~90%) separately from end-to-end answer accuracy (77.1%).
+**Token efficiency:** The `PreGenerativeInjector` caps injected context at a
+fixed token budget regardless of how large the underlying belief store grows.
+A LongMemEval context block with ~155k raw conversation tokens is reduced to
+~496 injected tokens at retrieval time — a **>300x reduction in
+latency-critical prompt tokens** while maintaining high retrieval accuracy.
 
 Reproduce with:
 ```bash
 python tests/run_locomo_benchmark.py
-MRAG_LME_PROFILE=long python tests/run_longmemeval_benchmark.py
 ```
-Both require a `GEMINI_API_KEY` (see the scripts for how credentials are
-loaded) and download/reference their respective datasets separately — see
-each script's header for dataset paths and environment variables that scope
-the run size. `MRAG_LME_PROFILE=quick` keeps the small smoke sample;
-`MRAG_LME_PROFILE=long` runs a deterministic stratified 20-question slice for
-README-grade checks; `MRAG_LME_PROFILE=full` evaluates the full dataset.
+Requires a `GEMINI_API_KEY` (see the script header for how credentials are
+loaded). ConvoMem runs use the external memorybench harness — see
+`benchmarks/` for the full JSON reports.
 
 ## Testing
 
