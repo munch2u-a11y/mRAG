@@ -1,17 +1,47 @@
 # Micro-RAG (mRAG)
 
-Micro-RAG is a lightweight, framework-agnostic memory management system for LLM agents. It decouples fact extraction, storage, retrieval, and context-window management into independent components that integrate with any LLM harness or orchestrator.
+Micro-RAG is a lightweight, framework-agnostic memory management system for LLM agents. It decouples memory formation, storage, retrieval, and context-window management into independent components that integrate with any LLM harness or orchestrator.
 
 ## Design
 
-Rather than resetting context or prompting with full conversation history, Micro-RAG extracts structured facts ("beliefs") from conversation turns, stores them with metadata (confidence, relevance, category, relations to other facts), and retrieves a relevance-ranked, token-budget-limited subset before each generation call.
+Micro-RAG uses a **two-layer memory architecture**: raw conversation text is stored verbatim as Layer 1 chunks, and structured beliefs are derived from those chunks as Layer 2. This means ingestion is instant (zero LLM calls — just chunking and hashing), and no information is ever lost to extraction judgment. Beliefs are formed asynchronously by the consolidator and serve as a derived index over the permanent record.
+
+At retrieval time, the injector searches across both layers, assembles the most relevant facts within a fixed token budget, and injects them into the prompt — no system instructions, no coaching, just context.
+
+```mermaid
+flowchart LR
+    subgraph INGESTION ["Ingestion (zero LLM calls)"]
+        A["Conversation\nTurns"] --> B["MemoryIngestor"]
+        B --> C["Layer 1\n~100-token verbatim chunks\nwith timestamps & metadata"]
+    end
+
+    subgraph CONSOLIDATION ["Consolidation (async / batch)"]
+        C --> D["BeliefConsolidator"]
+        D --> E["Layer 2\nStructured beliefs\n(premises, preferences,\npropositions, skills)"]
+        D -->|"tag-based\nrollups"| E
+        D -->|"HDBSCAN\nclustering"| E
+        D -->|"session\nmerges"| E
+    end
+
+    subgraph RETRIEVAL ["Retrieval (per turn)"]
+        F["User Input"] --> G["PreGenerativeInjector"]
+        C --> G
+        E --> G
+        G -->|"multi-head search\n+ token budget"| H["Injected\nContext\n~400-700 tokens"]
+    end
+
+    H --> I["LLM\n(no system prompt)"]
+```
 
 ### Components
 
-- **BeliefStore**: JSON-backed storage for structured facts (premises, propositions, preferences, skills, desires). On write, distinguishes a paraphrase of an existing fact (corroborates, no new belief) from a value change to the same fact slot (supersedes the prior value) using template + salient-token matching rather than similarity alone. Tracks confidence, computed relevance, and explicit relations between facts.
-- **PreGenerativeInjector**: Retrieves relevant beliefs for a given input text via multi-head candidate gathering — parallel search terms are generated from the input (proper nouns, noun-phrase bigrams, individual significant words, and an auto-learned concept/relation-expansion vocabulary), each matched against stored fact content by exact stemmed-word matching; the raw input text itself is matched separately via embedding cosine similarity for genuine paraphrase recall. Candidates are ranked primarily by how many independent search terms matched (a fact relevant to more of the query's distinct aspects outranks a single strong match), with near-duplicate restatements and synthesis-covered constituents collapsed before token-budget selection.
-- **ContextCompressor**: Rolling context-window manager that summarizes older turns into a compact recollection once a token/turn threshold is crossed, while preserving recent turns verbatim and explicit turn identifiers for downstream fact extraction.
-- **BeliefConsolidator**: Converts raw conversation turns into structured facts via a single LLM extraction call per turn. Also performs: (a) tag-based immediate consolidation of a same-subject/same-category fact cluster into one rollup once it crosses a size/token threshold, (b) a periodic embedding-geometry (HDBSCAN) pass that finds clusters the tag-based path misses, and (c) an additive per-session pass that combines multiple parallel same-relation facts (e.g. several distinct hobbies for the same person) into one compact statement without removing the originals, with duplicate-fact suppression at retrieval time so the combined statement doesn't compete against its own constituents for context budget.
+| Component | Role |
+| :--- | :--- |
+| **MemoryIngestor** | Stores every conversation event (user input, assistant output, tool returns) as verbatim ~100-token chunks with timestamp prefixes and source metadata. Zero LLM calls — pure text handling. These Layer 1 chunks are the permanent record; everything else is derived from them. |
+| **BeliefConsolidator** | Derives structured Layer 2 beliefs from raw chunks. Runs in three modes: (1) **per-session extraction** — one LLM call per conversation turn batch to extract facts, (2) **tag-based rollup** — consolidates same-subject/same-category clusters once they cross a size threshold, (3) **HDBSCAN clustering** — periodic embedding-geometry pass that finds clusters the tag-based path misses, plus additive session merges that combine parallel facts (e.g., multiple hobbies) into compact statements. Also powers `run_nightly_review`, which sweeps unreviewed Layer 1 chunks in large batches to form new beliefs with provenance links back to the source chunks. |
+| **BeliefStore** | JSON-backed storage for both layers. On write, distinguishes paraphrases (corroborates existing belief) from value changes (supersedes prior value) using template + salient-token matching. Tracks confidence, computed relevance, timestamps, and explicit relations between facts. |
+| **PreGenerativeInjector** | Retrieves relevant memories via multi-head candidate gathering — generates parallel search terms from the input (proper nouns, bigrams, significant words, auto-learned concept expansions), matches against stored content by exact stemmed-word matching, and separately matches via embedding cosine similarity for paraphrase recall. Candidates are ranked by how many independent search heads matched (breadth over depth), with near-duplicates and synthesis-covered constituents collapsed. Final selection is capped to a fixed token budget. |
+| **ContextCompressor** | Rolling context-window manager that summarizes older turns into compact recollections once a token/turn threshold is crossed, while preserving recent turns verbatim for downstream extraction. |
 
 ## Installation
 
